@@ -1,9 +1,9 @@
 
 var mongoose = require('mongoose');
-var config = require('../../configs/config');
+var config = require('../../config');
 
 if (config.debug) {
-	mongoose.set('debug', true);
+	// mongoose.set('debug', true);
 }
 
 mongoose.connect(config.db_url, function (error) {

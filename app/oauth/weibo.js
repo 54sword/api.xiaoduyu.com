@@ -8,7 +8,7 @@ var User = require('../models').User;
 var Oauth = require('../models').Oauth;
 var mkdirs = require('../common/mkdirs');
 var Avatar = require('../api/v1/avatar');
-var config = require('../../configs/config');
+var config = require('../../config');
 var Tools = require('../common/tools');
 // var auth = require('../middlewares/auth');
 

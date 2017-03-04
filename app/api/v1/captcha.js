@@ -2,7 +2,7 @@ var Captcha = require('../../models').Captcha;
 var Account = require('../../models').Account;
 var async = require('async');
 var Email = require('../../common/email');
-var config = require('../../../configs/config');
+var config = require('../../../config');
 var Validate = require('../../common/validate');
 
 var generateEmailHTMLContent = function(content) {

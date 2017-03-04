@@ -12,7 +12,7 @@ var mkdirs = require('../../common/mkdirs');
 var User = require('../../models').User;
 // var auth = require('../middlewares/auth');
 
-var config = require('../../../configs/config');
+var config = require('../../../config');
 
 var avatarPath = config.upload.avatar.path;
 

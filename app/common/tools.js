@@ -1,7 +1,7 @@
 
 var request = require('request');
 var fs = require('fs');
-var bcrypt = require('bcryptjs');
+// var bcrypt = require('bcryptjs');
 
 var Digit = {};
 /**

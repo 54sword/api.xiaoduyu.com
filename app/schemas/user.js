@@ -27,9 +27,9 @@ var UserSchema = new Schema({
   role: { type: Number, default: 0 },
 
   // 是否上传了头像
-  avatar: { type: Boolean, default: false },
+  // avatar: { type: Boolean, default: false },
   // 头像
-  avatar_url: { type: String, default: '' },
+  avatar: { type: String, default: '' },
   // 性别
   gender: { type: Number, default: 0 },
   // 简介,一句话介绍自己，70个字符限制
@@ -70,9 +70,13 @@ var UserSchema = new Schema({
   // access_token: { type: String }
 });
 
-/*
+
+
 UserSchema.virtual('avatar_url').get(function () {
 
+  return '//img.xiaoduyu.com/default_avatar.jpg'
+
+  /*
   if (!this.avatar) {
     return config.domain + '/images/avatar/_thumbnail.jpg';
   }
@@ -88,9 +92,10 @@ UserSchema.virtual('avatar_url').get(function () {
   var path = config.domain + '/avatar' + '/' + year + '/' + month + '/' + day + '/' + this._id + '_thumbnail.jpg';
 
   return path;
+  */
 });
 
 UserSchema.set('toJSON', { getters: true });
-*/
+
 
 mongoose.model('User', UserSchema);

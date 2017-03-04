@@ -1,6 +1,6 @@
 
 var User = require('../schemas').User;
-var bcrypt = require('bcryptjs');
+// var bcrypt = require('bcryptjs');
 // var uuid = require('node-uuid');
 
 // 创建账号

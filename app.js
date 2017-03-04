@@ -11,7 +11,7 @@ var compress = require('compression');
 // var session = require('express-session');
 // var MongoStore = require('connect-mongo')(session);
 
-var config = require('./configs/config');
+var config = require('./config');
 
 var API_V1 = require('./app/api-v1');
 var OauthRouter = require('./app/oauth');

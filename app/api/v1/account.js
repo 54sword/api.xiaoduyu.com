@@ -11,7 +11,7 @@ var Captcha = require('../../models').Captcha;
 
 var JWT = require('../../common/jwt');
 var Email = require('../../common/email');
-var config = require('../../../configs/config');
+var config = require('../../../config');
 
 var Validate = require('../../common/validate');
 

@@ -26,5 +26,5 @@ node_modules
 
 psd
 dist
-configs/config.js
+config.js
 *.DS_Store

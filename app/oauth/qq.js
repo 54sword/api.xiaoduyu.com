@@ -13,7 +13,7 @@ var mkdirs = require('../common/mkdirs');
 var Avatar = require('../api/v1/avatar');
 
 // var Avatar = require('../controllers/avatar');
-var config = require('../../configs/config');
+var config = require('../../config');
 
 var appConfig = {
   appid: config.oauth.qq.appid,

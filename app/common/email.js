@@ -1,5 +1,5 @@
 
-var config = require('../../configs/config');
+var config = require('../../config');
 var SendCloud = require('sendcloud-client');
 
 var sendCloudConfig = config.email.sendCloud;
