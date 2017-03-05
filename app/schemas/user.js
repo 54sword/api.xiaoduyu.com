@@ -70,11 +70,9 @@ var UserSchema = new Schema({
   // access_token: { type: String }
 });
 
-
-
 UserSchema.virtual('avatar_url').get(function () {
 
-  return '//img.xiaoduyu.com/default_avatar.jpg'
+  return this.avatar.replace('!200', '!50') || '//img.xiaoduyu.com/default_avatar.jpg'
 
   /*
   if (!this.avatar) {

@@ -2,15 +2,15 @@
 var request = require('request');
 var xss = require('xss');
 var async = require('async');
-// var jwt = require('jwt-simple');
 var JWT = require('../common/jwt');
 
 var User = require('../models').User;
 var Oauth = require('../models').Oauth;
-var Tools = require('../common/tools');
+// var Tools = require('../common/tools');
 // var auth = require('../middlewares/auth');
-var mkdirs = require('../common/mkdirs');
-var Avatar = require('../api/v1/avatar');
+// var mkdirs = require('../common/mkdirs');
+// var Avatar = require('../api/v1/avatar');
+var qiniu = require('../api/v1/qiniu');
 
 // var Avatar = require('../controllers/avatar');
 var config = require('../../config');
@@ -23,12 +23,12 @@ var appConfig = {
 }
 
 var goToNoticePage = function(res, string) {
-  res.redirect('https://www.xiaoduyu.com/notice?source=oauth_qq&notice='+string)
+  res.redirect(config.oauth.landingPage+'/notice?source=oauth_qq&notice='+string)
 }
 
 var goToAutoSignin = function(res, jwtTokenSecret, userId) {
   var result = JWT.encode(jwtTokenSecret, userId)
-  res.redirect('https://www.xiaoduyu.com/oauth?access_token='+result.access_token+'&expires='+result.expires)
+  res.redirect(config.oauth.landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }
 
 // 打开QQ登录接入页面
@@ -202,9 +202,15 @@ exports.signin = function(req, res) {
             createOauth(tokenInfo, user, function(oauth){
               if (oauth) {
 
+                qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
+                  goToAutoSignin(res, req.jwtTokenSecret, user._id)
+                })
+
+                /*
                 updateAvatar(tokenInfo.avatar, user, function(){
                   goToAutoSignin(res, req.jwtTokenSecret,  user._id)
                 })
+                */
 
               } else {
                 goToNoticePage(res, 'create_oauth_failed')
@@ -233,9 +239,13 @@ exports.signin = function(req, res) {
             if (user) {
               Oauth.updateById(oauth._id, { user_id: user._id, deleted: false }, function(){
 
-                updateAvatar(tokenInfo.avatar, user, function(){
+                qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
                   goToAutoSignin(res, req.jwtTokenSecret, user._id)
                 })
+
+                // updateAvatar(tokenInfo.avatar, user, function(){
+                //   goToAutoSignin(res, req.jwtTokenSecret, user._id)
+                // })
 
               })
             } else {
@@ -353,7 +363,7 @@ var getOpenId = function(access_token, callback) {
 var getAccessToken = function(code, callback) {
 
   request.get(
-    'https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id='+appConfig.appid+'&client_secret='+appConfig.appkey+'&code='+code+'&redirect_uri=http%3A%2F%2Fapi.xiaoduyu.com%2Foauth%2Fqq',
+    'https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id='+appConfig.appid+'&client_secret='+appConfig.appkey+'&code='+code+'&redirect_uri='+encodeURIComponent(appConfig.redirectUri),
     {},
     function (error, response, body) {
       if (error || response.statusCode != 200) {
@@ -477,6 +487,7 @@ var createOauth = function(user, newUser, callback) {
 
 }
 
+/*
 var updateAvatar = function(imageSource, user, callback) {
 
   var path = config.upload.avatar.path + avatarFolderPath(user.create_at);
@@ -493,3 +504,4 @@ var updateAvatar = function(imageSource, user, callback) {
   });
 
 }
+*/

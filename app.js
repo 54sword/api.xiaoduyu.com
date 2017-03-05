@@ -76,7 +76,7 @@ app.set('jwtTokenSecret', config.jwt_secret);
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser(config.cookie_secret));
+// app.use(cookieParser(config.cookie_secret));
 app.set('trust proxy', 1);
 app.use(compress()); // gzip
 /*
@@ -92,8 +92,12 @@ app.use(session({
 }));
 */
 app.use(express.static(path.join(__dirname, 'public')));
-// ssl 验证的目录
-app.use(express.static(path.join(__dirname, '../../var/www/xiaoduyu.com')));
+
+// Let's encrypt 用于域名的验证
+// https://github.com/xdtianyu/scripts/blob/master/lets-encrypt/README-CN.md
+if (config.sslPath) {
+	app.use(express.static(path.join(__dirname, config.sslPath)));
+}
 
 /*
 // 强制去除www
@@ -124,24 +128,20 @@ app.all('*',function (req, res, next) {
 		// 第一步：发送预请求 OPTIONS 请求。此时 服务器端需要对于OPTIONS请求作出响应 一般使用202响应即可 不用返回任何内容信息。
 		// res.status(200);
 		res.sendStatus(204);
-  }
-  else {
+  } else {
     next();
   }
 
 });
 
-
-
-
-// app.use(auth.authUser);
-// app.use(auth.blockUser);
-
 // app.use(newAuth.authUser);
 // app.use(csrfProtection, site.initData);
+
 app.use('/oauth', OauthRouter());
 app.use('/api/v1', API_V1());
-
+app.use('/', function(req, res){
+	res.send('运行中');
+});
 
 // 初始化页面的基础数据
 

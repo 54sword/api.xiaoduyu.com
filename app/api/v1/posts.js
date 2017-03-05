@@ -19,7 +19,7 @@ exports.add = function(req, res, next) {
   var title       = req.body.title;
   var content     = req.body.detail;
   var contentHTML = req.body.detail_html;
-  var nodeId      = req.body.node_id;
+  var topicId      = req.body.topic_id;
   var ip          = Tools.getIP(req);
   var deviceId    = req.body.device_id ? parseInt(req.body.device_id) : 1;
   var type        = req.body.type ? parseInt(req.body.type) : 1;
@@ -64,13 +64,13 @@ exports.add = function(req, res, next) {
     // 如果包含节点，那么判断节点是否存在
     function(callback) {
 
-      if (!nodeId) {
+      if (!topicId) {
         // 回复没有节点
         callback(15000);
         return;
       }
 
-      Topic.fetch({ _id: nodeId }, {}, {}, function(err, data){
+      Topic.fetch({ _id: topicId }, {}, {}, function(err, data){
         if (err) console.log(err);
         if (!data || data.length == 0) {
           callback(15000);
@@ -157,7 +157,7 @@ exports.add = function(req, res, next) {
         title: title,
         content: content,
         content_html: contentHTML,
-        topic_id: nodeId,
+        topic_id: topicId,
         ip: ip,
         device: deviceId,
         type: type,
@@ -175,7 +175,7 @@ exports.add = function(req, res, next) {
     // 更新父节点children的
     function(feed, callback) {
 
-      Topic.update({ _id: nodeId }, { $inc: { 'posts_count': 1 } }, function(err){
+      Topic.update({ _id: topicId }, { $inc: { 'posts_count': 1 } }, function(err){
         if (err) console.log(err)
 
         User.update({ _id: user._id }, { $inc: { 'posts_count': 1 } }, function(err){
@@ -216,7 +216,6 @@ exports.update = function(req, res, next) {
   var title    = req.body.title;
   var content  = req.body.content;
   var contentHTML = req.body.content_html;
-  // var nodeId   = req.body.node_id;
   var ip       = Tools.getIP(req);
 
   async.waterfall([
@@ -310,7 +309,6 @@ exports.update = function(req, res, next) {
       //   callback('content is blank');
       //   return;
       // }
-
 
       title = xss(title, {
         whiteList: {},
@@ -427,33 +425,18 @@ exports.fetch = function(req, res, next) {
       page = parseInt(req.query.page) || 0,
       perPage = parseInt(req.query.per_page) || 20,
       userId = req.query.user_id,
-      nodeId = req.query.topic_id,
+      topicId = req.query.topic_id,
       postsId = req.query.posts_id,
-      // ltCreateAt = req.query.lt_create_at,
-      // ltCommentAt = req.query.lt_comment_at,
+      gtDate = req.query.gt_date,
       ltDate = req.query.lt_date,
       or = req.query.or || true,
       draft = req.query.draft || false,
-      method = req.query.method || '', // 模式
+      method = req.query.method || '', // user_custom 根据用户偏好查询
+      sortBy = req.query.sort_by || 'sort_by_date',
+      sort = req.query.sort || -1,
       query = {},
       select = {},
       options = {};
-
-  if (user && method == 'user_custom') {
-
-    // 用户自定制的内容
-    user.follow_people.push(user._id)
-    userId = user.follow_people.join(',')
-    nodeId = user.follow_node.join(',')
-
-    if (!userId && !nodeId) {
-      res.send({
-        success: true,
-        data: []
-      })
-      return
-    }
-  }
 
   // ---- query -----
 
@@ -461,58 +444,71 @@ exports.fetch = function(req, res, next) {
     query['$or'] = []
   }
 
+  // 根据用户的关注偏好获取帖子
   if (user && method == 'user_custom') {
-    // var count = user.follow_people.length + user.follow_node.length
-    if (user.follow_node.length < 5) {
+
+    user.follow_people.push(user._id)
+    userId = user.follow_people.join(',')
+
+    if (user.follow_topic.length < 5) {
       or = true
-      query['$or'] = [{
-        sort_by_date: { '$lt': ltDate },
-        deleted: false
-      }]
+      var conf = { deleted: false }
+
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.create_at = { '$gt': gtDate }
+
+      query['$or'] = [conf]
+    } else {
+      topicId = user.follow_topic.join(',')
     }
   }
 
+  // 用户偏好
   if (userId) {
     if (or) {
-      query['$or'].push({
+
+      var conf = {
         user_id: {'$in': userId.split(',') },
-        sort_by_date: { '$lt': ltDate },
         deleted: false
-      })
+      }
+
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.create_at = { '$gt': gtDate }
+
+      query['$or'].push(conf)
     } else {
       query.user_id = { '$in': userId.split(',') }
     }
   }
 
-  if (nodeId) {
+  // 话题偏好
+  if (topicId) {
     if (or) {
 
       var conf = {
-        topic_id: {'$in': nodeId.split(',') },
+        topic_id: {'$in': topicId.split(',') },
         deleted: false
       }
 
-      if (ltDate) {
-        conf.sort_by_date = { '$lt': ltDate }
-      }
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.create_at = { '$gt': gtDate }
 
       query['$or'].push(conf)
     } else {
-      query.node_id = { '$in': nodeId.split(',') }
+      query.topic_id = { '$in': topicId.split(',') }
     }
   }
 
+  // 指定的帖子
   if (postsId) {
     if (or) {
-
       var conf = {
         _id: {'$in': postsId.split(',') },
         deleted: false
       }
 
-      if (ltDate) {
-        conf.sort_by_date = { '$lt': ltDate }
-      }
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.create_at = { '$gt': gtDate }
 
       query['$or'].push(conf)
     } else {
@@ -520,12 +516,12 @@ exports.fetch = function(req, res, next) {
     }
   }
 
+  // 如果没有参数
   if (query['$or'].length == 0) {
     delete query['$or']
     query.deleted = false
-    if (ltDate) {
-      query.sort_by_date = { '$lt': ltDate }
-    }
+    if (ltDate) query.sort_by_date = { '$lt': ltDate }
+    if (gtDate) query.create_at = { '$gt': gtDate }
   }
 
   // ------- query end ------
@@ -550,7 +546,8 @@ exports.fetch = function(req, res, next) {
 
   options.limit = perPage
 
-  options.sort = { 'sort_by_date': -1 }
+  options.sort = { }
+  options.sort[sortBy] = sort
 
   options.populate = [
     {

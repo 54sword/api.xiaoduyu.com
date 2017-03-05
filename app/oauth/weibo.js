@@ -6,10 +6,12 @@ var JWT = require('../common/jwt');
 
 var User = require('../models').User;
 var Oauth = require('../models').Oauth;
-var mkdirs = require('../common/mkdirs');
-var Avatar = require('../api/v1/avatar');
+// var mkdirs = require('../common/mkdirs');
+// var Avatar = require('../api/v1/avatar');
+var qiniu = require('../api/v1/qiniu');
+
 var config = require('../../config');
-var Tools = require('../common/tools');
+// var Tools = require('../common/tools');
 // var auth = require('../middlewares/auth');
 
 var appConfig = {
@@ -20,7 +22,7 @@ var appConfig = {
 }
 
 var goToNoticePage = function(res, string) {
-  res.redirect('https://www.xiaoduyu.com/notice?source=oauth_weibo&notice='+string)
+  res.redirect(config.oauth.landingPage+'/notice?source=oauth_weibo&notice='+string)
 }
 
 // var goToAutoSignin = function(res, accessToken) {
@@ -29,7 +31,7 @@ var goToNoticePage = function(res, string) {
 
 var goToAutoSignin = function(res, jwtTokenSecret, userId) {
   var result = JWT.encode(jwtTokenSecret, userId)
-  res.redirect('https://www.xiaoduyu.com/oauth?access_token='+result.access_token+'&expires='+result.expires)
+  res.redirect(config.oauth.landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }
 
 // 授权页面
@@ -210,9 +212,14 @@ exports.signin = function(req, res, next) {
 
             createOauth(user, newUser, function(oauth){
               if (oauth) {
-                updateAvatar(user.avatar, newUser, function(){
+
+                qiniu.uploadImage(user.avatar, newUser._id, function(){
                   goToAutoSignin(res, req.jwtTokenSecret, newUser._id)
                 })
+
+                // updateAvatar(user.avatar, newUser, function(){
+                //   goToAutoSignin(res, req.jwtTokenSecret, newUser._id)
+                // })
               } else {
                 goToNoticePage(res, 'create_oauth_failed')
               }
@@ -242,9 +249,14 @@ exports.signin = function(req, res, next) {
           createUser(user, function(newUser){
             if (newUser) {
               Oauth.updateById(oauth._id, { user_id: newUser._id, deleted: false }, function(){
-                updateAvatar(user.avatar, newUser, function(){
+
+                qiniu.uploadImage(user.avatar, newUser._id, function(){
                   goToAutoSignin(res, req.jwtTokenSecret, newUser._id)
                 })
+
+                // updateAvatar(user.avatar, newUser, function(){
+                //   goToAutoSignin(res, req.jwtTokenSecret, newUser._id)
+                // })
               })
             } else {
               goToNoticePage(res, 'create_oauth_failed')
@@ -442,6 +454,7 @@ var createOauth = function(user, newUser, callback) {
 
 }
 
+/*
 var updateAvatar = function(imageSource, user, callback) {
 
   var path = config.upload.avatar.path + avatarFolderPath(user.create_at);
@@ -459,7 +472,7 @@ var updateAvatar = function(imageSource, user, callback) {
 
 }
 
-/*
+
 // 创建账户
 var createAccount = function(req, user, callback) {
 

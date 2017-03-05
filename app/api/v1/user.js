@@ -40,9 +40,9 @@ exports.fetch = function(req, res, next) {
   user = JSON.stringify(user);
   user = JSON.parse(user);
 
-  if (user.avatar) {
-    user.avatar_url += '?_t=' + new Date().getTime();
-  }
+  // if (user.avatar) {
+  //   user.avatar_url += '?_t=' + new Date().getTime();
+  // }
 
   async.waterfall([
     function(callback) {
@@ -156,6 +156,28 @@ exports.fetchById = function(req, res, next) {
 
 }
 
+exports.resetAvatar = function(req, res, next) {
+
+  var user = req.user;
+  var avatar = req.body.avatar || '';
+
+  if (avatar) {
+    User.update({ _id: user._id }, { avatar: avatar }, function(err){
+      if (err) console.log(err)
+      res.send({
+        success: true
+      });
+    })
+  } else {
+    res.status(400);
+    res.send({
+      success: false,
+      error: 13008
+    });
+  }
+
+}
+
 exports.resetGender = function(req, res, next) {
   var user = req.user;
   var gender = req.body.gender || 0;
@@ -235,7 +257,7 @@ exports.resetNickname = function(req, res) {
   if (countdown.days > 0 || countdown.hours > 0 || countdown.mintues > 0) {
 
     // var timer = ''
-
+    
     // timer += countdown.days > 0 && countdown.days > 9 ? countdown.days+':' : '0'+countdown.days+':'
     // timer += countdown.hours > 0 && countdown.hours > 9 ? countdown.hours+':' : '0'+countdown.hours+':'
     // timer += countdown.mintues > 0 && countdown.mintues > 9 ? countdown.mintues : '0'+countdown.mintues
