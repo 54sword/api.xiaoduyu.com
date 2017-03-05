@@ -4,20 +4,28 @@ var SendCloud = require('sendcloud-client');
 
 var sendCloudConfig = config.email.sendCloud;
 
-var client = SendCloud.create({
-  from: config.name+' <'+sendCloudConfig.from+'>',
-  apiUser: sendCloudConfig.apiUser,
-  apiKey: sendCloudConfig.apiKey
-});
+if (sendCloudConfig.from) {
+  var client = SendCloud.create({
+    from: config.name+' <'+sendCloudConfig.from+'>',
+    apiUser: sendCloudConfig.apiUser,
+    apiKey: sendCloudConfig.apiKey
+  });
+}
 
 exports.send = function(options, callback){
-  var options = {
-    to: [options.to],
-    subject: options.subject,
-    html: options.html || options.text
-  };
-  var res = client.send(options);
-  callback(res);
+
+  if (sendCloudConfig.from) {
+    var options = {
+      to: [options.to],
+      subject: options.subject,
+      html: options.html || options.text
+    };
+    var res = client.send(options);
+    callback(res);
+  } else {
+    callback(false);
+  }
+
 };
 
 /*

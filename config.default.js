@@ -3,32 +3,31 @@ var config = {
 	// 调试
 	debug: true,
 	// 社区名称
-	name: '小度鱼',
-
-	// 必须填写
-	jwt_secret: '',
-
-	// mongodb 配置
-	db_url: 'mongodb://location:27017/xiaoduyu',
-	// 域名
-	host: 'location',
-	// 端口
+	name: '小度鱼API',
+	// jwt配置 [必填，建议修改]
+	// https://github.com/hokaccha/node-jwt-simple
+	jwt_secret: 'jwt_secret_xiaoduyu',
+	// mongodb配置 [必填]
+	db_url: 'mongodb://localhost:27017/xiaoduyu',
+	// 本地ip [必填]
+	host: 'localhost',
+	// 端口 [必填]
 	port: 3000,
-	// 网站的域名
-	domain: 'http://location:3000',
-	// 联系邮箱，发送出去的邮件中有使用到
+	// 网站的域名 [必填]
+	domain: 'http://localhost:3000',
+	// 联系邮箱 [选填]
 	contactEmail: '',
 
 	// 第三方发送邮件服务
 	email: {
-		//  SendCloud配置信息，用于发送邮件
+		// SendCloud配置信息，用于发送邮件 [必填, 否则将不能发送邮件]
 		// https://sendcloud.sohu.com
 		sendCloud: {
 			from: '',
 		  apiUser: '',
 		  apiKey: ''
 		},
-		//  qq邮箱配置信息
+		// qq邮箱配置信息[未使用]
 		qq: {
 			host: 'smtp.exmail.qq.com',
 	    port: 465,
@@ -39,7 +38,7 @@ var config = {
 		}
 	},
 
-	// 第三方登录
+	// 第三方登录 [必填, 否则将不支持QQ、微博登录]
 	oauth: {
 		weibo: {
 			appid: 0,
@@ -53,8 +52,7 @@ var config = {
 		landingPage: ''
 	},
 
-	// 上传头像、图片文件到七牛
-	// 必填否则将无法使用上传图片功能
+	// 上传头像、图片文件到七牛 [必填, 否则将不支持图片上传]
 	qiniu: {
 		accessKey: '',
     secretKey: '',
@@ -63,7 +61,7 @@ var config = {
     url: ''
 	},
 
-	// https 用于域名的验证的路径（选填）
+	// https 用于域名的验证的路径 [选填]
 	// https://github.com/xdtianyu/scripts/blob/master/lets-encrypt/README-CN.md
 	sslPath: ''
 
