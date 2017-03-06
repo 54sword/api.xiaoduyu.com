@@ -1,4 +1,4 @@
-# 小度鱼（API篇）
+# 小度鱼（后端API篇）
 
 ## 介绍
 小度鱼，是基于 React + NodeJS + Express + MongoDB 开发的一个社区系统  

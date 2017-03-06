@@ -76,7 +76,7 @@ app.set('jwtTokenSecret', config.jwt_secret);
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(cookieParser(config.cookie_secret));
+app.use(cookieParser(config.cookie_secret));
 app.set('trust proxy', 1);
 app.use(compress()); // gzip
 /*
