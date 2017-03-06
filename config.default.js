@@ -4,6 +4,8 @@ var config = {
 	debug: true,
 	// 社区名称
 	name: '小度鱼API',
+	// cookie 配置 [必填，建议修改]
+	cookie_secret: 'cookie_secret_xiaoduyu',
 	// jwt配置 [必填，建议修改]
 	// https://github.com/hokaccha/node-jwt-simple
 	jwt_secret: 'jwt_secret_xiaoduyu',
