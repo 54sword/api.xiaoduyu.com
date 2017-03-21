@@ -199,7 +199,7 @@ exports.add = function(req, res) {
       if (postsId && !parentId && !replyId) {
 
         // 评论
-        
+
         var update = {
           $inc: { 'comment_count': 1 },
           $addToSet: { comment: comment._id }

@@ -823,7 +823,7 @@ exports.bindingEmail = function(req, res, next) {
     function(callback) {
       Captcha.fetchByEmail(email, function(err, _captcha){
 
-        if (_captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
+        if (_captcha && _captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
           callback(null)
           return
         }

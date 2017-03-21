@@ -104,7 +104,7 @@ exports.add = function(req, res) {
           if (err) console.log(err);
           if (!account) {
             // 创建一个验证码
-            Captcha.add({ mail: email, captcha: code, user_id: user._id }, function(err){
+            Captcha.add({ email: email, captcha: code, user_id: user._id }, function(err){
               if (err) console.log(err)
 
               var title = '请输入验证码 '+code+' 完成绑定邮箱';

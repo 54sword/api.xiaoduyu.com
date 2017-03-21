@@ -6,12 +6,12 @@ var ObjectId = Schema.Types.ObjectId;
 /*
  * type:
  * follow-posts: xx 关注了你的帖子
- * answer: xx 评论了你的主题
- * comment: xx 回复了你
+ * comment: xx 评论了你的帖子
+ * reply: xx 回复了你的 xx 回复
  * follow-you: xx 关注了你
- * like-answer: xx 赞了你的答案
  * like-comment: xx 赞了你的评论
- * new-answer: xx 回答了 xx 问题
+ * like-reply: xx 赞了你的回复
+ * new-comment: xx 评论了 xx 帖子
  */
 
 var UserNotificationSchema = new Schema({

@@ -13,7 +13,7 @@ var verifyToken = function(req, callback) {
     callback(false);
     return;
   }
-
+  
   var decoded = JWT.decode(token, req.jwtTokenSecret);
 
   if (decoded && decoded.expires > new Date().getTime()) {
