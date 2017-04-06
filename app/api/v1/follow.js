@@ -16,7 +16,8 @@ exports.fetch = function(req, res, next) {
   var postsId = req.query.posts_id || '';
   var topicsId = req.query.topics_id || '';
   var peopleId = req.query.people_id || '';
-  var people_exsits = req.query.people_exsits || 0;
+  var people_exsits = req.query.people_exsits;
+  var posts_exsits = req.query.posts_exsits;
 
   var query = { deleted: false }
   var select = { __v: 0, create_at: 0, deleted: 0 }
@@ -24,7 +25,13 @@ exports.fetch = function(req, res, next) {
 
   // query
 
-  query.people_id = { $exists: people_exsits ? true : false }
+  if (typeof people_exsits != 'undefined') {
+    query.people_id = { $exists: people_exsits ? true : false }
+  }
+
+  if (typeof posts_exsits != 'undefined') {
+    query.posts_id = { $exists: posts_exsits ? true : false }
+  }
 
   if (userId) query.user_id = userId
   if (postsId) query.posts_id = postsId
@@ -43,14 +50,14 @@ exports.fetch = function(req, res, next) {
       path: 'user_id',
       // match: { 'deleted': false },
       select: {
-        '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1,
+        '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1, gender: 1,
         fans_count: 1, posts_count: 1, comment_count: 1
       }
     },
     {
       path: 'people_id',
       select: {
-        '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1,
+        '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1, gender: 1,
         fans_count: 1, posts_count: 1, comment_count: 1
       }
     },
@@ -58,7 +65,7 @@ exports.fetch = function(req, res, next) {
       path: 'posts_id',
       match: { 'deleted': false },
       select: {
-        '_id': 1, 'content_html': 1, 'create_at': 1, 'comment_count': 1, 'user_id': 1
+        '_id': 1, 'content_html': 1, 'create_at': 1, 'comment_count': 1, 'user_id': 1, title: 1
       }
     },
     {
@@ -128,7 +135,54 @@ exports.fetch = function(req, res, next) {
         callback(null, follows)
       })
 
+    },
+
+    function(follows, callback) {
+
+      if (!user) {
+        callback(null, follows)
+        return
+      }
+
+      var postsIds = []
+
+      follows.map(function(item){
+        if (item.posts_id) {
+          postsIds.push(item.posts_id)
+        }
+      })
+
+      if (postsIds.length == 0) {
+        callback(null, follows)
+      }
+
+      Follow.fetch({
+        user_id: user._id,
+        posts_id: { "$in": postsIds },
+        deleted: false
+      }, { posts_id: 1 }, {}, function(err, _follows){
+
+        if (err) console.log(err)
+        var ids = {}
+
+        for (var i = 0, max = _follows.length; i < max; i++) {
+          ids[_follows[i].posts_id] = 1
+        }
+
+        follows.map(function(follow, key){
+
+          if (follow.posts_id) {
+            follow.posts_id.follow = ids[follow.posts_id._id] ? true : false
+          }
+
+        })
+
+        callback(null, follows)
+
+      })
+
     }
+
   ], function(err, result){
     if (err) {
       res.status(404);

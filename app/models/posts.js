@@ -15,7 +15,7 @@ exports.add = function(info, callback) {
         }
       },
       {
-        path: 'topics_id'
+        path: 'topic_id'
       }
     ];
 

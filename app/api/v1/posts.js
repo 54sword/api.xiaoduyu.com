@@ -421,6 +421,8 @@ exports.update = function(req, res, next) {
 
 exports.fetch = function(req, res, next) {
 
+
+
   var user = req.user || null,
       page = parseInt(req.query.page) || 0,
       perPage = parseInt(req.query.per_page) || 20,
@@ -432,11 +434,38 @@ exports.fetch = function(req, res, next) {
       or = req.query.or || true,
       draft = req.query.draft || false,
       method = req.query.method || '', // user_custom 根据用户偏好查询
+
+      // 是否包含部分评论一起返回
+      includeComments = req.query.include_comments || 0,
+      commentsLimit = req.query.comments_limit || 7,
+      commentsSort = req.query.comments_sort || 'reply_count:-1,like_count:-1',
+
+      postsSort = req.query.posts_sort || 'sort_by_date:-1',
+
       sortBy = req.query.sort_by || 'sort_by_date',
       sort = req.query.sort || -1,
       query = {},
       select = {},
       options = {};
+
+      // console.log(req.query.include_comments);
+
+  if (commentsLimit > 100) commentsLimit = 100
+  if (perPage > 100) perPage = 100
+
+  var _commentsSort = {}
+
+  commentsSort.split(',').map((item)=>{
+
+    if (!item) {
+      return
+    }
+
+    var i = item.split(':')
+    _commentsSort[i[0]] = parseInt(i[1])
+  })
+
+  // console.log(_commentsSort);
 
   // ---- query -----
 
@@ -454,7 +483,7 @@ exports.fetch = function(req, res, next) {
       or = true
       var conf = { deleted: false }
 
-      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (ltDate) conf.create_at = { '$lt': ltDate }
       if (gtDate) conf.create_at = { '$gt': gtDate }
 
       query['$or'] = [conf]
@@ -472,7 +501,7 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
-      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (ltDate) conf.create_at = { '$lt': ltDate }
       if (gtDate) conf.create_at = { '$gt': gtDate }
 
       query['$or'].push(conf)
@@ -490,7 +519,7 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
-      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (ltDate) conf.create_at = { '$lt': ltDate }
       if (gtDate) conf.create_at = { '$gt': gtDate }
 
       query['$or'].push(conf)
@@ -507,7 +536,7 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
-      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (ltDate) conf.create_at = { '$lt': ltDate }
       if (gtDate) conf.create_at = { '$gt': gtDate }
 
       query['$or'].push(conf)
@@ -520,7 +549,7 @@ exports.fetch = function(req, res, next) {
   if (query['$or'].length == 0) {
     delete query['$or']
     query.deleted = false
-    if (ltDate) query.sort_by_date = { '$lt': ltDate }
+    if (ltDate) query.create_at = { '$lt': ltDate }
     if (gtDate) query.create_at = { '$gt': gtDate }
   }
 
@@ -530,6 +559,10 @@ exports.fetch = function(req, res, next) {
   // ------- select --------
 
   select = { __v: 0, recommend: 0, verify: 0, deleted: 0, ip: 0, device: 0, content: 0 }
+
+  if (!includeComments) {
+    select.comment = 0
+  }
 
   if (draft) {
     delete select.content
@@ -562,7 +595,7 @@ exports.fetch = function(req, res, next) {
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1
       },
-      options: { limit: 5, sort:{ 'reply_count': -1, 'like_count': -1 } }
+      options: { limit: commentsLimit, sort:_commentsSort }
     },
     {
       path: 'topic_id',

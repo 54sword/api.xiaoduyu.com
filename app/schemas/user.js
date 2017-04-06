@@ -21,8 +21,6 @@ var UserSchema = new Schema({
   // 限制发送消息
   disable_send_reply: { type: Date, default: Date.now },
   // 用户等级
-  // 0 新手
-  // 1 普通用户
   // 100 后台管理员
   role: { type: Number, default: 0 },
 
@@ -49,8 +47,8 @@ var UserSchema = new Schema({
   like_count: { type: Number, default: 0 },
 
   // 用户关注的节点
-  follow_node: [{ type: ObjectId, ref: 'Node' }],
-  follow_node_count: { type: Number, default: 0 },
+  // follow_node: [{ type: ObjectId, ref: 'Node' }],
+  // follow_node_count: { type: Number, default: 0 },
 
   // 用户关注的人
   follow_people: [{ type: ObjectId, ref: 'User' }],
@@ -64,10 +62,10 @@ var UserSchema = new Schema({
   follow_posts_count: { type: Number, default: 0 },
 
   // 最近一次查询Notification的日期
-  find_notification_at: { type: Date }
+  find_notification_at: { type: Date },
 
   // 访问令牌
-  // access_token: { type: String }
+  access_token: { type: String }
 });
 
 UserSchema.virtual('avatar_url').get(function () {

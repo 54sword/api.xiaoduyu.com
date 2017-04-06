@@ -22,13 +22,15 @@ var appConfig = {
   scope: 'get_user_info'
 }
 
-var goToNoticePage = function(res, string) {
-  res.redirect(config.oauth.landingPage+'/notice?source=oauth_qq&notice='+string)
+var goToNoticePage = function(req, res, string) {
+  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  res.redirect(landingPage+'/notice?source=oauth_qq&notice='+string)
 }
 
-var goToAutoSignin = function(res, jwtTokenSecret, userId) {
-  var result = JWT.encode(jwtTokenSecret, userId)
-  res.redirect(config.oauth.landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
+var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
+  var result = JWT.encode(jwtTokenSecret, userId, accessToken);
+  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  res.redirect(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }
 
 // 打开QQ登录接入页面
@@ -38,10 +40,11 @@ exports.show = function(req, res, next) {
   var opts = {
     httpOnly: true,
     path: '/',
-    maxAge: 1000 * 60 * 2
+    maxAge: 1000 * 60 * 5
   };
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
+  res.cookie('landing_page', req.query.landing_page || '', opts);
 
   // req.session.csrf = csrf;
   // req.session.access_token = req.query.access_token || '';
@@ -84,11 +87,11 @@ exports.signin = function(req, res) {
             user = user[0];
             callback(null);
           } else {
-            goToNoticePage(res, 'wrong_token');
+            goToNoticePage(req, res, 'wrong_token');
           }
         });
       } else {
-        goToNoticePage(res, 'wrong_token');
+        goToNoticePage(req, res, 'wrong_token');
       }
 
       /*
@@ -98,7 +101,7 @@ exports.signin = function(req, res) {
           user = _user
           callback(null)
         } else {
-          goToNoticePage(res, 'wrong_token')
+          goToNoticePage(req, res, 'wrong_token')
         }
       })
       */
@@ -141,7 +144,7 @@ exports.signin = function(req, res) {
 
       if (user && oauth && oauth.deleted == false) {
         // 绑定失败，账号已经被绑定
-        goToNoticePage(res, 'has_been_binding')
+        goToNoticePage(req, res, 'has_been_binding')
       } else if (user && oauth && oauth.deleted == true) {
 
         // 已经存在的 oauth
@@ -154,9 +157,9 @@ exports.signin = function(req, res) {
         }, function(err){
           if (err) {
             console.log(err)
-            goToNoticePage(res, 'binding_failed')
+            goToNoticePage(req, res, 'binding_failed')
           } else {
-            goToNoticePage(res, 'binding_finished')
+            goToNoticePage(req, res, 'binding_finished')
           }
         })
 
@@ -173,12 +176,13 @@ exports.signin = function(req, res) {
 
         Oauth.create(qq, function(err, user){
           if (err) console.log(err);
-          goToNoticePage(res, 'binding_finished')
+          goToNoticePage(req, res, 'binding_finished')
         });
 
       } else if (!user && oauth && oauth.deleted == false) {
+
         // 登录
-        goToAutoSignin(res, req.jwtTokenSecret, oauth.user_id._id)
+        goToAutoSignin(req, res, req.jwtTokenSecret, oauth.user_id._id, oauth.user_id.access_token)
       } else if (!user && !oauth) {
 
         // 创建 user，并绑定
@@ -195,7 +199,7 @@ exports.signin = function(req, res) {
 
           createUser(tokenInfo, function(user){
             if (!user) {
-              goToNoticePage(res, 'create_user_failed')
+              goToNoticePage(req, res, 'create_user_failed')
               return
             }
 
@@ -203,17 +207,17 @@ exports.signin = function(req, res) {
               if (oauth) {
 
                 qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
-                  goToAutoSignin(res, req.jwtTokenSecret, user._id)
+                  goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
                 })
 
                 /*
                 updateAvatar(tokenInfo.avatar, user, function(){
-                  goToAutoSignin(res, req.jwtTokenSecret,  user._id)
+                  goToAutoSignin(req, res, req.jwtTokenSecret,  user._id)
                 })
                 */
 
               } else {
-                goToNoticePage(res, 'create_oauth_failed')
+                goToNoticePage(req, res, 'create_oauth_failed')
               }
             })
 
@@ -240,7 +244,7 @@ exports.signin = function(req, res) {
               Oauth.updateById(oauth._id, { user_id: user._id, deleted: false }, function(){
 
                 qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
-                  goToAutoSignin(res, req.jwtTokenSecret, user._id)
+                  goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
                 })
 
                 // updateAvatar(tokenInfo.avatar, user, function(){
@@ -249,7 +253,7 @@ exports.signin = function(req, res) {
 
               })
             } else {
-              goToNoticePage(res, 'create_oauth_failed')
+              goToNoticePage(req, res, 'create_oauth_failed')
             }
           })
 
@@ -281,11 +285,11 @@ exports.unbinding = function(req, res, next) {
           if (user && user[0]) {
             callback(null, user[0]);
           } else {
-            goToNoticePage('access token error');
+            callback('access token error');
           }
         });
       } else {
-        goToNoticePage('access token error');
+        callback('access token error');
       }
 
     },

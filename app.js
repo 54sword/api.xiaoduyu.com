@@ -74,8 +74,11 @@ app.set('jwtTokenSecret', config.jwt_secret);
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+// http://www.cnblogs.com/vipstone/p/4865079.html
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser(config.cookie_secret));
 app.set('trust proxy', 1);
 app.use(compress()); // gzip

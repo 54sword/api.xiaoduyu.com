@@ -21,16 +21,14 @@ var appConfig = {
   scope: ''
 }
 
-var goToNoticePage = function(res, string) {
+var goToNoticePage = function(req, res, string) {
+  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
   res.redirect(config.oauth.landingPage+'/notice?source=oauth_weibo&notice='+string)
 }
 
-// var goToAutoSignin = function(res, accessToken) {
-//   res.redirect('https://www.xiaoduyu.com/oauth?access_token='+accessToken)
-// }
-
-var goToAutoSignin = function(res, jwtTokenSecret, userId) {
-  var result = JWT.encode(jwtTokenSecret, userId)
+var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
+  var result = JWT.encode(jwtTokenSecret, userId, accessToken);
+  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
   res.redirect(config.oauth.landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }
 
@@ -38,17 +36,14 @@ var goToAutoSignin = function(res, jwtTokenSecret, userId) {
 exports.show = function(req, res, next) {
   var csrf = Math.round(900000*Math.random()+100000);
 
-  // req.cookies['csrf'] = csrf;
-  // req.cookies['access_token'] = req.query.access_token || '';
-
-
   var opts = {
     httpOnly: true,
     path: '/',
-    maxAge: 1000 * 60 * 2
+    maxAge: 1000 * 60 * 5
   };
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
+  res.cookie('landing_page', req.query.landing_page || '', opts);
 
   // req.session.csrf = csrf;
   // req.session.access_token = req.query.access_token || '';
@@ -100,12 +95,12 @@ exports.signin = function(req, res, next) {
             req.user = user[0];
             callback(null);
           } else {
-            goToNoticePage(res, 'wrong_token');
+            goToNoticePage(req, res, 'wrong_token');
             // callback(false);
           }
         });
       } else {
-        goToNoticePage(res, 'wrong_token');
+        goToNoticePage(req, res, 'wrong_token');
         // callback(false)
       }
 
@@ -116,7 +111,7 @@ exports.signin = function(req, res, next) {
           user = _user
           callback(null)
         } else {
-          goToNoticePage(res, 'wrong_token')
+          goToNoticePage(req, res, 'wrong_token')
         }
       })
       */
@@ -147,7 +142,7 @@ exports.signin = function(req, res, next) {
 
       if (user && oauth && oauth.deleted == false) {
         // 已经绑定
-        goToNoticePage(res, 'binding_failed')
+        goToNoticePage(req, res, 'binding_failed')
       } else if (user && oauth && oauth.deleted == true) {
 
         // 已经存在的 oauth
@@ -161,9 +156,9 @@ exports.signin = function(req, res, next) {
         }, function(err){
           if (err) {
             console.log(err)
-            goToNoticePage(res, 'binding_failed')
+            goToNoticePage(req, res, 'binding_failed')
           } else {
-            goToNoticePage(res, 'binding_finished')
+            goToNoticePage(req, res, 'binding_finished')
           }
         })
 
@@ -181,12 +176,12 @@ exports.signin = function(req, res, next) {
 
         Oauth.create(weibo, function(err, user){
           if (err) console.log(err);
-          goToNoticePage(res, 'binding_finished')
+          goToNoticePage(req, res, 'binding_finished')
         });
 
       } else if (!user && oauth && oauth.deleted == false) {
         // 登录
-        goToAutoSignin(res, req.jwtTokenSecret, oauth.user_id._id)
+        goToAutoSignin(req, res, req.jwtTokenSecret, oauth.user_id._id, oauth.user_id.access_token)
       } else if (!user && !oauth) {
 
         // 创建 oauth 并登陆
@@ -205,8 +200,9 @@ exports.signin = function(req, res, next) {
           };
 
           createUser(user, function(newUser){
+
             if (!newUser) {
-              goToNoticePage(res, 'create_user_failed')
+              goToNoticePage(req, res, 'create_user_failed')
               return
             }
 
@@ -214,14 +210,14 @@ exports.signin = function(req, res, next) {
               if (oauth) {
 
                 qiniu.uploadImage(user.avatar, newUser._id, function(){
-                  goToAutoSignin(res, req.jwtTokenSecret, newUser._id)
+                  goToAutoSignin(req, res, req.jwtTokenSecret, newUser._id, newUser.access_token)
                 })
 
                 // updateAvatar(user.avatar, newUser, function(){
                 //   goToAutoSignin(res, req.jwtTokenSecret, newUser._id)
                 // })
               } else {
-                goToNoticePage(res, 'create_oauth_failed')
+                goToNoticePage(req, res, 'create_oauth_failed')
               }
             })
 
@@ -251,7 +247,7 @@ exports.signin = function(req, res, next) {
               Oauth.updateById(oauth._id, { user_id: newUser._id, deleted: false }, function(){
 
                 qiniu.uploadImage(user.avatar, newUser._id, function(){
-                  goToAutoSignin(res, req.jwtTokenSecret, newUser._id)
+                  goToAutoSignin(req, res, req.jwtTokenSecret, newUser._id, newUser.access_token)
                 })
 
                 // updateAvatar(user.avatar, newUser, function(){
@@ -259,7 +255,7 @@ exports.signin = function(req, res, next) {
                 // })
               })
             } else {
-              goToNoticePage(res, 'create_oauth_failed')
+              goToNoticePage(req, res, 'create_oauth_failed')
             }
           })
 
@@ -293,11 +289,11 @@ exports.unbinding = function(req, res, next) {
           if (user && user[0]) {
             callback(null, user[0]);
           } else {
-            goToNoticePage('access token error');
+            callback('access token error');
           }
         });
       } else {
-        goToNoticePage('access token error');
+        callback('access token error');
       }
 
       /*

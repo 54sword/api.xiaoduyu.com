@@ -13,7 +13,7 @@ var verifyToken = function(req, callback) {
     callback(false);
     return;
   }
-  
+
   var decoded = JWT.decode(token, req.jwtTokenSecret);
 
   if (decoded && decoded.expires > new Date().getTime()) {
@@ -23,6 +23,12 @@ var verifyToken = function(req, callback) {
       if (err) console.log(err);
       if (user && user[0]) {
         req.user = user[0];
+
+        if (!decoded.access_token || decoded.access_token != user[0].access_token) {
+          callback(false);
+          return
+        }
+
         callback(true);
       } else {
         callback(false);
