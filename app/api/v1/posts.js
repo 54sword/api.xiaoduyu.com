@@ -1,7 +1,6 @@
 var Question = require('../../models').Question;
 var Node = require('../../models').Node;
 var User = require('../../models').User;
-// var FollowQuestion = require('../../models').FollowQuestion;
 var Like = require('../../models').Like;
 
 var Posts = require('../../models').Posts;
@@ -483,8 +482,8 @@ exports.fetch = function(req, res, next) {
       or = true
       var conf = { deleted: false }
 
-      if (ltDate) conf.create_at = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
 
       query['$or'] = [conf]
     } else {
@@ -501,8 +500,8 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
-      if (ltDate) conf.create_at = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
 
       query['$or'].push(conf)
     } else {
@@ -519,8 +518,8 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
-      if (ltDate) conf.create_at = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
 
       query['$or'].push(conf)
     } else {
@@ -536,8 +535,8 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
-      if (ltDate) conf.create_at = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (ltDate) conf.sort_by_date = { '$lt': ltDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
 
       query['$or'].push(conf)
     } else {
@@ -549,8 +548,8 @@ exports.fetch = function(req, res, next) {
   if (query['$or'].length == 0) {
     delete query['$or']
     query.deleted = false
-    if (ltDate) query.create_at = { '$lt': ltDate }
-    if (gtDate) query.create_at = { '$gt': gtDate }
+    if (ltDate) query.sort_by_date = { '$lt': ltDate }
+    if (gtDate) query.sort_by_date = { '$gt': gtDate }
   }
 
   // ------- query end ------
@@ -593,7 +592,7 @@ exports.fetch = function(req, res, next) {
       path: 'comment',
       match: { 'deleted': false },
       select: {
-        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1
+        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
       options: { limit: commentsLimit, sort:_commentsSort }
     },
@@ -685,7 +684,7 @@ exports.fetch = function(req, res, next) {
           posts[key].follow = ids[question._id] ? true : false
         })
 
-        callback(posts)
+        callback(null, posts)
 
       })
 
@@ -727,7 +726,60 @@ exports.fetch = function(req, res, next) {
       })
       */
 
+    },
+
+    function(posts, callback) {
+
+      if (!user) {
+        callback(posts)
+        return
+      }
+
+      var ids = []
+
+      for (var i = 0, max = posts.length; i < max; i++) {
+
+        if (posts[i].comment) {
+          posts[i].comment.map(function(comment){
+            ids.push(comment._id)
+          })
+        }
+
+
+      }
+
+      Like.fetch({
+        user_id: user._id,
+        type: 'comment',
+        target_id: { "$in": ids },
+        deleted: false
+      }, { target_id:1, _id:0 }, {}, function(err, likes){
+
+        if (err) console.log(err)
+        var ids = {}
+
+        for (var i = 0, max = likes.length; i < max; i++) {
+          ids[likes[i].target_id] = 1
+        }
+
+        for (var i = 0, max = posts.length; i < max; i++) {
+
+          if (posts[i].comment) {
+            posts[i].comment.map(function(comment, index){
+              comment.like = ids[comment._id] ? true : false
+              posts[i].comment[index] = comment
+            })
+          }
+
+        }
+
+        callback(posts)
+
+      })
+
+
     }
+
   ], function(result){
 
     res.send({

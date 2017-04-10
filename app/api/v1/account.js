@@ -35,8 +35,6 @@ exports.signin = function(req, res, next) {
 
       Account.fetchByEmail(email, function(err, account){
 
-        console.log(account);
-
         if (err) console.log(err);
 
         if (account) {
