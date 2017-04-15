@@ -166,6 +166,8 @@ exports.add = function(req, res, next) {
 
         feed.create_at = new Date(feed.create_at).getTime();
 
+        global.io.sockets.emit('new-posts');
+
         callback(null, feed);
       });
 
@@ -420,14 +422,14 @@ exports.update = function(req, res, next) {
 
 exports.fetch = function(req, res, next) {
 
-
-
   var user = req.user || null,
       page = parseInt(req.query.page) || 0,
       perPage = parseInt(req.query.per_page) || 20,
       userId = req.query.user_id,
       topicId = req.query.topic_id,
       postsId = req.query.posts_id,
+      // 大于创建日期
+      gtCreateAt = req.query.gt_create_at,
       gtDate = req.query.gt_date,
       ltDate = req.query.lt_date,
       or = req.query.or || true,
@@ -484,6 +486,7 @@ exports.fetch = function(req, res, next) {
 
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
       if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'] = [conf]
     } else {
@@ -502,6 +505,7 @@ exports.fetch = function(req, res, next) {
 
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
       if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'].push(conf)
     } else {
@@ -520,6 +524,7 @@ exports.fetch = function(req, res, next) {
 
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
       if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'].push(conf)
     } else {
@@ -537,6 +542,7 @@ exports.fetch = function(req, res, next) {
 
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
       if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'].push(conf)
     } else {
@@ -550,6 +556,7 @@ exports.fetch = function(req, res, next) {
     query.deleted = false
     if (ltDate) query.sort_by_date = { '$lt': ltDate }
     if (gtDate) query.sort_by_date = { '$gt': gtDate }
+    if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
   }
 
   // ------- query end ------
@@ -790,6 +797,7 @@ exports.fetch = function(req, res, next) {
   })
 
 }
+
 
 /*
 exports.delete = function(req, res){

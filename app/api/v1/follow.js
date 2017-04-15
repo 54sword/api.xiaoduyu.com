@@ -507,13 +507,13 @@ exports.add = function(req, res, next) {
           type: 'follow-posts',
           posts_id: postsId,
           sender_id: user._id,
-          addressee_id: [posts.user_id]
+          addressee_id: posts.user_id
         }
       } else if (peopleId) {
         notice = {
           type: 'follow-you',
           sender_id: user._id,
-          addressee_id: [peopleId]
+          addressee_id: peopleId
         }
       }
 
@@ -703,13 +703,13 @@ exports.remove = function(req, res, next) {
           type: 'follow-posts',
           posts_id: postsId,
           sender_id: user._id,
-          addressee_id: [posts.user_id]
+          addressee_id: posts.user_id
         }
       } else if (peopleId) {
         notice = {
           type: 'follow-you',
           sender_id: user._id,
-          addressee_id: [peopleId]
+          addressee_id: peopleId
         }
       }
 
