@@ -265,7 +265,7 @@ exports.fetchUnreadCount = function(req, res) {
               if (err) console.log(err);
             })
 
-            let notificationArr = []
+            var notificationArr = []
 
             // 问题关键
             notice.map(function(item){

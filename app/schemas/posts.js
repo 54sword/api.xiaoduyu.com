@@ -40,6 +40,8 @@ var PostsSchema = new Schema({
   verify: { type: Boolean, default: true },
   // 推荐
   recommend: { type: Boolean, default: false },
+  // 削弱，将不出现在首页
+  weaken: { type: Boolean, default: false },
   // 排序
   sort_by_date: { type: Date, default: Date.now }
 });

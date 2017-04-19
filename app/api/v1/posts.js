@@ -35,7 +35,7 @@ exports.add = function(req, res, next) {
     },
 
     function(callback) {
-      if (type > 2 || type < 1) {
+      if (type > 3 || type < 1) {
         callback(11001);
       } else {
         callback(null);
@@ -166,7 +166,7 @@ exports.add = function(req, res, next) {
 
         feed.create_at = new Date(feed.create_at).getTime();
 
-        global.io.sockets.emit('new-posts');
+        global.io.sockets.emit('new-posts', feed.create_at - 1);
 
         callback(null, feed);
       });
@@ -434,7 +434,8 @@ exports.fetch = function(req, res, next) {
       ltDate = req.query.lt_date,
       or = req.query.or || true,
       draft = req.query.draft || false,
-      method = req.query.method || '', // user_custom 根据用户偏好查询
+      method = req.query.method || '', // user_custom 根据用户偏好查询、
+      weaken = req.query.weaken,
 
       // 是否包含部分评论一起返回
       includeComments = req.query.include_comments || 0,
@@ -484,6 +485,7 @@ exports.fetch = function(req, res, next) {
       or = true
       var conf = { deleted: false }
 
+      if (weaken) conf.weaken = false
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
       if (gtDate) conf.sort_by_date = { '$gt': gtDate }
       if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
@@ -503,6 +505,7 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
+      if (weaken) conf.weaken = false
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
       if (gtDate) conf.sort_by_date = { '$gt': gtDate }
       if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
@@ -522,6 +525,7 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
+      if (weaken) conf.weaken = false
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
       if (gtDate) conf.sort_by_date = { '$gt': gtDate }
       if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
@@ -554,9 +558,11 @@ exports.fetch = function(req, res, next) {
   if (query['$or'].length == 0) {
     delete query['$or']
     query.deleted = false
+
+    if (weaken) query.weaken = false
     if (ltDate) query.sort_by_date = { '$lt': ltDate }
     if (gtDate) query.sort_by_date = { '$gt': gtDate }
-    if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
+    if (gtCreateAt) query.create_at = { '$gt': gtCreateAt }
   }
 
   // ------- query end ------
@@ -597,7 +603,7 @@ exports.fetch = function(req, res, next) {
     },
     {
       path: 'comment',
-      match: { 'deleted': false },
+      match: { 'deleted': false, weaken: false },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },

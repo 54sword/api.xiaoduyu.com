@@ -55,22 +55,7 @@ if (config.sslPath) {
 }
 
 
-var onlineUserCount = 0
 
-var io = require("socket.io").listen(server)
-io.on('connection', function(socket){
-
-	onlineUserCount += 1
-	io.sockets.emit("online-user-count", onlineUserCount);
-
-  socket.on('disconnect', function(){
-		
-		onlineUserCount -= 1
-		io.sockets.emit("online-user-count", onlineUserCount);
-
-	});
-});
-global.io = io
 
 
 app.all('*',function (req, res, next) {
@@ -91,6 +76,24 @@ app.all('*',function (req, res, next) {
   }
 
 });
+
+
+var onlineUserCount = 0
+
+var io = require("socket.io").listen(server)
+io.on('connection', function(socket){
+
+	onlineUserCount += 1
+	io.sockets.emit("online-user-count", onlineUserCount);
+
+  socket.on('disconnect', function(){
+
+		onlineUserCount -= 1
+		io.sockets.emit("online-user-count", onlineUserCount);
+
+	});
+});
+global.io = io
 
 
 app.use('/oauth', OauthRouter());
