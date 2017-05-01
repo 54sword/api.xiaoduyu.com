@@ -36,3 +36,10 @@ exports.add = function(info, callback) {
 exports.remove = function(id, callback) {
   new Captcha({ _id: id}).remove(callback);
 }
+
+/*
+var captcha = new Captcha({ captcha: 123456 });
+captcha.save(function(err, res){
+  console.log(res._id);
+});
+*/

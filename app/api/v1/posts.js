@@ -212,12 +212,16 @@ exports.add = function(req, res, next) {
 exports.update = function(req, res, next) {
 
   // 用户的信息
-  var user     = req.user || null;
-  var id       = req.body.id;
-  var title    = req.body.title;
-  var content  = req.body.content;
+  var user        = req.user || null;
+  var type        = req.body.type;
+  var topicId    = req.body.topic_id;
+  var id          = req.body.id;
+  var title       = req.body.title;
+  var content     = req.body.content;
   var contentHTML = req.body.content_html;
-  var ip       = Tools.getIP(req);
+  var ip          = Tools.getIP(req);
+
+  type = parseInt(type)
 
   async.waterfall([
 
@@ -237,6 +241,41 @@ exports.update = function(req, res, next) {
       } else {
         callback(null);
       }
+    },
+
+    function(callback) {
+      if (!type || type > 3) {
+        callback(11001)
+      } else {
+        callback(null);
+      }
+    },
+
+    function(callback) {
+      if (!type || type > 3) {
+        callback(11001)
+      } else {
+        callback(null);
+      }
+    },
+
+    function(callback) {
+
+      if (!topicId) {
+        // 回复没有节点
+        callback(15000);
+        return;
+      }
+
+      Topic.fetch({ _id: topicId }, {}, {}, function(err, data){
+        if (err) console.log(err);
+        if (!data || data.length == 0) {
+          callback(15000);
+        } else {
+          callback(null);
+        }
+      });
+
     },
 
     function(callback) {
@@ -325,15 +364,16 @@ exports.update = function(req, res, next) {
       }
 
       Posts.update(
+      { _id: id },
       {
-        _id: id
-      },
-      {
+        type: type,
+        topic_id: topicId,
         title: title,
         content: content,
         content_html: contentHTML,
         update_at: new Date()
-      }, function(err){
+      }, function(err, result){
+
         if (err) {
           console.log(err)
           callback(11005);
@@ -439,7 +479,7 @@ exports.fetch = function(req, res, next) {
 
       // 是否包含部分评论一起返回
       includeComments = req.query.include_comments || 0,
-      commentsLimit = req.query.comments_limit || 7,
+      commentsLimit = req.query.comments_limit || 5,
       commentsSort = req.query.comments_sort || 'reply_count:-1,like_count:-1',
 
       postsSort = req.query.posts_sort || 'sort_by_date:-1',
@@ -570,7 +610,7 @@ exports.fetch = function(req, res, next) {
 
   // ------- select --------
 
-  select = { __v: 0, recommend: 0, verify: 0, deleted: 0, ip: 0, device: 0, content: 0 }
+  select = { __v: 0, recommend: 0, verify: 0, deleted: 0, ip: 0, device: 0, content: 0, weaken: 0 }
 
   if (!includeComments) {
     select.comment = 0
@@ -598,7 +638,7 @@ exports.fetch = function(req, res, next) {
     {
       path: 'user_id',
       select: {
-        '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1
+        '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1
       }
     },
     {
@@ -634,7 +674,7 @@ exports.fetch = function(req, res, next) {
           {
             path: 'comment.user_id',
             model: 'User',
-            select: { '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1 }
+            select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
           }
         ]
 

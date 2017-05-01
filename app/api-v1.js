@@ -23,8 +23,9 @@ var APIRequire = function() {
   router.post('/user', auth.userRequired, user.fetch);
 
   router.get('/people/:id', auth.openType, user.fetchById);
-
+  
   router.post('/get-captcha', auth.openType, Captcha.add);
+  router.get('/captcha-image', auth.openType, Captcha.showImage);
 
   router.post('/signin', account.signin);
   router.post('/signup', account.signup);

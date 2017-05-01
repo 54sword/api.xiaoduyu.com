@@ -9,6 +9,8 @@ var config = {
 	// jwt配置 [必填，建议修改]
 	// https://github.com/hokaccha/node-jwt-simple
 	jwt_secret: 'jwt_secret_xiaoduyu',
+	// 默认用户头像
+	defaultAvatar: '//img.xiaoduyu.com/default_avatar.jpg',
 	// mongodb配置 [必填]
 	db_url: 'mongodb://localhost:27017/xiaoduyu',
 	// 本地ip [必填]
@@ -63,10 +65,9 @@ var config = {
     url: ''
 	},
 
-	// https 用于域名的验证的路径 [选填]
+	// https 用于域名的验证的路径（Let's encrypt）
 	// https://github.com/xdtianyu/scripts/blob/master/lets-encrypt/README-CN.md
 	sslPath: ''
-
 };
 
 module.exports = config;

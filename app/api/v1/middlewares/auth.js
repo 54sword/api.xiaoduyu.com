@@ -24,6 +24,12 @@ var verifyToken = function(req, callback) {
       if (user && user[0]) {
         req.user = user[0];
 
+        if (new Date().getTime() - new Date(user[0].last_sign_at).getTime() > 3600000) {
+          User.update({ _id: user[0]._id }, { last_sign_at: new Date() }, function(err){
+            if (err) console.log(err);
+          })
+        }
+
         if (!decoded.access_token || decoded.access_token != user[0].access_token) {
           callback(false);
           return
