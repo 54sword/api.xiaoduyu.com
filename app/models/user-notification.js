@@ -4,6 +4,12 @@ exports.save = function(data, callback) {
   new UserNotification(data).save(callback)
 }
 
+exports.create = function(data, callback) {
+  UserNotification.create(data, function(err){
+    if (callback) callback(err)
+  })
+}
+
 exports.find = function(query, select, options, callback) {
   var find = UserNotification.find(query, select)
   for (var i in options) {

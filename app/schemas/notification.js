@@ -5,13 +5,7 @@ var ObjectId = Schema.Types.ObjectId;
 
 /*
  * type:
- * follow-posts: xx 关注了你的帖子
- * answer: xx 评论了你的主题
- * comment: xx 回复了你
- * follow-you: xx 关注了你
- * like-answer: xx 赞了你的答案
- * like-comment: xx 赞了你的评论
- * new-answer: xx 回答了 xx 问题
+ * new-comment: xx 评论了 xx 帖子
  */
 
 // 通知多人
@@ -32,12 +26,3 @@ var NotificationSchema = new Schema({
 // Notify.index({ addressee_id: 1, create_at: -1, deleted: 1 });
 
 mongoose.model('Notification', NotificationSchema);
-
-
-/**
-1、用户获取通知
-2、获取最近的查询时间,同 Notify 查询新的通知
-3、如果有自己的新通知，那么写入到 Notification
-4、查询 Notification 获取新的通知
-
- */

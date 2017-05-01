@@ -9,6 +9,8 @@ var Validate = require('../../common/validate');
 var xss = require('xss');
 var async = require('async');
 
+
+
 function changeString(str) {
   var length = str.length
   var s = ''
@@ -257,7 +259,7 @@ exports.resetNickname = function(req, res) {
   if (countdown.days > 0 || countdown.hours > 0 || countdown.mintues > 0) {
 
     // var timer = ''
-    
+
     // timer += countdown.days > 0 && countdown.days > 9 ? countdown.days+':' : '0'+countdown.days+':'
     // timer += countdown.hours > 0 && countdown.hours > 9 ? countdown.hours+':' : '0'+countdown.hours+':'
     // timer += countdown.mintues > 0 && countdown.mintues > 9 ? countdown.mintues : '0'+countdown.mintues

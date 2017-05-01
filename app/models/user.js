@@ -1,7 +1,7 @@
 
 var User = require('../schemas').User;
 // var bcrypt = require('bcryptjs');
-// var uuid = require('node-uuid');
+var uuid = require('node-uuid');
 
 // 创建账号
 exports.create = function(user, callback) {
@@ -11,7 +11,7 @@ exports.create = function(user, callback) {
   _user.last_sign_at = user.createDate;
   _user.gender = user.gender;
   _user.source = user.source;
-  // _user.access_token = uuid.v4();
+  _user.access_token = uuid.v4();
   _user.save(callback);
 };
 
@@ -25,6 +25,25 @@ exports.fetch = function(query, select, options, callback) {
   find.exec(callback)
 }
 
+exports.find = function(query, select, options, callback) {
+  var find = User.find(query, select)
+  for (var i in options) {
+    find[i](options[i])
+  }
+  find.exec(callback)
+}
+
+
+/*
+var find = User.find({}, {})
+find.exec(function(err, result){
+  result.map(function(item){
+    User.update({ _id: item._id }, { access_token: uuid.v4() }, function(err){
+      console.log(item._id)
+    })
+  })
+})
+*/
 
 exports.update = function(condition, contents, callback) {
   User.update(condition, contents, callback);
@@ -43,6 +62,17 @@ exports.fetchById = function(id, callback) {
     disable_send_reply: 0, role:0, follow_node:0, follow_people: 0
   })
   .exec(callback);
+};
+
+// 更新访问的token
+exports.updateAccessTokenById = function(id, callback) {
+
+  var access_token = uuid.v4()
+
+  User.update({ _id: id }, { access_token: access_token }, function(err){
+    callback(err, access_token)
+  })
+
 };
 
 /*

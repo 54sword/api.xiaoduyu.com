@@ -1,7 +1,6 @@
 var Question = require('../../models').Question;
 var Node = require('../../models').Node;
 var User = require('../../models').User;
-// var FollowQuestion = require('../../models').FollowQuestion;
 var Like = require('../../models').Like;
 
 var Posts = require('../../models').Posts;
@@ -36,7 +35,7 @@ exports.add = function(req, res, next) {
     },
 
     function(callback) {
-      if (type > 2 || type < 1) {
+      if (type > 3 || type < 1) {
         callback(11001);
       } else {
         callback(null);
@@ -167,6 +166,8 @@ exports.add = function(req, res, next) {
 
         feed.create_at = new Date(feed.create_at).getTime();
 
+        global.io.sockets.emit('new-posts', feed.create_at - 1);
+
         callback(null, feed);
       });
 
@@ -211,12 +212,16 @@ exports.add = function(req, res, next) {
 exports.update = function(req, res, next) {
 
   // 用户的信息
-  var user     = req.user || null;
-  var id       = req.body.id;
-  var title    = req.body.title;
-  var content  = req.body.content;
+  var user        = req.user || null;
+  var type        = req.body.type;
+  var topicId    = req.body.topic_id;
+  var id          = req.body.id;
+  var title       = req.body.title;
+  var content     = req.body.content;
   var contentHTML = req.body.content_html;
-  var ip       = Tools.getIP(req);
+  var ip          = Tools.getIP(req);
+
+  type = parseInt(type)
 
   async.waterfall([
 
@@ -236,6 +241,41 @@ exports.update = function(req, res, next) {
       } else {
         callback(null);
       }
+    },
+
+    function(callback) {
+      if (!type || type > 3) {
+        callback(11001)
+      } else {
+        callback(null);
+      }
+    },
+
+    function(callback) {
+      if (!type || type > 3) {
+        callback(11001)
+      } else {
+        callback(null);
+      }
+    },
+
+    function(callback) {
+
+      if (!topicId) {
+        // 回复没有节点
+        callback(15000);
+        return;
+      }
+
+      Topic.fetch({ _id: topicId }, {}, {}, function(err, data){
+        if (err) console.log(err);
+        if (!data || data.length == 0) {
+          callback(15000);
+        } else {
+          callback(null);
+        }
+      });
+
     },
 
     function(callback) {
@@ -324,15 +364,16 @@ exports.update = function(req, res, next) {
       }
 
       Posts.update(
+      { _id: id },
       {
-        _id: id
-      },
-      {
+        type: type,
+        topic_id: topicId,
         title: title,
         content: content,
         content_html: contentHTML,
         update_at: new Date()
-      }, function(err){
+      }, function(err, result){
+
         if (err) {
           console.log(err)
           callback(11005);
@@ -427,16 +468,46 @@ exports.fetch = function(req, res, next) {
       userId = req.query.user_id,
       topicId = req.query.topic_id,
       postsId = req.query.posts_id,
+      // 大于创建日期
+      gtCreateAt = req.query.gt_create_at,
       gtDate = req.query.gt_date,
       ltDate = req.query.lt_date,
       or = req.query.or || true,
       draft = req.query.draft || false,
-      method = req.query.method || '', // user_custom 根据用户偏好查询
+      method = req.query.method || '', // user_custom 根据用户偏好查询、
+      weaken = req.query.weaken,
+
+      // 是否包含部分评论一起返回
+      includeComments = req.query.include_comments || 0,
+      commentsLimit = req.query.comments_limit || 5,
+      commentsSort = req.query.comments_sort || 'reply_count:-1,like_count:-1',
+
+      postsSort = req.query.posts_sort || 'sort_by_date:-1',
+
       sortBy = req.query.sort_by || 'sort_by_date',
       sort = req.query.sort || -1,
       query = {},
       select = {},
       options = {};
+
+      // console.log(req.query.include_comments);
+
+  if (commentsLimit > 100) commentsLimit = 100
+  if (perPage > 100) perPage = 100
+
+  var _commentsSort = {}
+
+  commentsSort.split(',').map((item)=>{
+
+    if (!item) {
+      return
+    }
+
+    var i = item.split(':')
+    _commentsSort[i[0]] = parseInt(i[1])
+  })
+
+  // console.log(_commentsSort);
 
   // ---- query -----
 
@@ -454,8 +525,10 @@ exports.fetch = function(req, res, next) {
       or = true
       var conf = { deleted: false }
 
+      if (weaken) conf.weaken = false
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'] = [conf]
     } else {
@@ -472,8 +545,10 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
+      if (weaken) conf.weaken = false
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'].push(conf)
     } else {
@@ -490,8 +565,10 @@ exports.fetch = function(req, res, next) {
         deleted: false
       }
 
+      if (weaken) conf.weaken = false
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'].push(conf)
     } else {
@@ -508,7 +585,8 @@ exports.fetch = function(req, res, next) {
       }
 
       if (ltDate) conf.sort_by_date = { '$lt': ltDate }
-      if (gtDate) conf.create_at = { '$gt': gtDate }
+      if (gtDate) conf.sort_by_date = { '$gt': gtDate }
+      if (gtCreateAt) conf.create_at = { '$gt': gtCreateAt }
 
       query['$or'].push(conf)
     } else {
@@ -520,8 +598,11 @@ exports.fetch = function(req, res, next) {
   if (query['$or'].length == 0) {
     delete query['$or']
     query.deleted = false
+
+    if (weaken) query.weaken = false
     if (ltDate) query.sort_by_date = { '$lt': ltDate }
-    if (gtDate) query.create_at = { '$gt': gtDate }
+    if (gtDate) query.sort_by_date = { '$gt': gtDate }
+    if (gtCreateAt) query.create_at = { '$gt': gtCreateAt }
   }
 
   // ------- query end ------
@@ -529,7 +610,11 @@ exports.fetch = function(req, res, next) {
 
   // ------- select --------
 
-  select = { __v: 0, recommend: 0, verify: 0, deleted: 0, ip: 0, device: 0, content: 0 }
+  select = { __v: 0, recommend: 0, verify: 0, deleted: 0, ip: 0, device: 0, content: 0, weaken: 0 }
+
+  if (!includeComments) {
+    select.comment = 0
+  }
 
   if (draft) {
     delete select.content
@@ -553,16 +638,16 @@ exports.fetch = function(req, res, next) {
     {
       path: 'user_id',
       select: {
-        '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1
+        '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1
       }
     },
     {
       path: 'comment',
-      match: { 'deleted': false },
+      match: { 'deleted': false, weaken: false },
       select: {
-        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1
+        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
-      options: { limit: 5, sort:{ 'reply_count': -1, 'like_count': -1 } }
+      options: { limit: commentsLimit, sort:_commentsSort }
     },
     {
       path: 'topic_id',
@@ -589,7 +674,7 @@ exports.fetch = function(req, res, next) {
           {
             path: 'comment.user_id',
             model: 'User',
-            select: { '_id': 1, 'avatar': 1, 'create_at': 1, 'nickname': 1, 'brief': 1 }
+            select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
           }
         ]
 
@@ -652,7 +737,7 @@ exports.fetch = function(req, res, next) {
           posts[key].follow = ids[question._id] ? true : false
         })
 
-        callback(posts)
+        callback(null, posts)
 
       })
 
@@ -694,7 +779,60 @@ exports.fetch = function(req, res, next) {
       })
       */
 
+    },
+
+    function(posts, callback) {
+
+      if (!user) {
+        callback(posts)
+        return
+      }
+
+      var ids = []
+
+      for (var i = 0, max = posts.length; i < max; i++) {
+
+        if (posts[i].comment) {
+          posts[i].comment.map(function(comment){
+            ids.push(comment._id)
+          })
+        }
+
+
+      }
+
+      Like.fetch({
+        user_id: user._id,
+        type: 'comment',
+        target_id: { "$in": ids },
+        deleted: false
+      }, { target_id:1, _id:0 }, {}, function(err, likes){
+
+        if (err) console.log(err)
+        var ids = {}
+
+        for (var i = 0, max = likes.length; i < max; i++) {
+          ids[likes[i].target_id] = 1
+        }
+
+        for (var i = 0, max = posts.length; i < max; i++) {
+
+          if (posts[i].comment) {
+            posts[i].comment.map(function(comment, index){
+              comment.like = ids[comment._id] ? true : false
+              posts[i].comment[index] = comment
+            })
+          }
+
+        }
+
+        callback(posts)
+
+      })
+
+
     }
+
   ], function(result){
 
     res.send({
@@ -705,6 +843,7 @@ exports.fetch = function(req, res, next) {
   })
 
 }
+
 
 /*
 exports.delete = function(req, res){

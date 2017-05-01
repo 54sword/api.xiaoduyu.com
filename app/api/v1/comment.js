@@ -100,6 +100,9 @@ exports.add = function(req, res) {
 
     function(callback) {
 
+      callback(null)
+      return
+
       if (postsId && !parentId && !replyId) {
 
         Comment.fetch(
@@ -199,7 +202,7 @@ exports.add = function(req, res) {
       if (postsId && !parentId && !replyId) {
 
         // 评论
-        
+
         var update = {
           $inc: { 'comment_count': 1 },
           $addToSet: { comment: comment._id }
@@ -273,6 +276,9 @@ exports.add = function(req, res) {
           { '$addToSet': { 'reply': comment._id }, $inc: { 'reply_count': 1 } },
           function(err){
             if (err) console.log(err);
+
+            console.log(replyComment);
+            console.log(user._id);
 
             if (replyComment && replyComment.user_id == user._id + '') {
               callback(null, comment)
@@ -494,7 +500,7 @@ exports.fetch = function(req, res) {
     {
       path: 'reply',
       select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-      options: { limit: 5 }
+      options: { limit: 10 }
     },
     {
       path: 'posts_id',

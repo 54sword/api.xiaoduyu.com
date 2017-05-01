@@ -39,7 +39,9 @@ var CommentSchema = new Schema({
   // 删除标记
   deleted: { type: Boolean, default: false },
   // 是否是审核
-  verify: { type: Boolean, default: true }
+  verify: { type: Boolean, default: true },
+  // 削弱
+  weaken: { type: Boolean, default: false }
 });
 
 // CommentSchema.index({ feed_id: 1, last_reply_at: -1 });

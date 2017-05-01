@@ -265,24 +265,26 @@ exports.fetchUnreadCount = function(req, res) {
               if (err) console.log(err);
             })
 
+            var notificationArr = []
+
+            // 问题关键
             notice.map(function(item){
-
               if (item.type == 'new-comment') {
-
-                UserNotification.save({
+                notificationArr.push({
                   sender_id: item.sender_id,
                   comment_id: item.target,
                   addressee_id: user._id,
                   create_at: item.create_at,
                   type: item.type
-                }, function(err){
-                  if (err) console.log(err)
                 })
-
               }
-
             })
 
+            UserNotification.create(notificationArr, function(err){
+              if (err) console.log(err)
+              callback(null)
+            })
+            return
           }
 
           callback(null)
@@ -320,6 +322,10 @@ exports.add = function(data, callback) {
     // 添加通知
     UserNotification.save(data, function(err){
       if (err) console.log(err)
+
+      // console.log(data);
+
+      global.io.sockets.emit('notiaction', [data.addressee_id]);
       callback()
     })
 

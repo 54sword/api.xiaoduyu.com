@@ -47,7 +47,7 @@ exports.signin = function(req, res, next) {
 
                 user = user[0]
 
-                var result = JWT.encode(req.jwtTokenSecret, user._id)
+                var result = JWT.encode(req.jwtTokenSecret, user._id, user.access_token)
 
                 callback(null, result)
 
@@ -514,7 +514,12 @@ exports.resetPassword = function(req, res) {
         } else {
           Account.resetPassword(account._id, newPassword, function(err, password){
             if (err) console.log(err);
-            callback(null);
+
+            User.updateAccessTokenById(user._id, function(err){
+              if (err) console.log(err);
+              callback(null);
+            })
+
           });
         }
       });
@@ -823,7 +828,7 @@ exports.bindingEmail = function(req, res, next) {
     function(callback) {
       Captcha.fetchByEmail(email, function(err, _captcha){
 
-        if (_captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
+        if (_captcha && _captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
           callback(null)
           return
         }

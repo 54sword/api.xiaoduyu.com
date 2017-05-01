@@ -1,5 +1,5 @@
 
-// var config = require('../../configs/config');
+var config = require('../../config');
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
@@ -21,13 +21,9 @@ var UserSchema = new Schema({
   // 限制发送消息
   disable_send_reply: { type: Date, default: Date.now },
   // 用户等级
-  // 0 新手
-  // 1 普通用户
   // 100 后台管理员
   role: { type: Number, default: 0 },
 
-  // 是否上传了头像
-  // avatar: { type: Boolean, default: false },
   // 头像
   avatar: { type: String, default: '' },
   // 性别
@@ -48,10 +44,6 @@ var UserSchema = new Schema({
   // 获取赞的累计
   like_count: { type: Number, default: 0 },
 
-  // 用户关注的节点
-  follow_node: [{ type: ObjectId, ref: 'Node' }],
-  follow_node_count: { type: Number, default: 0 },
-
   // 用户关注的人
   follow_people: [{ type: ObjectId, ref: 'User' }],
   follow_people_count: { type: Number, default: 0 },
@@ -64,36 +56,21 @@ var UserSchema = new Schema({
   follow_posts_count: { type: Number, default: 0 },
 
   // 最近一次查询Notification的日期
-  find_notification_at: { type: Date }
+  find_notification_at: { type: Date },
 
-  // 访问令牌
-  // access_token: { type: String }
+  access_token: { type: String }
 });
+
 
 UserSchema.virtual('avatar_url').get(function () {
 
-  return this.avatar.replace('!200', '!50') || '//img.xiaoduyu.com/default_avatar.jpg'
+  var url = this.avatar ? this.avatar.replace('!200', '!50') : config.defaultAvatar
+  url += url.indexOf('thumbnail') != -1 ? '/quality/90' : ''
 
-  /*
-  if (!this.avatar) {
-    return config.domain + '/images/avatar/_thumbnail.jpg';
-  }
+  return url
 
-  var myDate = new Date(this.create_at);
-  var year = myDate.getFullYear();
-  var month = (myDate.getMonth()+1);
-  var day = myDate.getDate();
-
-  if (month < 10) month = '0'+month;
-  if (day < 10) day = '0'+day;
-
-  var path = config.domain + '/avatar' + '/' + year + '/' + month + '/' + day + '/' + this._id + '_thumbnail.jpg';
-
-  return path;
-  */
 });
 
 UserSchema.set('toJSON', { getters: true });
-
 
 mongoose.model('User', UserSchema);
