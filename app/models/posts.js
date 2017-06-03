@@ -32,6 +32,10 @@ exports.find = function(query, select, options, callback) {
   find.exec(callback)
 }
 
+exports.findOne = function(query, select, callback) {
+  Posts.findOne(query, select).exec(callback)
+}
+
 exports.populate = function(questions, opts, callback) {
   Posts.populate(questions, opts, callback);
 }

@@ -140,7 +140,7 @@ exports.add = function(req, res) {
 
       contentHTML = xss(contentHTML, {
         whiteList: {
-          a: ['href', 'title', 'target'],
+          a: ['href', 'title', 'target', 'rel'],
           img: ['src', 'alt'],
           p: [],
           div: [],
@@ -359,7 +359,7 @@ exports.update = function(req, res, next) {
 
       anaserContentHTMl = xss(anaserContentHTMl, {
         whiteList: {
-          a: ['href', 'title', 'target'],
+          a: ['href', 'title', 'target', 'rel'],
           img: ['src', 'alt'],
           p: [],
           div: [],

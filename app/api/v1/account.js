@@ -14,12 +14,18 @@ var Email = require('../../common/email');
 var config = require('../../../config');
 
 var Validate = require('../../common/validate');
+var Tools = require('../../common/tools');
+
 
 // 账号登录
 exports.signin = function(req, res, next) {
 
+  var ip = Tools.getIP(req);
   var email = req.body['email'];
   var password = req.body['password'];
+  var captcha = req.body['captcha'] || '';
+  var captchaId = req.body['captcha_id'] || '';
+  console.log(req.body);
 
   async.waterfall([
     function(callback) {
@@ -31,6 +37,42 @@ exports.signin = function(req, res, next) {
         callback(null);
       }
     },
+
+    function(callback) {
+
+      Captcha.findOne({ ip: ip }, { _id: 1 }, { sort:{ create_at: -1 } },function(err, result){
+        if (err) console.log(err);
+
+        if (!result) {
+          callback(null)
+          return
+        }
+
+        if (captcha && captchaId) {
+
+          Captcha.findOne(
+            { _id: captchaId },
+            {},
+            {},
+            function(err, result){
+              if (err) console.log(err);
+
+              // 不需要验证
+              if (result && result.captcha == captcha) {
+                callback(null)
+              } else {
+                callback(13010)
+              }
+            }
+          )
+
+        } else {
+          callback(13010)
+        }
+
+      })
+    },
+
     function(callback) {
 
       Account.fetchByEmail(email, function(err, account){
@@ -71,6 +113,17 @@ exports.signin = function(req, res, next) {
       res.status(400);
       meg.success = false;
       meg.error = err;
+
+      var code = Math.round(900000*Math.random()+100000);
+      var ip = Tools.getIP(req);
+
+      // console.log(ip);
+
+      //  type:1,
+      Captcha.add({ captcha: code, ip:ip }, function(err){
+        if (err) console.log(err);
+      })
+
     } else {
       meg.success = true;
       meg.data = result;

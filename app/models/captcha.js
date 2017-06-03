@@ -33,8 +33,19 @@ exports.add = function(info, callback) {
   captcha.save(callback);
 }
 
-exports.remove = function(id, callback) {
-  new Captcha({ _id: id}).remove(callback);
+exports.remove = function(conditions, callback) {
+  // console.log(conditions);
+  // Model.remove(conditions, callback);
+  Captcha.remove(conditions, callback);
+}
+
+
+exports.findOne = function(query, select, options, callback) {
+  var find = Captcha.findOne(query, select)
+  for (var i in options) {
+    find[i](options[i])
+  }
+  find.exec(callback)
 }
 
 /*
