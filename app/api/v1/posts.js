@@ -686,10 +686,13 @@ exports.fetch = function(req, res, next) {
           posts = JSON.parse(posts);
 
           if (postsId) {
+            callback(null, posts)
+            /*
             Posts.update({ _id: postsId }, { $inc: { view_count: 1 } }, function(err){
               if (err) console.log(err);
               callback(null, posts)
             })
+            */
           } else {
             callback(null, posts)
           }
@@ -844,6 +847,22 @@ exports.fetch = function(req, res, next) {
 
 }
 
+
+exports.view = function(req, res, next) {
+  var postsId = req.query.posts_id
+
+  Posts.findOne({ _id: postsId }, { _id: 1 }, function(err, posts){
+    if (err) console.log(err);
+    if (posts) {
+      Posts.update({ _id: postsId }, { $inc: { view_count: 1 } }, function(err){
+        if (err) console.log(err);
+        res.send({ success: true })
+      })
+    } else {
+      res.send({ success: false })
+    }
+  })
+}
 
 /*
 exports.delete = function(req, res){

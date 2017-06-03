@@ -23,9 +23,11 @@ var APIRequire = function() {
   router.post('/user', auth.userRequired, user.fetch);
 
   router.get('/people/:id', auth.openType, user.fetchById);
-  
+
   router.post('/get-captcha', auth.openType, Captcha.add);
-  router.get('/captcha-image', auth.openType, Captcha.showImage);
+  router.get('/captcha-image/:id', Captcha.showImage);
+  // router.get('/add-captcha-by-ip', Captcha.addCaptchaByIP);
+  router.get('/get-captcha-id', Captcha.getCaptchaId);
 
   router.post('/signin', account.signin);
   router.post('/signup', account.signup);
@@ -48,6 +50,8 @@ var APIRequire = function() {
   router.post('/add-posts', auth.userRequired, Posts.add);
   router.post('/update-posts', auth.userRequired, Posts.update);
   router.get('/posts', auth.openType, Posts.fetch);
+  router.get('/view-posts', Posts.view);
+
 
   router.post('/write-comment', auth.userRequired, commment.add);
   router.post('/update-comment', auth.userRequired, commment.update);

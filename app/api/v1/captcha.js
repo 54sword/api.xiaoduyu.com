@@ -1,3 +1,4 @@
+
 var Captcha = require('../../models').Captcha;
 var Account = require('../../models').Account;
 var async = require('async');
@@ -5,6 +6,7 @@ var Email = require('../../common/email');
 var config = require('../../../config');
 var Validate = require('../../common/validate');
 var captchapng = require('captchapng');
+var Tools = require('../../common/tools');
 
 var generateEmailHTMLContent = function(content) {
 
@@ -269,20 +271,97 @@ export.getCaptchaId = function(req, res, next) {
 
 }
 */
+
+exports.getCaptchaId = function(req, res, next) {
+  var ip = Tools.getIP(req);
+
+  Captcha.findOne({ ip: ip }, { _id: 1 }, { sort:{ create_at: -1 } },function(err, result){
+    if (err) console.log(err);
+
+    // 不需要验证
+    if (!result) {
+      return res.send({
+        success: true,
+        data: ''
+      });
+    }
+
+    // 删除所有该ip的验证码
+    Captcha.remove({ ip: ip }, function(err){
+
+      if (err) console.log(err);
+
+      // 创建一个验证码，并返回id
+      var code = Math.round(900000*Math.random()+100000);
+
+      Captcha.add({ captcha: code, ip:ip }, function(err, result){
+        if (err) console.log(err);
+
+        return res.send({
+          success: true,
+          data: result ? result._id : ''
+        });
+
+      })
+
+    })
+
+  })
+}
+
+/*
+exports.addCaptchaByIP = function(req, res, next) {
+
+  var ip = Tools.getIP(req);
+  var code = Math.round(900000*Math.random()+100000);
+
+  Captcha.add({ captcha: code, ip:ip }, function(err, result){
+    if (err) console.log(err);
+
+    return res.send({
+      success: true,
+      data: result ? result._id : ''
+    });
+
+  })
+}
+*/
 exports.showImage = function(req, res, next){
-  // var captcha = parseInt(Math.random()*9000+10000);
-  var captcha = Math.round(900000*Math.random()+100000);
 
-  // console.log(captcha);
+  // console.log(res);
 
-  var p = new captchapng(80,30,captcha); // width,height,numeric captcha
-      p.color(0, 0, 0, 0);  // First color: background (red, green, blue, alpha)
-      p.color(80, 80, 80, 255); // Second color: paint (red, green, blue, alpha)
+  var id = req.params.id;
 
-  var img = p.getBase64();
-  var imgbase64 = new Buffer(img,'base64');
-  res.writeHead(200, { 'Content-Type': 'image/png' });
-  // req.session.captcha = captcha;
+  Captcha.findOne({ _id: id }, {}, {},function(err, result){
+    if (err) console.log(err);
 
-  res.end(imgbase64);
+    if (!result) {
+      // 账号的邮箱已经验证
+      res.status(404);
+      return res.send({
+        success: false
+      });
+    } else {
+
+      // console.log(result);
+
+      // var captcha = Math.round(900000*Math.random()+100000);
+
+      // console.log(captcha);
+
+      var p = new captchapng(80,30,result.captcha); // width,height,numeric captcha
+          p.color(0, 0, 0, 0);  // First color: background (red, green, blue, alpha)
+          p.color(80, 80, 80, 255); // Second color: paint (red, green, blue, alpha)
+
+      var img = p.getBase64();
+      var imgbase64 = new Buffer(img,'base64');
+      res.writeHead(200, { 'Content-Type': 'image/png' });
+      // req.session.captcha = captcha;
+
+      res.end(imgbase64);
+
+    }
+
+  })
+
 };
