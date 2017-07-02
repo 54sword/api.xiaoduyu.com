@@ -46,7 +46,7 @@ exports.getToken = function(req, res, next) {
 exports.uploadImage = function(imgUrl, userId, callback) {
 
   Tools.download(imgUrl, 'public/', userId+".jpg", function(){
-
+    
     var token = uptoken(bucket)
 
     //构造上传函数
@@ -58,7 +58,7 @@ exports.uploadImage = function(imgUrl, userId, callback) {
     //调用uploadFile上传
     uploadFile(token, '', 'public/'+userId+'.jpg', function(err, ret){
       if(!err) {
-        User.update({ _id: userId }, { avatar: config.qiniu.url + '/' + ret.key + '?imageMogr2/thumbnail/!200' }, function(err){
+        User.update({ _id: userId }, { avatar: config.qiniu.url + '/' + ret.key + '?imageMogr2/auto-orient/thumbnail/!200' }, function(err){
           if (err) console.log(err);
           // 删除源文件
           fs.unlink('public/'+userId+'.jpg', function(){

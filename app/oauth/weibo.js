@@ -54,7 +54,7 @@ exports.show = function(req, res, next) {
 // 验证登录
 exports.signin = function(req, res, next) {
 
-  var user = req.user;
+  var user = null;
   var code = req.query.code;
   var state = req.query.state;
   var user_access_token = req.cookies['access_token']; //req.session.access_token;
@@ -89,10 +89,10 @@ exports.signin = function(req, res, next) {
       if (decoded && decoded.expires > new Date().getTime()) {
 
         // 判断 token 是否有效
-        User.fetch({ _id: decoded.user_id }, {}, {}, function(err, user){
+        User.fetch({ _id: decoded.user_id }, {}, {}, function(err, _user){
           if (err) console.log(err);
-          if (user && user[0]) {
-            req.user = user[0];
+          if (_user && _user[0]) {
+            user = _user[0];
             callback(null);
           } else {
             goToNoticePage(req, res, 'wrong_token');

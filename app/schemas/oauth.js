@@ -6,6 +6,8 @@ var ObjectId = Schema.Types.ObjectId;
 var OauthSchema = new Schema({
   // 用户的唯一id
   openid: String,
+  // 微信登录PC端、服务号的openid，留着备用，微信的 unionid 是该表的 openid
+  backup_openid: String,
   // 访问令牌
   access_token: String,
   // 令牌有效时间/单位秒

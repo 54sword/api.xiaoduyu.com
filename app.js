@@ -1,5 +1,4 @@
 
-
 var express = require('express');
 var http = require('http');
 var path = require('path');
@@ -13,8 +12,8 @@ var jwt = require('jwt-simple');
 var config = require('./config');
 
 var API_V1 = require('./app/api-v1');
-var OauthRouter = require('./app/oauth');
-
+// var OauthRouter = require('./app/oauth');
+import OauthRouter from './app/oauth'
 
 var app = express();
 var server = http.createServer(app);
@@ -56,10 +55,6 @@ if (config.sslPath) {
 	app.use(express.static(path.join(__dirname, config.sslPath)));
 }
 
-
-
-
-
 app.all('*',function (req, res, next) {
 
 	req.jwtTokenSecret = app.get('jwtTokenSecret')
@@ -78,6 +73,29 @@ app.all('*',function (req, res, next) {
   }
 
 });
+
+
+if (config.oauth.wechatToken) {
+
+	app.all('*', (req, res, next)=>{
+		if (req.method === 'GET') {
+
+			const { signature, timestamp, nonce, echostr } = req.query
+
+			if (signature && timestamp && nonce) {
+				let sha1 = crypto.createHash('sha1'),
+		        sha1Str = sha1.update([config.oauth.wechatToken, timestamp, nonce].sort().join('')).digest('hex');
+		        res.send((sha1Str === signature) ? echostr : '');
+						return
+			} else {
+				next()
+			}
+	  } else {
+			next()
+		}
+	});
+
+}
 
 
 var onlineUserCount = 0

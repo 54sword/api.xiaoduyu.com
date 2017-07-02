@@ -92,7 +92,7 @@ exports.updateLastSignAt = function(userId, callback){
   .exec(callback);
 };
 
-
+/*
 // 重置昵称
 exports.resetNickname = function(id, nickname, callback) {
   User.update({_id: id}, { nickname: nickname })
@@ -102,6 +102,7 @@ exports.resetNickname = function(id, nickname, callback) {
     .exec(callback);
   });
 };
+*/
 
 // 重置性别
 exports.resetGender = function(id, gender, callback) {

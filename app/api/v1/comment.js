@@ -170,8 +170,8 @@ exports.add = function(req, res) {
           }
         }
       });
-
-      if (!content || !contentHTML) {
+      
+      if (!content || !contentHTML || contentHTML.replace(/<[^>]+>/g,"") == '') {
         callback(12004);
         return;
       }

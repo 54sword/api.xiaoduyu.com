@@ -6,21 +6,21 @@ var JWT = require('../common/jwt');
 
 var User = require('../models').User;
 var Oauth = require('../models').Oauth;
-// var Tools = require('../common/tools');
-// var auth = require('../middlewares/auth');
-// var mkdirs = require('../common/mkdirs');
-// var Avatar = require('../api/v1/avatar');
 var qiniu = require('../api/v1/qiniu');
 
-// var Avatar = require('../controllers/avatar');
 var config = require('../../config');
 
-var appConfig = {
-  appid: config.oauth.qq.appid,
-  appkey: config.oauth.qq.appkey,
-  redirectUri: config.domain+'/oauth/qq-signin',
-  scope: 'get_user_info'
+var appConfig = {}
+
+if (config.oauth.wechat) {
+  appConfig = {
+    appid: config.oauth.wechat.appid,
+    appkey: config.oauth.wechat.appkey,
+    redirectUri: config.domain+'/oauth/wechat-signin',
+    scope: 'snsapi_userinfo'
+  }
 }
+
 
 var goToNoticePage = function(req, res, string) {
   var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
@@ -46,13 +46,16 @@ exports.show = function(req, res, next) {
   res.cookie('access_token', req.query.access_token || '', opts);
   res.cookie('landing_page', req.query.landing_page || '', opts);
 
-  // req.session.csrf = csrf;
-  // req.session.access_token = req.query.access_token || '';
-  res.redirect('https://graph.qq.com/oauth2.0/authorize?response_type=code&state='+csrf+'&client_id='+appConfig.appid+'&redirect_uri='+encodeURIComponent(appConfig.redirectUri)+'&scope='+appConfig.scope);
+  var url = 'https://open.weixin.qq.com/connect/oauth2/authorize'+
+  '?appid='+appConfig.appid+
+  '&redirect_uri='+encodeURIComponent(appConfig.redirectUri)+
+  '&response_type=code'+
+  '&scope='+appConfig.scope+
+  '&state='+csrf+'#wechat_redirect'
+
+  res.redirect(url)
 };
 
-// 登陆验证
-// http://wiki.connect.qq.com/使用authorization_code获取access_token
 exports.signin = function(req, res) {
 
   var user = null;
@@ -62,7 +65,7 @@ exports.signin = function(req, res) {
 
   // 避免csrf攻击
   if (req.cookies['csrf'] != state) {
-    res.redirect(config.domain+'/oauth/qq');
+    res.redirect(config.domain+'/oauth/wechat');
     return;
   }
 
@@ -94,23 +97,11 @@ exports.signin = function(req, res) {
         goToNoticePage(req, res, 'wrong_token');
       }
 
-      /*
-      User.fetchByAccessToken(user_access_token, function(err, _user){
-        if (err) console.log(err)
-        if (_user) {
-          user = _user
-          callback(null)
-        } else {
-          goToNoticePage(req, res, 'wrong_token')
-        }
-      })
-      */
-
     },
 
     // 获取访问令牌
     function(callback) {
-      getAccessToken(code, function(err, tokenInfo){
+      getAccessToken(code, function(tokenInfo){
         if (!tokenInfo) {
           res.redirect(appConfig.redirectUri);
         } else {
@@ -119,35 +110,37 @@ exports.signin = function(req, res) {
       });
     },
 
-    // 获取 openid
+    // 获取用户资料
     function(tokenInfo, callback) {
-      getOpenId(tokenInfo.access_token, function(err, openid){
-        if (err) {
-          res.send(err);
+      getUserinfo(tokenInfo, function(userinfo){
+        if (!userinfo) {
           res.redirect(appConfig.redirectUri);
         } else {
-          tokenInfo.openid = openid;
-          callback(null, tokenInfo);
+          callback(null, tokenInfo, userinfo);
         }
-      });
+      })
     },
 
     // 查询 openid 是否已经存在
-    function(tokenInfo, callback) {
-      Oauth.fetchByOpenIdAndSource(tokenInfo.openid, 'qq', function(err, oauth){
+    function(tokenInfo, userinfo, callback) {
+
+      tokenInfo.backup_openid = tokenInfo.openid
+      tokenInfo.openid = userinfo.unionid
+
+      Oauth.fetchByOpenIdAndSource(tokenInfo.openid, 'wechat', function(err, oauth){
         if (err) console.log(err);
-        callback(null, tokenInfo, oauth);
+        callback(null, tokenInfo, userinfo, oauth);
       });
     },
 
-    function(tokenInfo, oauth, callback) {
+    function(tokenInfo, userinfo, oauth, callback) {
 
       if (user && oauth && oauth.deleted == false) {
         // 绑定失败，账号已经被绑定
         goToNoticePage(req, res, 'has_been_binding')
       } else if (user && oauth && oauth.deleted == true) {
 
-        // 已经存在的 oauth
+        // 恢复绑定
         Oauth.updateById(oauth._id, {
           access_token: tokenInfo.access_token,
           expires_in: tokenInfo.expires_in,
@@ -164,100 +157,101 @@ exports.signin = function(req, res) {
         })
 
       } else if (user && !oauth) {
-        // 绑定到账户
-        var qq = {
-          openid: tokenInfo.openid,
-          access_token: tokenInfo.access_token,
-          expires_in: tokenInfo.expires_in,
-          refresh_token: tokenInfo.refresh_token,
-          source: 'qq',
-          user_id: user._id
-        };
 
-        Oauth.create(qq, function(err, user){
+        // 已注册用户绑定微信
+        createOauth(tokenInfo, user, function(oauth){
           if (err) console.log(err);
           goToNoticePage(req, res, 'binding_finished')
-        });
+        })
 
       } else if (!user && oauth && oauth.deleted == false) {
-
         // 登录
         goToAutoSignin(req, res, req.jwtTokenSecret, oauth.user_id._id, oauth.user_id.access_token)
       } else if (!user && !oauth) {
 
         // 创建 user，并绑定
 
-        getUserinfo(tokenInfo.access_token, appConfig.appid, tokenInfo.openid, function(user_info){
+        var newUser = {
+          nickname: userinfo.nickname,
+          avatar: userinfo.headimgurl || '',
+          createDate: new Date(),
+          gender: userinfo.sex == 1 ? 1 : 0,
+          source: 7
+          // province: userinfo.province || '',
+          // city: userinfo.city || '',
+          // country: userinfo.country || ''
+        }
 
-          tokenInfo.nickname = user_info.nickname;
-          tokenInfo.gender = user_info.gender;
-          tokenInfo.year = user_info.year;
-          tokenInfo.avatar = user_info.figureurl_qq_2;
-          tokenInfo.createDate = new Date();
-          tokenInfo.gender = user_info.gender == '男' ? 1 : 0;
-          tokenInfo.source = 4;
+        createUser(newUser, function(user){
 
-          createUser(tokenInfo, function(user){
-            if (!user) {
-              goToNoticePage(req, res, 'create_user_failed')
-              return
-            }
+          if (!user) {
+            goToNoticePage(req, res, 'create_user_failed')
+            return
+          }
 
-            createOauth(tokenInfo, user, function(oauth){
-              if (oauth) {
-
-                qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
+          createOauth(tokenInfo, user, function(oauth){
+            if (oauth) {
+              if (user.avatar) {
+                qiniu.uploadImage(user.avatar, user._id, function(){
                   goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
                 })
-
-                /*
-                updateAvatar(tokenInfo.avatar, user, function(){
-                  goToAutoSignin(req, res, req.jwtTokenSecret,  user._id)
-                })
-                */
-
               } else {
-                goToNoticePage(req, res, 'create_oauth_failed')
+                goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
               }
-            })
-
-          })
-
-        });
-
-      } else if (!user && oauth && oauth.deleted == true) {
-
-        // oauth 是删除状态，绑定新账户，并恢复成可用状态
-
-        getUserinfo(tokenInfo.access_token, appConfig.appid, tokenInfo.openid, function(user_info){
-
-          tokenInfo.nickname = user_info.nickname;
-          tokenInfo.gender = user_info.gender;
-          tokenInfo.year = user_info.year;
-          tokenInfo.avatar = user_info.figureurl_qq_2;
-          tokenInfo.createDate = new Date();
-          tokenInfo.gender = user_info.gender == '男' ? 1 : 0;
-          tokenInfo.source = 4;
-
-          createUser(tokenInfo, function(user){
-            if (user) {
-              Oauth.updateById(oauth._id, { user_id: user._id, deleted: false }, function(){
-
-                qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
-                  goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
-                })
-
-                // updateAvatar(tokenInfo.avatar, user, function(){
-                //   goToAutoSignin(res, req.jwtTokenSecret, user._id)
-                // })
-
-              })
             } else {
               goToNoticePage(req, res, 'create_oauth_failed')
             }
           })
 
-        });
+        })
+
+
+      } else if (!user && oauth && oauth.deleted == true) {
+
+        // oauth 是删除状态，绑定新账户，并恢复成可用状态
+
+        var newUser = {
+          nickname: userinfo.nickname,
+          avatar: userinfo.headimgurl || '',
+          createDate: new Date(),
+          gender: userinfo.sex == 1 ? 1 : 0,
+          source: 7
+          // province: userinfo.province || '',
+          // city: userinfo.city || '',
+          // country: userinfo.country || ''
+        }
+
+        createUser(newUser, function(user){
+
+          if (!user) {
+            goToNoticePage(req, res, 'create_user_failed')
+            return
+          }
+
+          Oauth.updateById(oauth._id,
+            {
+              access_token: tokenInfo.access_token,
+              expires_in: tokenInfo.expires_in,
+              refresh_token: tokenInfo.refresh_token,
+              user_id: user._id,
+              deleted: false
+            },
+            function(){
+              if (oauth) {
+                if (user.avatar) {
+                  qiniu.uploadImage(user.avatar, user._id, function(){
+                    goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
+                  })
+                } else {
+                  goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
+                }
+              } else {
+                goToNoticePage(req, res, 'create_oauth_failed')
+              }
+            }
+          )
+
+        })
 
       }
     }
@@ -296,10 +290,10 @@ exports.unbinding = function(req, res, next) {
 
     function(user, callback) {
       // 查询是否存在
-      Oauth.fetchByUserIdAndSource(user._id, 'qq', function(err, oauth){
+      Oauth.fetchByUserIdAndSource(user._id, 'wechat', function(err, oauth){
         if (err) console.log(err);
         if (!oauth) {
-          callback('not binding qq');
+          callback('not binding wechat');
         } else {
           callback(null, oauth);
         }
@@ -335,83 +329,39 @@ exports.unbinding = function(req, res, next) {
 
 };
 
-// 获取用户的openid
-var getOpenId = function(access_token, callback) {
-
-  request.get(
-    'https://graph.qq.com/oauth2.0/me?access_token='+access_token,
-    {},
-    function (error, response, body) {
-      if (!error && response.statusCode == 200) {
-
-        var star = body.indexOf('(')+1;
-        var end = body.lastIndexOf(')');
-        var body = body.substring(star, end);
-        var info = JSON.parse(body);
-
-        if (info.openid) {
-          callback(null, info.openid);
-        } else {
-          callback('openid get failed', null);
-        }
-
-      } else {
-        callback(error || response.statusCode, null);
-      }
-    }
-  );
-
-};
 
 // 获取 access token
 var getAccessToken = function(code, callback) {
-
   request.get(
-    'https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id='+appConfig.appid+'&client_secret='+appConfig.appkey+'&code='+code+'&redirect_uri='+encodeURIComponent(appConfig.redirectUri),
+    'https://api.weixin.qq.com/sns/oauth2/access_token?'+
+    'appid='+appConfig.appid+
+    '&secret='+appConfig.appkey+
+    '&code='+code+
+    '&grant_type=authorization_code',
     {},
     function (error, response, body) {
-      if (error || response.statusCode != 200) {
-        // 获取失败
-        callback(error || response.statusCode, null);
-        return;
-      }
-
-      var params = [];
-      var str = body;
-      var strs = str.split("&");
-
-      for (var i = 0, max = strs.length; i < max; i++) {
-        var a = strs[i].split("=");
-        params[a[0]] = a[1];
-      }
-
-      callback(null, params);
+      if (body) body = JSON.parse(body);
+      callback(body && !body.errcode ? body : null);
     }
   );
-
 };
 
 
 // 获取用户的信息
-var getUserinfo = function(access_token, appid, openid, callback) {
+var getUserinfo = function(tokenInfo, callback) {
 
   request.get(
-    'https://graph.qq.com/user/get_user_info?access_token='+access_token+'&oauth_consumer_key='+appid+'&openid='+openid,
+    'https://api.weixin.qq.com/sns/userinfo?access_token='+tokenInfo.access_token+'&openid='+tokenInfo.openid+'&lang=zh_CN',
+    // 'https://api.weixin.qq.com/cgi-bin/user/info?access_token='+tokenInfo.access_token+'&openid='+tokenInfo.openid+'&lang=zh_CN',
     {},
     function (error, response, body) {
-
-      if (!error && response.statusCode == 200) {
-        var info = JSON.parse(body);
-        callback(info);
-      } else {
-        callback(null);
-      }
+      if (body) body = JSON.parse(body);
+      callback(body && !body.errcode ? body : null);
     }
   );
-
 };
 
-
+/*
 // 重新获取token
 var refreshToken = function(refresh_token, callback) {
 
@@ -443,21 +393,7 @@ var refreshToken = function(refresh_token, callback) {
   );
 
 };
-
-
-// 通过日期获取头像的存放路径
-var avatarFolderPath = function(date) {
-
-  var myDate = new Date(date);
-  var year = myDate.getFullYear();
-  var month = (myDate.getMonth()+1);
-  var day = myDate.getDate();
-
-  if (month < 10) month = '0'+month;
-  if (day < 10) day = '0'+day;
-
-  return year + '/' + month + '/' + day + '/';
-};
+*/
 
 
 var createUser = function(user, callback) {
@@ -482,7 +418,7 @@ var createUser = function(user, callback) {
 var createOauth = function(user, newUser, callback) {
 
   user.user_id = newUser._id;
-  user.source = 'qq';
+  user.source = 'wechat';
 
   Oauth.create(user, function(err, oauth){
     if (err) console.log(err);
@@ -490,22 +426,3 @@ var createOauth = function(user, newUser, callback) {
   });
 
 }
-
-/*
-var updateAvatar = function(imageSource, user, callback) {
-
-  var path = config.upload.avatar.path + avatarFolderPath(user.create_at);
-
-  // 创建文件夹
-  mkdirs(path, 0755, function(){
-    // 下载头像图片
-    Tools.download(imageSource, path, user._id + "_original.jpg", function(){
-      // 裁剪头像
-      Avatar.cropAvatar(null, 0, 0, 100, 100, user, function(){
-        callback();
-      });
-    });
-  });
-
-}
-*/

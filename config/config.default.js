@@ -44,14 +44,11 @@ var config = {
 
 	// 第三方登录 [必填, 否则将不支持QQ、微博登录]
 	oauth: {
-		weibo: {
-			appid: 0,
-		  appSecret: ''
-		},
-		qq: {
-			appid: 0,
-			appkey: ''
-		},
+		// weibo: { appid: 0, appSecret: '' },
+		// qq: { appid: '', appkey: '' },
+		// github: { appid: '', appkey: '' },
+		// wechat: { appid: '', appkey: '' },
+		// wechat_pc: { appid: '', appkey: '' },
 		// 授权成功后跳转到着陆网站
 		landingPage: ''
 	},

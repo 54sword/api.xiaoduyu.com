@@ -3,7 +3,9 @@ var Oauth = require('../schemas').Oauth;
 
 var sources = {
   'qq': 0,
-  'weibo': 1
+  'weibo': 1,
+  'github': 2,
+  'wechat': 3
 };
 
 /*
@@ -67,7 +69,7 @@ exports.create = function(info, callback) {
   var oauth = new Oauth();
   oauth.openid = info.openid;
   oauth.access_token = info.access_token;
-  oauth.expires_in = info.expires_in;
+  oauth.expires_in = info.expires_in || 0;
 
   if (info.refresh_token) {
     oauth.refresh_token = info.refresh_token;

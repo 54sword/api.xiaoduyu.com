@@ -61,12 +61,12 @@ exports.userRequired = function(req, res, next) {
     if (!result) {
       return res.status(401).send({
         success: false,
-        error: 'Unauthorized! 无效access_token'
+        error: 10006
       });
     } else if (req.user.blocked) {
       return res.status(403).send({
         success: false,
-        error: 'Forbidden! 访问被拒绝'
+        error: 10007
       });
     } else {
       next();
@@ -82,12 +82,12 @@ exports.adminRequired = function(req, res, next) {
     if (!result) {
       return res.status(401).send({
         success: false,
-        error: 'Unauthorized! 无效access_token'
+        error: 10006
       });
     } else if (req.user.role != 100) {
       return res.status(403).send({
         success: false,
-        error: 'Forbidden! 访问被拒绝'
+        error: 10007
       });
     } else {
       next();

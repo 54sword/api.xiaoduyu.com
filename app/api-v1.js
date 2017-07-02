@@ -13,6 +13,7 @@ var Topic = require('./api/v1/topic');
 var Follow = require('./api/v1/follow');
 var qq = require('./oauth/qq');
 var weibo = require('./oauth/weibo');
+var github = require('./oauth/github');
 
 var auth = require('./api/v1/middlewares/auth');
 
@@ -76,6 +77,7 @@ var APIRequire = function() {
   // 解除绑定
   router.post('/unbinding-qq', auth.userRequired, qq.unbinding);
   router.post('/unbinding-weibo', auth.userRequired, weibo.unbinding);
+  router.post('/unbinding-github', auth.userRequired, github.unbinding);
 
   return router;
 };
