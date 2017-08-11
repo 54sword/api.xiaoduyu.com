@@ -22,6 +22,8 @@ exports.add = function(req, res, next) {
 
       if (type == 'comment' || type == 'reply') {
         var model = Comment
+      } else if (type == 'posts') {
+        var model = Posts
       } else {
         callback(16000)
         return
@@ -29,8 +31,11 @@ exports.add = function(req, res, next) {
 
       model.findOne({ _id: targetId }, {}, function(err, data){
         if (err) console.log(err)
+
         if (!data) {
           callback(16001)
+        } else if (user._id + '' == data.user_id + '') {
+          callback(16005)
         } else {
           callback(null, data)
         }
@@ -101,6 +106,13 @@ exports.add = function(req, res, next) {
           addressee_id: comment.user_id,
           comment_id: comment._id
         }
+      } else if (type == 'posts' && user._id + '' != comment.user_id + '') {
+        params = {
+          type: 'like-posts',
+          sender_id: user._id,
+          addressee_id: comment.user_id,
+          posts_id: comment._id
+        }
       }
 
       if (params) {
@@ -120,6 +132,8 @@ exports.add = function(req, res, next) {
 
       if (type == 'comment' || type == 'reply') {
         model = Comment
+      } else if (type == 'posts') {
+        model = Posts
       }
 
       if (!model) {
@@ -174,6 +188,8 @@ exports.unlike = function(req, res, next) {
 
       if (type == 'comment' || type == 'reply') {
         var model = Comment
+      } else if (type == 'posts') {
+        var model = Posts
       } else {
         callback(16000)
         return
@@ -240,6 +256,13 @@ exports.unlike = function(req, res, next) {
           addressee_id: answer.user_id._id,
           comment_id: answer._id
         }
+      } else if (type == 'posts') {
+        params = {
+          type: 'like-posts',
+          sender_id: user._id,
+          addressee_id: answer.user_id._id,
+          posts_id: answer._id
+        }
       }
 
       if (params) {
@@ -259,6 +282,8 @@ exports.unlike = function(req, res, next) {
 
       if (type == 'comment' || type == 'reply') {
         model = Comment
+      } else if (type == 'posts') {
+        model = Posts
       }
 
       if (!model) {

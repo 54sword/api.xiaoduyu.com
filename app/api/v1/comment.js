@@ -37,7 +37,7 @@ exports.add = function(req, res) {
 
       if (!postsId) {
         callback(11000);
-        return;
+        return
       }
 
       Posts.find({ _id: postsId }, { user_id:1, _id:1, create_at:1 }, {}, function(err, data){
@@ -45,11 +45,11 @@ exports.add = function(req, res) {
 
         if (!data || data.length == 0) {
           callback(11000)
-        } else if (data[0].user_id + '' == user._id && !parentId) {
-          callback(12006)
+        // } else if (data[0].user_id + '' == user._id && !parentId) {
+        //   callback(12006)
         } else {
           posts = data[0]
-          callback(null);
+          callback(null)
         }
       })
 
@@ -170,7 +170,7 @@ exports.add = function(req, res) {
           }
         }
       });
-      
+
       if (!content || !contentHTML || contentHTML.replace(/<[^>]+>/g,"") == '') {
         callback(12004);
         return;

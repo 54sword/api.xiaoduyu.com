@@ -15,15 +15,15 @@ exports.add = function(req, res, next) {
 
   // 用户的信息
   var user        = req.user;
-  // var title       = req.body.title;
-  // var content     = req.body.detail;
-  // var contentHTML = req.body.detail_html;
-  // var topicId      = req.body.topic_id;
+  var title       = req.body.title;
+  var content     = req.body.detail;
+  var contentHTML = req.body.detail_html;
+  var topicId      = req.body.topic_id;
   var ip          = Tools.getIP(req);
-  // var deviceId    = req.body.device_id ? parseInt(req.body.device_id) : 1;
-  // var type        = req.body.type ? parseInt(req.body.type) : 1;
+  var deviceId    = req.body.device_id ? parseInt(req.body.device_id) : 1;
+  var type        = req.body.type ? parseInt(req.body.type) : 1;
 
-  let { title, content, contentHTML, topicId, deviceId = 1, type = 1 } = req.body
+  // let { title, content, contentHTML, topicId, deviceId = 1, type = 1 } = req.body
 
   deviceId = parseInt(deviceId)
   type = parseInt(type)
@@ -125,13 +125,13 @@ exports.add = function(req, res, next) {
 
         global.io.sockets.emit('new-posts', posts.create_at - 1);
 
-        callback(null, feed);
+        callback(null, posts);
       });
 
     },
 
     // 更新父节点children的
-    (feed, callback) => {
+    (posts, callback) => {
 
       Topic.update({ _id: topicId }, { $inc: { 'posts_count': 1 } }, function(err){
         if (err) console.log(err)
@@ -139,20 +139,20 @@ exports.add = function(req, res, next) {
         User.update({ _id: user._id }, { $inc: { 'posts_count': 1 } }, function(err){
           if (err) console.log(err)
 
-          callback(null, feed);
+          callback(null, posts);
         })
 
       })
 
     }
 
-  ], (err, result) => {
+  ], (err, posts) => {
 
     if (err) {
       res.status(400);
       res.send({ success: false, error: err })
     } else {
-      res.send({ success: true, data: result });
+      res.send({ success: true, data: posts });
     }
 
   });
@@ -742,17 +742,47 @@ exports.fetch = function(req, res, next) {
         return
       }
 
+      // 如果是登录状态，那么查询是否赞了帖子
+
       var ids = []
 
       for (var i = 0, max = posts.length; i < max; i++) {
+        ids.push(posts[i]._id)
+      }
 
+      Like.find({ user_id: user._id, type: 'posts', target_id: { "$in": ids }, deleted: false }, { _id: 0, target_id: 1 }, {}, function(err, likeList){
+        if (err) console.log(err);
+
+        var ids = {}
+
+        likeList.map(like=>{
+          ids[like.target_id] = 1
+        })
+
+        posts.map(function(item, key){
+          posts[key].like = ids[item._id] ? true : false
+        })
+
+        callback(null, posts)
+
+      })
+    },
+
+    function(posts, callback) {
+
+      if (!user) {
+        callback(posts)
+        return
+      }
+
+      var ids = []
+
+      for (var i = 0, max = posts.length; i < max; i++) {
         if (posts[i].comment) {
           posts[i].comment.map(function(comment){
             ids.push(comment._id)
           })
         }
-
-
       }
 
       Like.fetch({

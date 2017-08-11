@@ -97,6 +97,15 @@ if (config.oauth.wechatToken) {
 
 }
 
+// function* f(){
+//   console.log('执行了');
+// }
+//
+// var generator = f();
+//
+// setTimeout(function(){
+// 	generator.next()
+// }, 2000)
 
 var onlineUserCount = 0
 
@@ -107,7 +116,6 @@ io.on('connection', function(socket){
 	io.sockets.emit("online-user-count", onlineUserCount);
 
   socket.on('disconnect', function(){
-
 		onlineUserCount -= 1
 		io.sockets.emit("online-user-count", onlineUserCount);
 

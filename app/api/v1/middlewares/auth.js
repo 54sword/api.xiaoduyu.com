@@ -16,7 +16,7 @@ var verifyToken = function(req, callback) {
 
   var decoded = JWT.decode(token, req.jwtTokenSecret);
 
-  if (decoded && decoded.expires > new Date().getTime()) {
+  if (decoded && decoded.expires && decoded.expires > new Date().getTime()) {
 
     // 判断 token 是否有效
     User.fetch({ _id: decoded.user_id }, {}, {}, function(err, user){

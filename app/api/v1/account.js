@@ -25,7 +25,7 @@ exports.signin = function(req, res, next) {
   var password = req.body['password'];
   var captcha = req.body['captcha'] || '';
   var captchaId = req.body['captcha_id'] || '';
-  console.log(req.body);
+  // console.log(req.body);
 
   async.waterfall([
     function(callback) {

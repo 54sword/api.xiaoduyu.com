@@ -6,13 +6,7 @@ var JWT = require('../common/jwt');
 
 var User = require('../models').User;
 var Oauth = require('../models').Oauth;
-// var Tools = require('../common/tools');
-// var auth = require('../middlewares/auth');
-// var mkdirs = require('../common/mkdirs');
-// var Avatar = require('../api/v1/avatar');
 var qiniu = require('../api/v1/qiniu');
-
-// var Avatar = require('../controllers/avatar');
 var config = require('../../config');
 
 var appConfig = {
@@ -31,6 +25,139 @@ var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
   var result = JWT.encode(jwtTokenSecret, userId, accessToken);
   var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
   res.redirect(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
+}
+
+const signInAndSignUp = (user, authorize, _callback) => {
+
+  async.waterfall([
+
+    // 查询 openid 是否已经存在
+    function(callback) {
+      Oauth.fetchByOpenIdAndSource(authorize.openid, 'qq', function(err, oauth){
+        if (err) console.log(err);
+        callback(null, oauth);
+      });
+    },
+
+    function(oauth, callback) {
+
+      if (user && oauth && oauth.deleted == false) {
+        // 绑定失败，账号已经被绑定
+        callback('has_been_binding')
+      } else if (user && oauth && oauth.deleted == true) {
+
+        // 已经存在的 oauth
+        Oauth.updateById(oauth._id, {
+          access_token: authorize.access_token,
+          expires_in: authorize.expires_in,
+          refresh_token: authorize.refresh_token,
+          user_id: user._id,
+          deleted: false
+        }, function(err){
+          if (err) {
+            console.log(err)
+            callback('binding_failed')
+          } else {
+            callback('binding_finished')
+          }
+        })
+
+      } else if (user && !oauth) {
+        // 绑定到账户
+        var qq = {
+          openid: authorize.openid,
+          access_token: authorize.access_token,
+          expires_in: authorize.expires_in,
+          refresh_token: authorize.refresh_token,
+          source: 'qq',
+          user_id: user._id
+        };
+
+        Oauth.create(qq, function(err, user){
+          if (err) console.log(err);
+          callback('binding_finished')
+        });
+
+      } else if (!user && oauth && oauth.deleted == false) {
+
+        // 登录
+        // goToAutoSignin(req, res, req.jwtTokenSecret, oauth.user_id._id, oauth.user_id.access_token)
+        callback(null, { user_id: oauth.user_id._id, access_token: oauth.user_id.access_token })
+      } else if (!user && !oauth) {
+
+        // 创建 user，并绑定
+
+        getUserinfo(authorize.access_token, appConfig.appid, authorize.openid, function(user_info){
+
+          authorize.nickname = user_info.nickname;
+          authorize.gender = user_info.gender;
+          authorize.year = user_info.year;
+          authorize.avatar = user_info.figureurl_qq_2;
+          authorize.createDate = new Date();
+          authorize.gender = user_info.gender == '男' ? 1 : 0;
+          authorize.source = 4;
+
+          createUser(authorize, function(user){
+            if (!user) {
+              callback('create_user_failed')
+              return
+            }
+
+            createOauth(authorize, user, function(oauth){
+              if (oauth) {
+                qiniu.uploadImage(authorize.avatar, user._id, function(){
+                  callback(null, { user_id: user._id, access_token: user.access_token })
+                })
+              } else {
+                callback('create_oauth_failed')
+              }
+            })
+
+          })
+
+        });
+
+      } else if (!user && oauth && oauth.deleted == true) {
+
+        // oauth 是删除状态，绑定新账户，并恢复成可用状态
+
+        getUserinfo(authorize.access_token, appConfig.appid, authorize.openid, function(user_info){
+
+          authorize.nickname = user_info.nickname;
+          authorize.gender = user_info.gender;
+          authorize.year = user_info.year;
+          authorize.avatar = user_info.figureurl_qq_2;
+          authorize.createDate = new Date();
+          authorize.gender = user_info.gender == '男' ? 1 : 0;
+          authorize.source = 4;
+
+          createUser(authorize, function(user){
+            if (user) {
+              Oauth.updateById(oauth._id, { user_id: user._id, deleted: false }, function(){
+
+                qiniu.uploadImage(authorize.avatar, user._id, function(){
+                  callback(null, { user_id: user._id, access_token: user.access_token })
+                })
+
+              })
+            } else {
+              callback('create_oauth_failed')
+            }
+          })
+
+        })
+
+      }
+    }
+
+  ], (err, info) => {
+    if (err) {
+      _callback(err)
+    } else {
+      _callback(null, info)
+    }
+  })
+
 }
 
 // 打开QQ登录接入页面
@@ -94,18 +221,6 @@ exports.signin = function(req, res) {
         goToNoticePage(req, res, 'wrong_token');
       }
 
-      /*
-      User.fetchByAccessToken(user_access_token, function(err, _user){
-        if (err) console.log(err)
-        if (_user) {
-          user = _user
-          callback(null)
-        } else {
-          goToNoticePage(req, res, 'wrong_token')
-        }
-      })
-      */
-
     },
 
     // 获取访问令牌
@@ -132,134 +247,14 @@ exports.signin = function(req, res) {
       });
     },
 
-    // 查询 openid 是否已经存在
     function(tokenInfo, callback) {
-      Oauth.fetchByOpenIdAndSource(tokenInfo.openid, 'qq', function(err, oauth){
-        if (err) console.log(err);
-        callback(null, tokenInfo, oauth);
-      });
-    },
-
-    function(tokenInfo, oauth, callback) {
-
-      if (user && oauth && oauth.deleted == false) {
-        // 绑定失败，账号已经被绑定
-        goToNoticePage(req, res, 'has_been_binding')
-      } else if (user && oauth && oauth.deleted == true) {
-
-        // 已经存在的 oauth
-        Oauth.updateById(oauth._id, {
-          access_token: tokenInfo.access_token,
-          expires_in: tokenInfo.expires_in,
-          refresh_token: tokenInfo.refresh_token,
-          user_id: user._id,
-          deleted: false
-        }, function(err){
-          if (err) {
-            console.log(err)
-            goToNoticePage(req, res, 'binding_failed')
-          } else {
-            goToNoticePage(req, res, 'binding_finished')
-          }
-        })
-
-      } else if (user && !oauth) {
-        // 绑定到账户
-        var qq = {
-          openid: tokenInfo.openid,
-          access_token: tokenInfo.access_token,
-          expires_in: tokenInfo.expires_in,
-          refresh_token: tokenInfo.refresh_token,
-          source: 'qq',
-          user_id: user._id
-        };
-
-        Oauth.create(qq, function(err, user){
-          if (err) console.log(err);
-          goToNoticePage(req, res, 'binding_finished')
-        });
-
-      } else if (!user && oauth && oauth.deleted == false) {
-
-        // 登录
-        goToAutoSignin(req, res, req.jwtTokenSecret, oauth.user_id._id, oauth.user_id.access_token)
-      } else if (!user && !oauth) {
-
-        // 创建 user，并绑定
-
-        getUserinfo(tokenInfo.access_token, appConfig.appid, tokenInfo.openid, function(user_info){
-
-          tokenInfo.nickname = user_info.nickname;
-          tokenInfo.gender = user_info.gender;
-          tokenInfo.year = user_info.year;
-          tokenInfo.avatar = user_info.figureurl_qq_2;
-          tokenInfo.createDate = new Date();
-          tokenInfo.gender = user_info.gender == '男' ? 1 : 0;
-          tokenInfo.source = 4;
-
-          createUser(tokenInfo, function(user){
-            if (!user) {
-              goToNoticePage(req, res, 'create_user_failed')
-              return
-            }
-
-            createOauth(tokenInfo, user, function(oauth){
-              if (oauth) {
-
-                qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
-                  goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
-                })
-
-                /*
-                updateAvatar(tokenInfo.avatar, user, function(){
-                  goToAutoSignin(req, res, req.jwtTokenSecret,  user._id)
-                })
-                */
-
-              } else {
-                goToNoticePage(req, res, 'create_oauth_failed')
-              }
-            })
-
-          })
-
-        });
-
-      } else if (!user && oauth && oauth.deleted == true) {
-
-        // oauth 是删除状态，绑定新账户，并恢复成可用状态
-
-        getUserinfo(tokenInfo.access_token, appConfig.appid, tokenInfo.openid, function(user_info){
-
-          tokenInfo.nickname = user_info.nickname;
-          tokenInfo.gender = user_info.gender;
-          tokenInfo.year = user_info.year;
-          tokenInfo.avatar = user_info.figureurl_qq_2;
-          tokenInfo.createDate = new Date();
-          tokenInfo.gender = user_info.gender == '男' ? 1 : 0;
-          tokenInfo.source = 4;
-
-          createUser(tokenInfo, function(user){
-            if (user) {
-              Oauth.updateById(oauth._id, { user_id: user._id, deleted: false }, function(){
-
-                qiniu.uploadImage(tokenInfo.avatar, user._id, function(){
-                  goToAutoSignin(req, res, req.jwtTokenSecret, user._id, user.access_token)
-                })
-
-                // updateAvatar(tokenInfo.avatar, user, function(){
-                //   goToAutoSignin(res, req.jwtTokenSecret, user._id)
-                // })
-
-              })
-            } else {
-              goToNoticePage(req, res, 'create_oauth_failed')
-            }
-          })
-
-        });
-
-      }
+      signInAndSignUp(user, tokenInfo, (err, result)=>{
+        if (err) {
+          goToNoticePage(req, res, err)
+        } else {
+          goToAutoSignin(req, res, req.jwtTokenSecret, result.user_id, result.access_token)
+        }
+      })
     }
 
   ], function(err, result) {
@@ -267,6 +262,34 @@ exports.signin = function(req, res) {
   });
 
 };
+
+exports.getUserInfo = (req, res, next) => {
+
+  const user = req.user || null;
+
+  const { access_token, refresh_token, openid, expires_in } = req.body
+
+  signInAndSignUp(user, {
+    access_token: access_token,
+    expires_in: expires_in,
+    refresh_token: refresh_token,
+    openid: openid,
+  }, (err, result)=>{
+    if (err) {
+      res.status(401);
+      res.send({
+        success: false,
+        error: 10007
+      });
+    } else {
+      res.send({
+        success: true,
+        data: JWT.encode(req.jwtTokenSecret, result.user_id, result.access_token)
+      });
+    }
+  })
+
+}
 
 // 解除绑定
 exports.unbinding = function(req, res, next) {
@@ -445,21 +468,6 @@ var refreshToken = function(refresh_token, callback) {
 };
 
 
-// 通过日期获取头像的存放路径
-var avatarFolderPath = function(date) {
-
-  var myDate = new Date(date);
-  var year = myDate.getFullYear();
-  var month = (myDate.getMonth()+1);
-  var day = myDate.getDate();
-
-  if (month < 10) month = '0'+month;
-  if (day < 10) day = '0'+day;
-
-  return year + '/' + month + '/' + day + '/';
-};
-
-
 var createUser = function(user, callback) {
 
   // xss过滤
@@ -490,22 +498,3 @@ var createOauth = function(user, newUser, callback) {
   });
 
 }
-
-/*
-var updateAvatar = function(imageSource, user, callback) {
-
-  var path = config.upload.avatar.path + avatarFolderPath(user.create_at);
-
-  // 创建文件夹
-  mkdirs(path, 0755, function(){
-    // 下载头像图片
-    Tools.download(imageSource, path, user._id + "_original.jpg", function(){
-      // 裁剪头像
-      Avatar.cropAvatar(null, 0, 0, 100, 100, user, function(){
-        callback();
-      });
-    });
-  });
-
-}
-*/

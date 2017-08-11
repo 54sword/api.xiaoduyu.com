@@ -185,37 +185,38 @@ exports.add = function(req, res) {
         });
       } else if (type == 'reset-email') {
 
-        if (!user) {
-          callback(13000)
-          return
-        }
+        if (!user) return callback(13000)
+        if (!email) return callback(13005)
 
-        if (!email) {
-          callback(13005)
-          return
-        }
+        Account.fetchByEmail(email, function(err, account){
+          if (err) console.log(err);
+          if (account) return callback(13009)
 
-        Captcha.add({
-          email: email,
-          captcha: code,
-          user_id: user._id
-        }, function(err){
-          if (err) console.log(err)
+          Captcha.add({
+            email: email,
+            captcha: code,
+            user_id: user._id
+          }, function(err){
+            if (err) console.log(err)
 
-          var title = '请输入验证码 '+code+' 完成绑定邮箱';
+            var title = '请输入验证码 '+code+' 完成绑定邮箱';
 
-          var content = '<div style="font-size:18px;">尊敬的 '+user.nickname+'，您好！</div>'+
-                          '<div>您正在绑定新的小度鱼账号邮箱，若不是您本人操作，请忽略此邮件。</div>'+
-                          '如下是您的注册验证码:<br />'+
-                          '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
-                          code+
-                          '</span>'+
-                          '<div>请注意: 为了保障您帐号的安全性，验证码1小时后过期，请尽快验证!</div>';
+            var content = '<div style="font-size:18px;">尊敬的 '+user.nickname+'，您好！</div>'+
+                            '<div>您正在绑定新的小度鱼账号邮箱，若不是您本人操作，请忽略此邮件。</div>'+
+                            '如下是您的验证码:<br />'+
+                            '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
+                            code+
+                            '</span>'+
+                            '<div>请注意: 为了保障您帐号的安全性，验证码1小时后过期，请尽快验证!</div>';
 
-          callback(null, title, content)
+            callback(null, title, content)
 
-          // callback(null, email, code)
+            // callback(null, email, code)
+          })
+
         })
+
+
       } else {
         callback(10005)
       }

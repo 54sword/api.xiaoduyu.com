@@ -17,5 +17,12 @@ exports.encode = function(jwtTokenSecret, userId, accessToken) {
 }
 
 exports.decode = function(token, jwtTokenSecret) {
-  return jwt.decode(token, jwtTokenSecret) || null;
+  
+  try {
+    return jwt.decode(token, jwtTokenSecret)
+  } catch (e) {
+    return null
+  }
+
+  // return jwt.decode(token, jwtTokenSecret) || null;
 }
