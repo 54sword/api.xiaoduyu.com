@@ -324,7 +324,7 @@ function updateUserFollowPeopleCount(userId, callback) {
 
 // 更新节点被关注的数量
 function updateTopicFollowCount(nodeId, callback) {
-  Follow.count({ topics_id: nodeId, deleted: false }, function(err, total){
+  Follow.count({ topic_id: nodeId, deleted: false }, function(err, total){
     if (err) console.log(err);
     Topic.update({ _id: nodeId }, { follow_count: total }, function(err){
       if (err) console.log(err);
@@ -355,7 +355,7 @@ function updatePeopleFollowCount(peopleId, callback) {
 };
 
 
-// 关注节点
+// 添加关注
 exports.add = function(req, res, next) {
 
   var user = req.user;
@@ -550,15 +550,19 @@ exports.add = function(req, res, next) {
     // 更新node被收藏的总数量
     function(callback) {
 
+
       if (topicId) {
+        // 关注话题
         updateTopicFollowCount(topicId, function(){
           callback(null);
         });
       } else if (postsId) {
+        // 关注帖子
         updatePostsFollowCount(postsId, function(){
           callback(null);
         });
       } else if (peopleId) {
+        // 关注用户
         updatePeopleFollowCount(peopleId, function(){
           callback(null);
         });
@@ -757,13 +761,11 @@ exports.remove = function(req, res, next) {
         updateTopicFollowCount(topicId, function(){
           callback(null);
         });
-      }
-      else if (postsId) {
+      } else if (postsId) {
         updatePostsFollowCount(postsId, function(){
           callback(null);
         });
-      }
-      else if (peopleId) {
+      } else if (peopleId) {
         updatePeopleFollowCount(peopleId, function(){
           callback(null);
         });

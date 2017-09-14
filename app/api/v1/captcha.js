@@ -8,6 +8,7 @@ var Validate = require('../../common/validate');
 var captchapng = require('captchapng');
 var Tools = require('../../common/tools');
 
+
 var generateEmailHTMLContent = function(content) {
 
   return '<table width="100%" height="100%" bgcolor="#e0e0e0" style="min-width: 348px; font-family: \'Helvetica Neue\', \'Luxi Sans\', \'DejaVu Sans\', Tahoma, \'Hiragino Sans GB\', \'Microsoft Yahei\', sans-serif;" border="0" cellspacing="0" cellpadding="0">'+

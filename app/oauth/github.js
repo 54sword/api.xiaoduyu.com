@@ -35,10 +35,19 @@ exports.show = function(req, res, next) {
     httpOnly: true,
     path: '/',
     maxAge: 1000 * 60 * 5
-  };
+  }
+
+  // 设置登录成后的着陆页面
+  let landingPage = ''
+  if (req.query.landing_page) {
+    landingPage = req.query.landing_page
+  } else if (req.headers && req.headers.referer) {
+    landingPage = req.headers.referer
+  }
+
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
-  res.cookie('landing_page', req.query.landing_page || '', opts);
+  res.cookie('landing_page', landingPage, opts);
 
   var path = "http://github.com/login/oauth/authorize";
   path += '?client_id=' + appConfig.appid;

@@ -169,9 +169,18 @@ exports.show = function(req, res, next) {
     path: '/',
     maxAge: 1000 * 60 * 5
   };
+
+  // 设置登录成后的着陆页面
+  let landingPage = ''
+  if (req.query.landing_page) {
+    landingPage = req.query.landing_page
+  } else if (req.headers && req.headers.referer) {
+    landingPage = req.headers.referer
+  }
+
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
-  res.cookie('landing_page', req.query.landing_page || '', opts);
+  res.cookie('landing_page', landingPage, opts);
 
   // req.session.csrf = csrf;
   // req.session.access_token = req.query.access_token || '';
@@ -192,7 +201,7 @@ exports.signin = function(req, res) {
     res.redirect(config.domain+'/oauth/qq');
     return;
   }
-
+  
   async.waterfall([
 
     function(callback) {

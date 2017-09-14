@@ -90,9 +90,13 @@ const signInAndSignUp = (user, authorize, _callback) => {
         // goToAutoSignin(req, res, req.jwtTokenSecret, oauth.user_id._id, oauth.user_id.access_token)
       } else if (!user && !oauth) {
 
+        console.log(authorize.access_token);
+
         // 创建 oauth 并登陆
         getUserInfo(authorize.access_token, authorize.uid, function(info) {
-          
+
+          console.log(info);
+
           var user = {
             nickname: info.screen_name,
             gender: (info.gender === 'm' ? 1 : 0),
@@ -186,9 +190,18 @@ exports.show = function(req, res, next) {
     path: '/',
     maxAge: 1000 * 60 * 5
   };
+
+  // 设置登录成后的着陆页面
+  let landingPage = ''
+  if (req.query.landing_page) {
+    landingPage = req.query.landing_page
+  } else if (req.headers && req.headers.referer) {
+    landingPage = req.headers.referer
+  }
+
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
-  res.cookie('landing_page', req.query.landing_page || '', opts);
+  res.cookie('landing_page', landingPage, opts);
 
   // req.session.csrf = csrf;
   // req.session.access_token = req.query.access_token || '';

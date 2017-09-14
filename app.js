@@ -81,7 +81,7 @@ if (config.oauth.wechatToken) {
 		if (req.method === 'GET') {
 
 			const { signature, timestamp, nonce, echostr } = req.query
-
+			// 微信验证
 			if (signature && timestamp && nonce) {
 				let sha1 = crypto.createHash('sha1'),
 		        sha1Str = sha1.update([config.oauth.wechatToken, timestamp, nonce].sort().join('')).digest('hex');
@@ -116,10 +116,17 @@ io.on('connection', function(socket){
 	io.sockets.emit("online-user-count", onlineUserCount);
 
   socket.on('disconnect', function(){
+		// console.log('-------断开--');
 		onlineUserCount -= 1
 		io.sockets.emit("online-user-count", onlineUserCount);
-
 	});
+
+	socket.on('heartbeat', function(){
+		// console.log('心跳...');
+		// onlineUserCount -= 1
+		// io.sockets.emit("online-user-count", onlineUserCount);
+	});
+
 });
 global.io = io
 
