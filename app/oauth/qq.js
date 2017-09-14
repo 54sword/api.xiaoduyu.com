@@ -201,7 +201,7 @@ exports.signin = function(req, res) {
     res.redirect(config.domain+'/oauth/qq');
     return;
   }
-  
+
   async.waterfall([
 
     function(callback) {

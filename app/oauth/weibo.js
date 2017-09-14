@@ -90,12 +90,8 @@ const signInAndSignUp = (user, authorize, _callback) => {
         // goToAutoSignin(req, res, req.jwtTokenSecret, oauth.user_id._id, oauth.user_id.access_token)
       } else if (!user && !oauth) {
 
-        console.log(authorize.access_token);
-
         // 创建 oauth 并登陆
         getUserInfo(authorize.access_token, authorize.uid, function(info) {
-
-          console.log(info);
 
           var user = {
             nickname: info.screen_name,

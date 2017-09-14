@@ -50,7 +50,7 @@ exports.show = function(req, res, next) {
   } else if (req.headers && req.headers.referer) {
     landingPage = req.headers.referer
   }
-  
+
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
   res.cookie('landing_page', landingPage, opts);
