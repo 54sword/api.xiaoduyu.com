@@ -472,7 +472,11 @@ exports.fetch = function(req, res, next) {
     user.follow_people.push(user._id)
     userId = user.follow_people.join(',')
 
-    if (user.follow_topic.length < 5) {
+    // if (user.follow_topic.length > 0) {
+    //   topicId = user.follow_topic.join(',')
+    // }
+
+    if (!user.follow_topic.length) {
       or = true
       var conf = { deleted: false }
 

@@ -141,8 +141,8 @@ var APIRequire = function() {
   router.post('/unbinding-weibo', auth.userRequired, weibo.unbinding);
   router.post('/unbinding-github', auth.userRequired, github.unbinding);
 
-  router.post('/weibo-get-user-info', weibo.getUserInfo);
-  router.post('/qq-get-user-info', qq.getUserInfo);
+  router.post('/weibo-get-user-info', auth.openType, weibo.getUserInfo);
+  router.post('/qq-get-user-info', auth.openType, qq.getUserInfo);
 
   return router;
 };

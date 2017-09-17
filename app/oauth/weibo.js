@@ -28,7 +28,7 @@ var goToNoticePage = function(req, res, string) {
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
   var result = JWT.encode(jwtTokenSecret, userId, accessToken);
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  var landingPage = config.oauth.landingPage; // req.cookies['landing_page'] ||
   res.redirect(config.oauth.landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }
 
@@ -48,7 +48,7 @@ const signInAndSignUp = (user, authorize, _callback) => {
 
       if (user && oauth && oauth.deleted == false) {
         // 已经绑定
-        callback('binding_failed')
+        callback('has_been_binding')
       } else if (user && oauth && oauth.deleted == true) {
 
         // 已经存在的 oauth
@@ -394,10 +394,10 @@ exports.getUserInfo = (req, res, next) => {
 
   const user = req.user || null;
 
-  const { access_token, refresh_token, user_id, expiration_date } = req.body
+  const { weibo_access_token, refresh_token, user_id, expiration_date } = req.body
 
   signInAndSignUp(user, {
-    access_token: access_token,
+    access_token: weibo_access_token,
     expires_in: new Date(expiration_date).getTime(),
     remind_in: refresh_token,
     uid: user_id,
@@ -406,9 +406,18 @@ exports.getUserInfo = (req, res, next) => {
   }, (err, result)=>{
     if (err) {
       res.status(401);
+
+      let _err = {
+        binding_finished: 20000,
+        binding_failed: 20001,
+        create_user_failed: 20002,
+        create_oauth_failed: 20003,
+        has_been_binding: 20004
+      }
+
       res.send({
         success: false,
-        error: 10007
+        error: _err[err] || 10007
       });
     } else {
       res.send({

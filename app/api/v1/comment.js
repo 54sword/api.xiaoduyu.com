@@ -463,6 +463,7 @@ exports.fetch = function(req, res) {
   parent_exists = req.query.parent_exists,
   sortBy = req.query.sort_by || 'create_at',
   sort = req.query.sort || 1,
+  includeReply = parseInt(req.query.include_reply) || 1,
   query = {
     deleted: false
   },
@@ -498,18 +499,22 @@ exports.fetch = function(req, res) {
       select:{ 'user_id': 1, '_id': 0 }
     },
     {
+      path: 'posts_id',
+      select: { _id:1, title:1 }
+    },
+    {
       path: 'reply',
       select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
       options: { limit: 10 }
-    },
-    {
-      path: 'posts_id',
-      select: { _id:1, title:1 }
     }
   ]
 
   var select = {
     __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0
+  }
+
+  if (includeReply <= 0) {
+    select.reply = 0
   }
 
   if (draft) {
@@ -524,6 +529,11 @@ exports.fetch = function(req, res) {
 
         if (!comments || comments.length == 0) {
           callback(null, [])
+          return
+        }
+
+        if (includeReply <= 0) {
+          callback(null, comments)
           return
         }
 
@@ -579,9 +589,11 @@ exports.fetch = function(req, res) {
 
       comments.map(function(item){
         ids.push(item._id)
-        item.reply.map(function(item){
-          ids.push(item._id)
-        })
+        if (item.reply) {
+          item.reply.map(function(item){
+            ids.push(item._id)
+          })
+        }
       })
 
       Like.find({
@@ -613,11 +625,13 @@ exports.fetch = function(req, res) {
             item.like = true
           }
 
-          item.reply.map(function(item){
-            if (ids[item._id]) {
-              item.like = true
-            }
-          })
+          if (item.reply) {
+            item.reply.map(function(item){
+              if (ids[item._id]) {
+                item.like = true
+              }
+            })
+          }
 
         })
 

@@ -23,7 +23,10 @@ var goToNoticePage = function(req, res, string) {
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
   var result = JWT.encode(jwtTokenSecret, userId, accessToken);
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  var landingPage = config.oauth.landingPage; // req.cookies['landing_page'] ||
+
+  // console.log(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires);
+
   res.redirect(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }
 
@@ -178,6 +181,12 @@ exports.show = function(req, res, next) {
     landingPage = req.headers.referer
   }
 
+  // if (landingPage.charAt(landingPage.length - 1) == '/') {
+  //   landingPage = landingPage.substring(0, landingPage.length-1)
+  // }
+
+  // console.log(landingPage);
+
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
   res.cookie('landing_page', landingPage, opts);
@@ -257,7 +266,9 @@ exports.signin = function(req, res) {
     },
 
     function(tokenInfo, callback) {
+
       signInAndSignUp(user, tokenInfo, (err, result)=>{
+
         if (err) {
           goToNoticePage(req, res, err)
         } else {
@@ -276,19 +287,28 @@ exports.getUserInfo = (req, res, next) => {
 
   const user = req.user || null;
 
-  const { access_token, refresh_token, openid, expires_in } = req.body
+  const { qq_access_token, refresh_token, openid, expires_in } = req.body
 
   signInAndSignUp(user, {
-    access_token: access_token,
+    access_token: qq_access_token,
     expires_in: expires_in,
     refresh_token: refresh_token,
     openid: openid,
   }, (err, result)=>{
     if (err) {
       res.status(401);
+
+      let _err = {
+        binding_finished: 20000,
+        binding_failed: 20001,
+        create_user_failed: 20002,
+        create_oauth_failed: 20003,
+        has_been_binding: 20004
+      }
+
       res.send({
         success: false,
-        error: 10007
+        error: _err[err] || 10007
       });
     } else {
       res.send({
