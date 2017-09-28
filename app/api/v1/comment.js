@@ -6,11 +6,13 @@ var Follow = require('../../models').Follow;
 var UserNotification = require('./user-notification');
 var Notification = require('./notification');
 
+
 var async = require('async');
 var xss = require('xss');
 var Tools = require('../../common/tools');
+var jpush = require('../../common/jpush');
 
-// 添加分享
+// 添加
 exports.add = function(req, res) {
 
   var user          = req.user;
@@ -49,6 +51,9 @@ exports.add = function(req, res) {
         //   callback(12006)
         } else {
           posts = data[0]
+
+          console.log(posts);
+
           callback(null)
         }
       })
@@ -62,7 +67,7 @@ exports.add = function(req, res) {
         return
       }
 
-      Comment.fetch({ _id: parentId }, { _id:1, posts_id:1, user_id:1 }, {}, function(err, data){
+      Comment.fetch({ _id: parentId }, { _id:1, posts_id:1, user_id:1, content_html:1 }, {}, function(err, data){
         if (err) console.log(err)
         if (!data || data.length == 0) {
           callback(12000);
@@ -227,39 +232,42 @@ exports.add = function(req, res) {
               function(err){
                 if (err) console.log(err);
 
-                // 发送通知邮件给帖子作者
-                UserNotification.add(
-                  { type: 'comment', sender_id: user._id, addressee_id: posts.user_id, comment_id: comment._id },
-                  function(err){
-                    if (err) console.log(err)
+                if (user._id + '' != posts.user_id + '') {
+                  // 发送通知邮件给帖子作者
+                  UserNotification.add(
+                    { type: 'comment', sender_id: user._id, addressee_id: posts.user_id, comment_id: comment._id },
+                    function(err){
+                      if (err) console.log(err)
+                  });
 
-                    // 查询出所有关注该帖子的用户，然后发送通知给他们
-                    Follow.find(
-                      { posts_id: posts._id, user_id: { $ne: user._id } },
-                      { user_id: 1 },
-                      {},
-                      function(err, data){
+                  jpush.pushCommentToUser({ comment, posts, user })
+                }
 
-                        var userIds = []
+                // 查询出所有关注该帖子的用户，然后发送通知给他们
+                Follow.find(
+                  { posts_id: posts._id, user_id: { $ne: user._id } },
+                  { user_id: 1 },
+                  {},
+                  function(err, data){
 
-                        data.map(function(follow){
-                          if (userIds.indexOf(follow.user_id) == -1) {
-                            userIds.push(follow.user_id)
-                          }
-                        })
+                    var userIds = []
 
-                        if (userIds.length > 0) {
-                          Notification.add(
-                            { type: 'new-comment', sender_id: user._id, addressee_id: userIds, target: comment._id },
-                            function(err){
-                              if (err) console.log(err)
-                              callback(null, comment)
-                            });
-                        } else {
+                    data.map(function(follow){
+                      if (userIds.indexOf(follow.user_id) == -1) {
+                        userIds.push(follow.user_id)
+                      }
+                    })
+
+                    if (userIds.length > 0) {
+                      Notification.add(
+                        { type: 'new-comment', sender_id: user._id, addressee_id: userIds, target: comment._id },
+                        function(err){
+                          if (err) console.log(err)
                           callback(null, comment)
-                        }
-
-                      });
+                        });
+                    } else {
+                      callback(null, comment)
+                    }
 
                   });
 
@@ -277,8 +285,8 @@ exports.add = function(req, res) {
           function(err){
             if (err) console.log(err);
 
-            console.log(replyComment);
-            console.log(user._id);
+            // console.log(replyComment);
+            // console.log(user._id);
 
             if (replyComment && replyComment.user_id == user._id + '') {
               callback(null, comment)
@@ -295,6 +303,8 @@ exports.add = function(req, res) {
                 if (err) console.log(err)
                 callback(null, comment)
               })
+
+              jpush.pushReplyToUser({ comment: parentComment, reply: comment, user })
 
             }
 

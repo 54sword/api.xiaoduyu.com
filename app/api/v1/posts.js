@@ -437,6 +437,8 @@ exports.fetch = function(req, res, next) {
 
       sortBy = req.query.sort_by || 'sort_by_date',
       sort = req.query.sort || -1,
+      device = req.query.device || '',
+
       query = {},
       select = {},
       options = {};
@@ -476,7 +478,7 @@ exports.fetch = function(req, res, next) {
     //   topicId = user.follow_topic.join(',')
     // }
 
-    if (!user.follow_topic.length) {
+    if (!user.follow_topic.length && device == '') {
       or = true
       var conf = { deleted: false }
 
