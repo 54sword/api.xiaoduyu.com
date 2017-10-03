@@ -11,6 +11,9 @@ var QiNiu = require('./api/v1/qiniu');
 var Posts = require('./api/v1/posts');
 var Topic = require('./api/v1/topic');
 var Follow = require('./api/v1/follow');
+
+var token = require('./api/v1/token')
+
 var qq = require('./oauth/qq');
 var weibo = require('./oauth/weibo');
 var github = require('./oauth/github');
@@ -143,6 +146,10 @@ var APIRequire = function() {
 
   router.post('/weibo-get-user-info', auth.openType, weibo.getUserInfo);
   router.post('/qq-get-user-info', auth.openType, qq.getUserInfo);
+
+  // 旧token兑换新的token
+  router.post('/exchange-new-token', token.exchange);
+  router.post('/check-token', token.check);
 
   return router;
 };

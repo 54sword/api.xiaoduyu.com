@@ -8,6 +8,7 @@ exports.Like = require('./like');
 exports.Notification = require('./notification');
 exports.UserNotification = require('./user-notification');
 exports.Captcha = require('./captcha');
+exports.Token = require('./token');
 
 exports.Posts = require('./posts');
 exports.Topic = require('./topic');

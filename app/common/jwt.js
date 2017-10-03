@@ -1,28 +1,47 @@
-var jwt = require('jwt-simple');
 
-exports.encode = function(jwtTokenSecret, userId, accessToken) {
+var jwt = require('jsonwebtoken');
+var Token = require('../models').Token;
 
-  var expires = new Date().getTime() + (1000 * 60 * 60 * 24 * 30);
-  var token = jwt.encode({
-    user_id: userId,
-    expires: expires,
-    access_token: accessToken
+
+exports.encode = function(jwtTokenSecret, userId, accessToken, ip) {
+
+  let token = jwt.sign({
+    expires: new Date().getTime() + 1000 * 60 * 60 * 24 * 30,
+    // exp: Math.floor(Date.now() / 1000) + 30, //* 60 * 24,
+    user_id: userId
+    // access_token: accessToken
   }, jwtTokenSecret);
 
+  // 储存token记录
+  Token.save({
+    user_id: userId,
+    token: token,
+    ip
+  }, (err)=>{
+    if (err) console.log(err)
+  })
+
   return {
-    expires: expires,
+    user_id: userId,
     access_token: token
   }
 
 }
 
 exports.decode = function(token, jwtTokenSecret) {
-  
   try {
-    return jwt.decode(token, jwtTokenSecret)
+    return jwt.verify(token, jwtTokenSecret)
   } catch (e) {
     return null
   }
-
-  // return jwt.decode(token, jwtTokenSecret) || null;
 }
+
+
+
+/*
+exports.decode = function({ token, jwtTokenSecret, callback =()=>{} }) {
+  jwt.verify(token, jwtTokenSecret, function(err, decoded) {
+    callback(err, decoded)
+  })
+}
+*/

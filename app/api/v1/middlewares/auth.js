@@ -1,6 +1,7 @@
 
 var User = require('../../../models').User;
-var Account = require('../../../models').Account;
+var Token = require('../../../models').Token;
+// var Account = require('../../../models').Account;
 // var jwt = require('jwt-simple');
 var JWT = require('../../../common/jwt');
 
@@ -14,22 +15,81 @@ var verifyToken = function(req, callback) {
     return;
   }
 
+  let decoded = JWT.decode(token, req.jwtTokenSecret)
+  
+  // console.log(decoded);
+
+  // 解析错误
+  if (!decoded) return callback(false)
+
+  if (decoded && decoded.expires && decoded.expires < new Date().getTime()) {
+    return callback(false)
+  }
+
+  // console.log('token在有效期内');
+
+  // 判断 token 是否有效
+  Token.findOne(
+    { user_id: decoded.user_id, token: token },
+    {},
+    {
+      populate: {
+        path: 'user_id'
+      }
+    },
+    function(err, result){
+    if (err) console.log(err);
+
+    if (result) {
+      let user = result.user_id;
+      req.user = user;
+
+      // console.log(user);
+
+      // 最近登录时间，根据请求时间，每5分钟更新一次
+      if (new Date().getTime() - new Date(user.last_sign_at).getTime() > 1000 * 60 * 5) {
+        User.update({ _id: user._id }, { last_sign_at: new Date() }, function(err){
+          if (err) console.log(err);
+        })
+      }
+
+      /*
+      // 判断访问令牌是否正确
+      if (!decoded.access_token || decoded.access_token != user[0].access_token) {
+        callback(false);
+        return
+      }
+      */
+
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
+
+  /*
+  return
+
   var decoded = JWT.decode(token, req.jwtTokenSecret);
 
-  if (decoded && decoded.expires && decoded.expires > new Date().getTime()) {
+  // if (decoded && decoded.expires && decoded.expires > new Date().getTime()) {
+  if (decoded) {
 
     // 判断 token 是否有效
     User.fetch({ _id: decoded.user_id }, {}, {}, function(err, user){
       if (err) console.log(err);
+
       if (user && user[0]) {
         req.user = user[0];
 
-        if (new Date().getTime() - new Date(user[0].last_sign_at).getTime() > 3600000) {
+        // 最近登录时间，根据请求时间，每5分钟更新一次
+        if (new Date().getTime() - new Date(user[0].last_sign_at).getTime() > 1000 * 60 * 5) {
           User.update({ _id: user[0]._id }, { last_sign_at: new Date() }, function(err){
             if (err) console.log(err);
           })
         }
 
+        // 判断访问令牌是否正确
         if (!decoded.access_token || decoded.access_token != user[0].access_token) {
           callback(false);
           return
@@ -43,6 +103,7 @@ var verifyToken = function(req, callback) {
   } else {
     callback(false)
   }
+  */
 
 };
 

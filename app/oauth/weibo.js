@@ -3,6 +3,7 @@ var request = require('request');
 var xss = require('xss');
 var async = require('async');
 var JWT = require('../common/jwt');
+var Tools = require('../common/tools');
 
 var User = require('../models').User;
 var Oauth = require('../models').Oauth;
@@ -27,7 +28,8 @@ var goToNoticePage = function(req, res, string) {
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
-  var result = JWT.encode(jwtTokenSecret, userId, accessToken);
+  var ip = Tools.getIP(req);
+  var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip);
   var landingPage = config.oauth.landingPage; // req.cookies['landing_page'] ||
   res.redirect(config.oauth.landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }
@@ -186,7 +188,7 @@ exports.show = function(req, res, next) {
     path: '/',
     maxAge: 1000 * 60 * 5
   };
-
+  
   // 设置登录成后的着陆页面
   let landingPage = ''
   if (req.query.landing_page) {

@@ -3,6 +3,7 @@ var request = require('request');
 var xss = require('xss');
 var async = require('async');
 var JWT = require('../common/jwt');
+var Tools = require('../common/tools');
 
 var User = require('../models').User;
 var Oauth = require('../models').Oauth;
@@ -21,15 +22,14 @@ if (config.oauth.wechat) {
   }
 }
 
-
-
 var goToNoticePage = function(req, res, string) {
   var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
   res.redirect(landingPage+'/notice?source=oauth_qq&notice='+string)
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
-  var result = JWT.encode(jwtTokenSecret, userId, accessToken);
+  var ip = Tools.getIP(req);
+  var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip);
   var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
   res.redirect(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
 }

@@ -7,7 +7,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var compress = require('compression');
-var jwt = require('jwt-simple');
+// var jwt = require('jwt-simple');
 
 var config = require('./config');
 
