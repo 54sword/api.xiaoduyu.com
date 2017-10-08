@@ -24,14 +24,22 @@ var goToNoticePage = function(req, res, string) {
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
+  /*
   var ip = Tools.getIP(req);
   var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip);
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  var landingPage = config.oauth.landingPage;
   res.redirect(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
+  */
+  var ip = Tools.getIP(req)
+  var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip)
+  var landingPage = req.cookies['landing_page']
+  var landingPageDomain = req.cookies['landing_page_domain']
+  res.redirect(landingPageDomain+'/oauth?access_token='+result.access_token+'&expires='+result.expires+'&landing_page='+landingPage)
 }
 
 // 打开QQ登录接入页面
 exports.show = function(req, res, next) {
+  /*
   var csrf = Math.round(900000*Math.random()+100000);
   var opts = {
     httpOnly: true,
@@ -50,6 +58,35 @@ exports.show = function(req, res, next) {
   res.cookie('csrf', csrf, opts);
   res.cookie('access_token', req.query.access_token || '', opts);
   res.cookie('landing_page', landingPage, opts);
+  */
+
+  let csrf = Math.round(900000*Math.random()+100000);
+  let opts = {
+    httpOnly: true,
+    path: '/',
+    maxAge: 1000 * 60 * 5
+  };
+
+  // 设置登录成后的着陆页面
+  let landingPage = config.oauth.landingPage
+  if (req.headers && req.headers.referer) {
+    landingPage = req.headers.referer
+  }
+
+  let domain = []
+
+  let _arr = landingPage.split('/')
+
+  domain.push(_arr[0])
+  domain.push(_arr[1])
+  domain.push(_arr[2])
+
+  domain = domain.join('/')
+
+  res.cookie('csrf', csrf, opts)
+  res.cookie('access_token', req.query.access_token || '', opts)
+  res.cookie('landing_page_domain', domain, opts)
+  res.cookie('landing_page', landingPage, opts)
 
   var path = "http://github.com/login/oauth/authorize";
   path += '?client_id=' + appConfig.appid;

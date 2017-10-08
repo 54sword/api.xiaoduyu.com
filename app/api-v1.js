@@ -146,10 +146,10 @@ var APIRequire = function() {
 
   router.post('/weibo-get-user-info', auth.openType, weibo.getUserInfo);
   router.post('/qq-get-user-info', auth.openType, qq.getUserInfo);
-
+  
   // 旧token兑换新的token
   router.post('/exchange-new-token', token.exchange);
-  router.post('/check-token', token.check);
+  // router.post('/check-token', token.check);
 
   return router;
 };

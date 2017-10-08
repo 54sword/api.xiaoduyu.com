@@ -30,15 +30,6 @@ var config = {
 			from: '',
 		  apiUser: '',
 		  apiKey: ''
-		},
-		// qq邮箱配置信息[未使用]
-		qq: {
-			host: 'smtp.exmail.qq.com',
-	    port: 465,
-	    auth: {
-	      user: '',
-	      pass: ''
-	    }
 		}
 	},
 
@@ -47,8 +38,6 @@ var config = {
 		// weibo: { appid: 0, appSecret: '' },
 		// qq: { appid: '', appkey: '' },
 		// github: { appid: '', appkey: '' },
-		// wechat: { appid: '', appkey: '' },
-		// wechat_pc: { appid: '', appkey: '' },
 		// 授权成功后跳转到着陆网站
 		landingPage: ''
 	},

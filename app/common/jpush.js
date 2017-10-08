@@ -1,5 +1,7 @@
 var JPush = require("jpush-sdk/lib/JPush/JPush.js")
-var config = require("../../config")
+// var config = require("../../config")
+
+import { jpush } from '../../config'
 
 /*
 exports.pushPostsToSignInUser = function({ posts, user }) {
@@ -21,7 +23,7 @@ exports.pushPostsToSignInUser = function({ posts, user }) {
       })
     )
     // 开启正式环境的推送
-    .setOptions(null, null, null, config.jpush.production)
+    .setOptions(null, null, null, jpush.production)
     .send(function(err, res) {
       if (err) {
         console.log(err.message)
@@ -34,7 +36,9 @@ exports.pushPostsToSignInUser = function({ posts, user }) {
 
 exports.pushCommentToUser = function({ posts, comment, user }) {
 
-  var client = JPush.buildClient(config.jpush.appKey, config.jpush.masterSecret)
+  if (!jpush.appKey || !jpush.masterSecret) return
+
+  var client = JPush.buildClient(jpush.appKey, jpush.masterSecret)
 
   let commentContent = comment.content_html.replace(/<[^>]+>/g,"")
   let summary = commentContent
@@ -53,7 +57,7 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
       })
     )
     // 开启正式环境的推送
-    .setOptions(null, null, null, config.jpush.production)
+    .setOptions(null, null, null, jpush.production)
     .send(function(err, res) {
       if (err) {
         console.log(err.message)
@@ -64,8 +68,9 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
 
 exports.pushReplyToUser = function({ comment, reply, user }) {
 
-  var client = JPush.buildClient(config.jpush.appKey, config.jpush.masterSecret)
+  if (!jpush.appKey || !jpush.masterSecret) return
 
+  var client = JPush.buildClient(jpush.appKey, jpush.masterSecret)
 
   let replyContent = reply.content_html.replace(/<[^>]+>/g,"")
   let summaryComment = comment.content_html.replace(/<[^>]+>/g,"")
@@ -84,7 +89,7 @@ exports.pushReplyToUser = function({ comment, reply, user }) {
       })
     )
     // 开启正式环境的推送
-    .setOptions(null, null, null, config.jpush.production)
+    .setOptions(null, null, null, jpush.production)
     .send(function(err, res) {
       if (err) {
         console.log(err.message)

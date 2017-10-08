@@ -23,13 +23,11 @@ var goToNoticePage = function(req, res, string) {
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
-  var ip = Tools.getIP(req);
-  var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip);
-  var landingPage = config.oauth.landingPage; // req.cookies['landing_page'] ||
-
-  // console.log(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires);
-
-  res.redirect(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
+  var ip = Tools.getIP(req)
+  var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip)
+  var landingPage = req.cookies['landing_page']
+  var landingPageDomain = req.cookies['landing_page_domain']
+  res.redirect(landingPageDomain+'/oauth?access_token='+result.access_token+'&expires='+result.expires+'&landing_page='+landingPage)
 }
 
 const signInAndSignUp = (user, authorize, _callback) => {
@@ -167,34 +165,34 @@ const signInAndSignUp = (user, authorize, _callback) => {
 
 // 打开QQ登录接入页面
 exports.show = function(req, res, next) {
-  var csrf = Math.round(900000*Math.random()+100000);
-
-  var opts = {
+  let csrf = Math.round(900000*Math.random()+100000);
+  let opts = {
     httpOnly: true,
     path: '/',
     maxAge: 1000 * 60 * 5
   };
 
   // 设置登录成后的着陆页面
-  let landingPage = ''
-  if (req.query.landing_page) {
-    landingPage = req.query.landing_page
-  } else if (req.headers && req.headers.referer) {
+  let landingPage = config.oauth.landingPage
+  if (req.headers && req.headers.referer) {
     landingPage = req.headers.referer
   }
 
-  // if (landingPage.charAt(landingPage.length - 1) == '/') {
-  //   landingPage = landingPage.substring(0, landingPage.length-1)
-  // }
+  let domain = []
 
-  // console.log(landingPage);
+  let _arr = landingPage.split('/')
 
-  res.cookie('csrf', csrf, opts);
-  res.cookie('access_token', req.query.access_token || '', opts);
-  res.cookie('landing_page', landingPage, opts);
+  domain.push(_arr[0])
+  domain.push(_arr[1])
+  domain.push(_arr[2])
 
-  // req.session.csrf = csrf;
-  // req.session.access_token = req.query.access_token || '';
+  domain = domain.join('/')
+
+  res.cookie('csrf', csrf, opts)
+  res.cookie('access_token', req.query.access_token || '', opts)
+  res.cookie('landing_page_domain', domain, opts)
+  res.cookie('landing_page', landingPage, opts)
+
   res.redirect('https://graph.qq.com/oauth2.0/authorize?response_type=code&state='+csrf+'&client_id='+appConfig.appid+'&redirect_uri='+encodeURIComponent(appConfig.redirectUri)+'&scope='+appConfig.scope);
 };
 

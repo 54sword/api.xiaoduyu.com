@@ -2,7 +2,7 @@ var Token = require('../../models').Token;
 var JWT = require('../../common/jwt');
 var Tools = require('../../common/tools');
 
-
+/*
 exports.check = function(req, res, next) {
 
   var token = String(req.headers.accesstoken || req.body.access_token || '');
@@ -43,6 +43,7 @@ exports.check = function(req, res, next) {
   )
 
 }
+*/
 
 exports.exchange = function(req, res, next) {
 
