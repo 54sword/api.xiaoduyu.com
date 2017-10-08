@@ -16,6 +16,11 @@ var config = require('../../../config');
 var Validate = require('../../common/validate');
 var Tools = require('../../common/tools');
 
+// 刷新token，延续登录状态
+exports.refreshToken = function(req, res, next) {
+  var accessToken = req.body['access_token'];
+  var refreshToken = req.body['refresh_token'];
+}
 
 // 账号登录
 exports.signin = function(req, res, next) {
@@ -25,14 +30,18 @@ exports.signin = function(req, res, next) {
   var password = req.body['password'];
   var captcha = req.body['captcha'] || '';
   var captchaId = req.body['captcha_id'] || '';
-  console.log(req.body);
+  var ip = Tools.getIP(req);
+  // console.log(req.body);
 
   async.waterfall([
+
     function(callback) {
       if (!email) {
         callback(13005);
       } else if (!password) {
         callback(13006);
+      } else if (!ip) {
+        callback(10000);
       } else {
         callback(null);
       }
@@ -89,7 +98,7 @@ exports.signin = function(req, res, next) {
 
                 user = user[0]
 
-                var result = JWT.encode(req.jwtTokenSecret, user._id, user.access_token)
+                var result = JWT.encode(req.jwtTokenSecret, user._id, user.access_token, ip)
 
                 callback(null, result)
 

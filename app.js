@@ -1,5 +1,4 @@
 
-
 var express = require('express');
 var http = require('http');
 var path = require('path');
@@ -8,13 +7,13 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var compress = require('compression');
-var jwt = require('jwt-simple');
+// var jwt = require('jwt-simple');
 
 var config = require('./config');
 
 var API_V1 = require('./app/api-v1');
-var OauthRouter = require('./app/oauth');
-
+// var OauthRouter = require('./app/oauth');
+import OauthRouter from './app/oauth'
 
 var app = express();
 var server = http.createServer(app);
@@ -56,10 +55,6 @@ if (config.sslPath) {
 	app.use(express.static(path.join(__dirname, config.sslPath)));
 }
 
-
-
-
-
 app.all('*',function (req, res, next) {
 
 	req.jwtTokenSecret = app.get('jwtTokenSecret')
@@ -80,6 +75,38 @@ app.all('*',function (req, res, next) {
 });
 
 
+if (config.oauth.wechatToken) {
+
+	app.all('*', (req, res, next)=>{
+		if (req.method === 'GET') {
+
+			const { signature, timestamp, nonce, echostr } = req.query
+			// 微信验证
+			if (signature && timestamp && nonce) {
+				let sha1 = crypto.createHash('sha1'),
+		        sha1Str = sha1.update([config.oauth.wechatToken, timestamp, nonce].sort().join('')).digest('hex');
+		        res.send((sha1Str === signature) ? echostr : '');
+						return
+			} else {
+				next()
+			}
+	  } else {
+			next()
+		}
+	});
+
+}
+
+// function* f(){
+//   console.log('执行了');
+// }
+//
+// var generator = f();
+//
+// setTimeout(function(){
+// 	generator.next()
+// }, 2000)
+
 var onlineUserCount = 0
 
 var io = require("socket.io").listen(server)
@@ -89,11 +116,17 @@ io.on('connection', function(socket){
 	io.sockets.emit("online-user-count", onlineUserCount);
 
   socket.on('disconnect', function(){
-
+		// console.log('-------断开--');
 		onlineUserCount -= 1
 		io.sockets.emit("online-user-count", onlineUserCount);
-
 	});
+
+	socket.on('heartbeat', function(){
+		// console.log('心跳...');
+		// onlineUserCount -= 1
+		// io.sockets.emit("online-user-count", onlineUserCount);
+	});
+
 });
 global.io = io
 

@@ -6,11 +6,13 @@ var Follow = require('../../models').Follow;
 var UserNotification = require('./user-notification');
 var Notification = require('./notification');
 
+
 var async = require('async');
 var xss = require('xss');
 var Tools = require('../../common/tools');
+var jpush = require('../../common/jpush');
 
-// 添加分享
+// 添加
 exports.add = function(req, res) {
 
   var user          = req.user;
@@ -37,7 +39,7 @@ exports.add = function(req, res) {
 
       if (!postsId) {
         callback(11000);
-        return;
+        return
       }
 
       Posts.find({ _id: postsId }, { user_id:1, _id:1, create_at:1 }, {}, function(err, data){
@@ -45,11 +47,14 @@ exports.add = function(req, res) {
 
         if (!data || data.length == 0) {
           callback(11000)
-        } else if (data[0].user_id + '' == user._id && !parentId) {
-          callback(12006)
+        // } else if (data[0].user_id + '' == user._id && !parentId) {
+        //   callback(12006)
         } else {
           posts = data[0]
-          callback(null);
+
+          console.log(posts);
+
+          callback(null)
         }
       })
 
@@ -62,7 +67,7 @@ exports.add = function(req, res) {
         return
       }
 
-      Comment.fetch({ _id: parentId }, { _id:1, posts_id:1, user_id:1 }, {}, function(err, data){
+      Comment.fetch({ _id: parentId }, { _id:1, posts_id:1, user_id:1, content_html:1 }, {}, function(err, data){
         if (err) console.log(err)
         if (!data || data.length == 0) {
           callback(12000);
@@ -171,7 +176,7 @@ exports.add = function(req, res) {
         }
       });
 
-      if (!content || !contentHTML) {
+      if (!content || !contentHTML || contentHTML.replace(/<[^>]+>/g,"") == '') {
         callback(12004);
         return;
       }
@@ -227,39 +232,42 @@ exports.add = function(req, res) {
               function(err){
                 if (err) console.log(err);
 
-                // 发送通知邮件给帖子作者
-                UserNotification.add(
-                  { type: 'comment', sender_id: user._id, addressee_id: posts.user_id, comment_id: comment._id },
-                  function(err){
-                    if (err) console.log(err)
+                if (user._id + '' != posts.user_id + '') {
+                  // 发送通知邮件给帖子作者
+                  UserNotification.add(
+                    { type: 'comment', sender_id: user._id, addressee_id: posts.user_id, comment_id: comment._id },
+                    function(err){
+                      if (err) console.log(err)
+                  });
 
-                    // 查询出所有关注该帖子的用户，然后发送通知给他们
-                    Follow.find(
-                      { posts_id: posts._id, user_id: { $ne: user._id } },
-                      { user_id: 1 },
-                      {},
-                      function(err, data){
+                  jpush.pushCommentToUser({ comment, posts, user })
+                }
 
-                        var userIds = []
+                // 查询出所有关注该帖子的用户，然后发送通知给他们
+                Follow.find(
+                  { posts_id: posts._id, user_id: { $ne: user._id } },
+                  { user_id: 1 },
+                  {},
+                  function(err, data){
 
-                        data.map(function(follow){
-                          if (userIds.indexOf(follow.user_id) == -1) {
-                            userIds.push(follow.user_id)
-                          }
-                        })
+                    var userIds = []
 
-                        if (userIds.length > 0) {
-                          Notification.add(
-                            { type: 'new-comment', sender_id: user._id, addressee_id: userIds, target: comment._id },
-                            function(err){
-                              if (err) console.log(err)
-                              callback(null, comment)
-                            });
-                        } else {
+                    data.map(function(follow){
+                      if (userIds.indexOf(follow.user_id) == -1) {
+                        userIds.push(follow.user_id)
+                      }
+                    })
+
+                    if (userIds.length > 0) {
+                      Notification.add(
+                        { type: 'new-comment', sender_id: user._id, addressee_id: userIds, target: comment._id },
+                        function(err){
+                          if (err) console.log(err)
                           callback(null, comment)
-                        }
-
-                      });
+                        });
+                    } else {
+                      callback(null, comment)
+                    }
 
                   });
 
@@ -277,8 +285,8 @@ exports.add = function(req, res) {
           function(err){
             if (err) console.log(err);
 
-            console.log(replyComment);
-            console.log(user._id);
+            // console.log(replyComment);
+            // console.log(user._id);
 
             if (replyComment && replyComment.user_id == user._id + '') {
               callback(null, comment)
@@ -295,6 +303,8 @@ exports.add = function(req, res) {
                 if (err) console.log(err)
                 callback(null, comment)
               })
+
+              jpush.pushReplyToUser({ comment: parentComment, reply: comment, user })
 
             }
 
@@ -463,6 +473,7 @@ exports.fetch = function(req, res) {
   parent_exists = req.query.parent_exists,
   sortBy = req.query.sort_by || 'create_at',
   sort = req.query.sort || 1,
+  includeReply = parseInt(req.query.include_reply) || 1,
   query = {
     deleted: false
   },
@@ -498,18 +509,22 @@ exports.fetch = function(req, res) {
       select:{ 'user_id': 1, '_id': 0 }
     },
     {
+      path: 'posts_id',
+      select: { _id:1, title:1 }
+    },
+    {
       path: 'reply',
       select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
       options: { limit: 10 }
-    },
-    {
-      path: 'posts_id',
-      select: { _id:1, title:1 }
     }
   ]
 
   var select = {
     __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0
+  }
+
+  if (includeReply <= 0) {
+    select.reply = 0
   }
 
   if (draft) {
@@ -524,6 +539,11 @@ exports.fetch = function(req, res) {
 
         if (!comments || comments.length == 0) {
           callback(null, [])
+          return
+        }
+
+        if (includeReply <= 0) {
+          callback(null, comments)
           return
         }
 
@@ -579,9 +599,11 @@ exports.fetch = function(req, res) {
 
       comments.map(function(item){
         ids.push(item._id)
-        item.reply.map(function(item){
-          ids.push(item._id)
-        })
+        if (item.reply) {
+          item.reply.map(function(item){
+            ids.push(item._id)
+          })
+        }
       })
 
       Like.find({
@@ -613,11 +635,13 @@ exports.fetch = function(req, res) {
             item.like = true
           }
 
-          item.reply.map(function(item){
-            if (ids[item._id]) {
-              item.like = true
-            }
-          })
+          if (item.reply) {
+            item.reply.map(function(item){
+              if (ids[item._id]) {
+                item.like = true
+              }
+            })
+          }
 
         })
 

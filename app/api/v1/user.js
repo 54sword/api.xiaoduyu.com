@@ -77,9 +77,16 @@ exports.fetch = function(req, res, next) {
       })
     },
     function(callback) {
+      Oauth.fetchByUserIdAndSource(user._id, 'github', function(err, oauth){
+        if (err) console.log(err)
+        user.github = oauth && oauth.deleted == false ? true : false
+        callback(null)
+      })
+    },
+    function(callback) {
       delete user.follow_node;
       delete user.follow_people;
-      delete user.avatar;
+      // delete user.avatar;
       delete user.id;
       // 删除一些字段
       callback(null)
@@ -251,28 +258,29 @@ exports.resetNickname = function(req, res) {
 
   var countdown = Countdown(new Date(), user.nickname_reset_at)
 
-
-  // if (countdown.days > 0) timer += countdown.days + '天'
-  // if (countdown.hours > 0) timer += countdown.hours + '小时'
-  // if (countdown.mintues > 0) timer += countdown.mintues + '分钟'
-
   if (countdown.days > 0 || countdown.hours > 0 || countdown.mintues > 0) {
 
-    // var timer = ''
+    if (user.nickname != '') {
+      res.status(400);
+      res.send({
+        success: false,
+        error_data: countdown,
+        error: 13004
+      })
+      return;
+    }
 
-    // timer += countdown.days > 0 && countdown.days > 9 ? countdown.days+':' : '0'+countdown.days+':'
-    // timer += countdown.hours > 0 && countdown.hours > 9 ? countdown.hours+':' : '0'+countdown.hours+':'
-    // timer += countdown.mintues > 0 && countdown.mintues > 9 ? countdown.mintues : '0'+countdown.mintues
-
-    res.status(400);
-    res.send({
-      success: false,
-      error_data: countdown,
-      error: 13004
-    })
-    return;
   }
 
+  User.update({ _id: user._id }, { nickname: nickname, nickname_reset_at: new Date() }, (err)=>{
+    if (err) console.log(err);
+    res.send({
+      success: true
+    });
+
+  })
+
+  /*
   User.resetNickname(user._id, nickname, function(err){
 
     if (err) console.log(err);
@@ -281,6 +289,7 @@ exports.resetNickname = function(req, res) {
     });
 
   });
+  */
 
 }
 
@@ -289,7 +298,7 @@ function Countdown(nowDate, endDate) {
   var lastDate = Math.ceil(new Date(endDate).getTime()/1000)
   var now = Math.ceil(new Date(nowDate).getTime()/1000)
 
-  var timeCount = 3600 - (now - lastDate)
+  var timeCount = (3600 * 24 * 30) - (now - lastDate)
 
   var days = parseInt( timeCount / (3600*24) )
   var hours = parseInt( (timeCount - (3600*24*days)) / 3600 )

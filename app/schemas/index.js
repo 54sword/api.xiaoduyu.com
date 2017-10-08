@@ -2,16 +2,37 @@
 var mongoose = require('mongoose');
 var config = require('../../config');
 
+
 if (config.debug) {
 	// mongoose.set('debug', true);
 }
 
-mongoose.connect(config.db_url, function (error) {
+/*
+mongoose.Promise = global.Promise;
+mongoose.connect(config.db_url, {}, function (error) {
 	if (error) {
 		console.error('connect to %s error: ', config.db_url, error.message);
 		process.exit(1);
 	}
 });
+*/
+
+mongoose.Promise = global.Promise;
+
+const promise = mongoose.connect(config.db_url, {
+  useMongoClient: true,
+})
+
+promise.then(function(db) {
+	// console.log('123123');
+})
+
+// mongoose.createConnection(config.db_url, { useMongoClient: false }, function (error) {
+// 	if (error) {
+// 		console.error('connect to %s error: ', config.db_url, error.message);
+// 		process.exit(1);
+// 	}
+// });
 
 require('./user');
 require('./account');
@@ -24,11 +45,13 @@ require('./captcha');
 require('./posts');
 require('./topic');
 require('./follow');
+require('./token');
 
 exports.User = mongoose.model('User');
 exports.Account = mongoose.model('Account');
 exports.Oauth = mongoose.model('Oauth');
 exports.Captcha = mongoose.model('Captcha');
+exports.Token = mongoose.model('Token');
 
 exports.Posts = mongoose.model('Posts');
 exports.Comment = mongoose.model('Comment');

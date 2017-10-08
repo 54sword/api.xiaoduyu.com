@@ -194,7 +194,7 @@ exports.fetch = function(req, res, next) {
       peopleId = req.query.people_id,
       parentId = req.query.parent_id,
       query = {},
-      select = { _id: 1, parent_id:1, comment_count: 1, answer_count: 1, question_count: 1, follow_count: 1, avatar: 1, description: 1, brief: 1, name: 1 },
+      select = { _id: 1, parent_id:1, comment_count: 1, posts_count: 1, follow_count: 1, avatar: 1, description: 1, brief: 1, name: 1 },
       options = {
         sort: { 'question_count': -1 }
       }

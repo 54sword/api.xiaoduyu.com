@@ -1,24 +1,45 @@
 
-var express = require('express');
+import express from 'express'
+import qq from './qq'
+import weibo from './weibo'
+import github from './github'
+import wechat from './wechat'
+import wechatPC from './wechat-pc'
+import { oauth } from '../../config'
 
-var qq = require('./qq');
-var weibo = require('./weibo');
+const OauthRouter = (csrfProtection) => {
 
-var OauthRouter = function(csrfProtection) {
+  const router = express.Router();
 
-  var router = express.Router();
+  if (oauth.weibo) {
+    router.get('/weibo', weibo.show);
+    router.get('/weibo-signin', weibo.signin);
+  }
 
-  router.get('/weibo', weibo.show);
-  router.get('/qq', qq.show);
-  // 登录创建账户或绑定账户
-  router.get('/weibo-signin', weibo.signin);
-  router.get('/qq-signin', qq.signin);
+  if (oauth.qq) {
+    router.get('/qq', qq.show);
+    router.get('/qq-signin', qq.signin);
+  }
 
-  // router.post('/unbinding-weibo', weibo.unbinding);
-  // router.post('/unbinding-qq', qq.unbinding);
+  if (oauth.github) {
+    router.get('/github', github.show);
+    router.get('/github-signin', github.signin);
+  }
+
+  if (oauth.wechat) {
+    router.get('/wechat', wechat.show);
+    router.get('/wechat-signin', wechat.signin);
+  }
+
+  if (oauth.wechatPC) {
+    router.get('/wechat-pc', wechatPC.show);
+    router.get('/wechat-pc-signin', wechatPC.signin);
+  }
+
+
+
 
   return router;
 }
 
-
-module.exports = OauthRouter;
+export default OauthRouter

@@ -23,51 +23,76 @@ exports.add = function(req, res, next) {
   var deviceId    = req.body.device_id ? parseInt(req.body.device_id) : 1;
   var type        = req.body.type ? parseInt(req.body.type) : 1;
 
+  // let { title, content, contentHTML, topicId, deviceId = 1, type = 1 } = req.body
+
+  deviceId = parseInt(deviceId)
+  type = parseInt(type)
+
   async.waterfall([
 
     // 判断ip是否存在
-    function(callback) {
-      if (!ip) {
-        callback(10000);
-      } else {
-        callback(null);
-      }
-    },
+    (callback) => callback(!ip ? 10000 : null),
 
-    function(callback) {
-      if (type > 3 || type < 1) {
-        callback(11001);
-      } else {
-        callback(null);
-      }
-    },
+    // 不存在的类型
+    (callback) => callback(type > 3 || type < 1 ? 11001 : null),
 
-    function(callback) {
-      if (!title) {
-        callback(11002);
+    // 标题合法性检测
+    (callback) => {
+
+      title = xss(title, {
+        whiteList: {},
+        stripIgnoreTag: true,
+        onTagAttr: function (tag, name, value, isWhiteAttr) {
+          return '';
+        }
+      })
+
+      if (!title || title.replace(/(^\s*)|(\s*$)/g, "") == '') {
+        // 标题不能为空
+        callback(11002)
       } else if (title.length > 120) {
-        callback(11003);
+        // 标题不能大于120个字符
+        callback(11003)
       } else {
-        callback(null);
+        callback(null)
       }
     },
 
-    function(callback) {
-      if (contentHTML.length > 20000) {
-        callback(11004);
-      } else {
-        callback(null);
-      }
+    // 内容合法性检测
+    (callback) => {
+
+      content = xss(content, {
+        whiteList: {},
+        stripIgnoreTag: true,
+        onTagAttr: function (tag, name, value, isWhiteAttr) {
+          return '';
+        }
+      });
+
+      contentHTML = xss(contentHTML, {
+        whiteList: {
+          a: ['href', 'title', 'target', 'rel'],
+          img: ['src', 'alt'],
+          p: [], div: [], br: [], blockquote: [], li: [], ol: [], ul: [],
+          strong: [], em: [], u: [], pre: [], b: [], h1: [], h2: [], h3: [],
+          h4: [], h5: [], h6: [], h7: []
+        },
+        stripIgnoreTag: true,
+        onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
+          if (tag == 'div' && name.substr(0, 5) === 'data-') {
+            // 通过内置的escapeAttrValue函数来对属性值进行转义
+            return name + '="' + xss.escapeAttrValue(value) + '"';
+          }
+        }
+      })
+
+      callback(contentHTML.length > 20000 ? 11004 : null)
     },
 
-    // 如果包含节点，那么判断节点是否存在
-    function(callback) {
+    // 话题是否存在
+    (callback) => {
 
-      if (!topicId) {
-        // 回复没有节点
-        callback(15000);
-        return;
-      }
+      if (!topicId) return callback(15000)
 
       Topic.fetch({ _id: topicId }, {}, {}, function(err, data){
         if (err) console.log(err);
@@ -80,76 +105,8 @@ exports.add = function(req, res, next) {
 
     },
 
-    // 添加feed
-    function(callback) {
-
-      content = xss(content, {
-        whiteList: {},
-        stripIgnoreTag: true,
-        onTagAttr: function (tag, name, value, isWhiteAttr) {
-          return '';
-        }
-      });
-
-      // if (!content) {
-      //   callback('content is blank');
-      //   return;
-      // }
-
-      // console.log(contentHTML);
-
-      contentHTML = xss(contentHTML, {
-        whiteList: {
-          a: ['href', 'title', 'target', 'rel'],
-          img: ['src', 'alt'],
-          p: [],
-          div: [],
-          br: [],
-          blockquote: [],
-          li: [],
-          ol: [],
-          ul: [],
-          strong: [],
-          em: [],
-          u: [],
-          pre: [],
-          b: [],
-          h1: [],
-          h2: [],
-          h3: [],
-          h4: [],
-          h5: [],
-          h6: [],
-          h7: []
-        },
-        stripIgnoreTag: true,
-        onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
-          if (tag == 'div' && name.substr(0, 5) === 'data-') {
-            // 通过内置的escapeAttrValue函数来对属性值进行转义
-            return name + '="' + xss.escapeAttrValue(value) + '"';
-          }
-        }
-      });
-
-      // console.log(contentHTML);
-
-      // if (!contentHTML) {
-      //   callback('content is blank');
-      //   return;
-      // }
-
-      title = xss(title, {
-        whiteList: {},
-        stripIgnoreTag: true,
-        onTagAttr: function (tag, name, value, isWhiteAttr) {
-          return '';
-        }
-      });
-
-      if (!title) {
-        callback(11002);
-        return;
-      }
+    // 添加
+    (callback)=>{
 
       Posts.add({
         user_id: user._id,
@@ -161,20 +118,20 @@ exports.add = function(req, res, next) {
         device: deviceId,
         type: type,
         last_comment_at: new Date().getTime()
-      }, function(err, feed){
+      }, function(err, posts){
         if (err) console.log(err);
 
-        feed.create_at = new Date(feed.create_at).getTime();
+        posts.create_at = new Date(posts.create_at).getTime();
 
-        global.io.sockets.emit('new-posts', feed.create_at - 1);
+        global.io.sockets.emit('new-posts', posts.create_at - 1);
 
-        callback(null, feed);
+        callback(null, posts);
       });
 
     },
 
     // 更新父节点children的
-    function(feed, callback) {
+    (posts, callback) => {
 
       Topic.update({ _id: topicId }, { $inc: { 'posts_count': 1 } }, function(err){
         if (err) console.log(err)
@@ -182,26 +139,20 @@ exports.add = function(req, res, next) {
         User.update({ _id: user._id }, { $inc: { 'posts_count': 1 } }, function(err){
           if (err) console.log(err)
 
-          callback(null, feed);
+          callback(null, posts);
         })
 
       })
 
     }
 
-  ], function(err, result){
+  ], (err, posts) => {
 
     if (err) {
       res.status(400);
-      res.send({
-        success: false,
-        error: err
-      });
+      res.send({ success: false, error: err })
     } else {
-      res.send({
-        success: true,
-        data: result
-      });
+      res.send({ success: true, data: posts });
     }
 
   });
@@ -486,6 +437,8 @@ exports.fetch = function(req, res, next) {
 
       sortBy = req.query.sort_by || 'sort_by_date',
       sort = req.query.sort || -1,
+      device = req.query.device || '',
+
       query = {},
       select = {},
       options = {};
@@ -521,7 +474,11 @@ exports.fetch = function(req, res, next) {
     user.follow_people.push(user._id)
     userId = user.follow_people.join(',')
 
-    if (user.follow_topic.length < 5) {
+    // if (user.follow_topic.length > 0) {
+    //   topicId = user.follow_topic.join(',')
+    // }
+
+    if (!user.follow_topic.length && device == '') {
       or = true
       var conf = { deleted: false }
 
@@ -791,17 +748,47 @@ exports.fetch = function(req, res, next) {
         return
       }
 
+      // 如果是登录状态，那么查询是否赞了帖子
+
       var ids = []
 
       for (var i = 0, max = posts.length; i < max; i++) {
+        ids.push(posts[i]._id)
+      }
 
+      Like.find({ user_id: user._id, type: 'posts', target_id: { "$in": ids }, deleted: false }, { _id: 0, target_id: 1 }, {}, function(err, likeList){
+        if (err) console.log(err);
+
+        var ids = {}
+
+        likeList.map(like=>{
+          ids[like.target_id] = 1
+        })
+
+        posts.map(function(item, key){
+          posts[key].like = ids[item._id] ? true : false
+        })
+
+        callback(null, posts)
+
+      })
+    },
+
+    function(posts, callback) {
+
+      if (!user) {
+        callback(posts)
+        return
+      }
+
+      var ids = []
+
+      for (var i = 0, max = posts.length; i < max; i++) {
         if (posts[i].comment) {
           posts[i].comment.map(function(comment){
             ids.push(comment._id)
           })
         }
-
-
       }
 
       Like.fetch({

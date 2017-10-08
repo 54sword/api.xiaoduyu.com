@@ -30,6 +30,8 @@ var PostsSchema = new Schema({
   view_count: { type: Number, default: 0 },
   // 关注累计
   follow_count: { type: Number, default: 0 },
+  // 赞的累计数
+  like_count: { type: Number, default: 0 },
   // 设备
   device: { type: Number, default: 1 },
   // ip地址

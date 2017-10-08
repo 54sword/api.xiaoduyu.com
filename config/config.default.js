@@ -30,28 +30,14 @@ var config = {
 			from: '',
 		  apiUser: '',
 		  apiKey: ''
-		},
-		// qq邮箱配置信息[未使用]
-		qq: {
-			host: 'smtp.exmail.qq.com',
-	    port: 465,
-	    auth: {
-	      user: '',
-	      pass: ''
-	    }
 		}
 	},
 
 	// 第三方登录 [必填, 否则将不支持QQ、微博登录]
 	oauth: {
-		weibo: {
-			appid: 0,
-		  appSecret: ''
-		},
-		qq: {
-			appid: 0,
-			appkey: ''
-		},
+		// weibo: { appid: 0, appSecret: '' },
+		// qq: { appid: '', appkey: '' },
+		// github: { appid: '', appkey: '' },
 		// 授权成功后跳转到着陆网站
 		landingPage: ''
 	},
@@ -67,7 +53,15 @@ var config = {
 
 	// https 用于域名的验证的路径（Let's encrypt）
 	// https://github.com/xdtianyu/scripts/blob/master/lets-encrypt/README-CN.md
-	sslPath: ''
+	sslPath: '',
+
+	jpush: {
+		// 是否是生产环境
+		production: false,
+		appKey: '',
+		masterSecret: ''
+	}
+
 };
 
 module.exports = config;

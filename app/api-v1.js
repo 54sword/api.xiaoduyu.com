@@ -11,10 +11,77 @@ var QiNiu = require('./api/v1/qiniu');
 var Posts = require('./api/v1/posts');
 var Topic = require('./api/v1/topic');
 var Follow = require('./api/v1/follow');
+
+var token = require('./api/v1/token')
+
 var qq = require('./oauth/qq');
 var weibo = require('./oauth/weibo');
+var github = require('./oauth/github');
 
 var auth = require('./api/v1/middlewares/auth');
+
+/*
+import { renderToString } from 'react-dom/server'
+
+var Redis = require('ioredis');
+var redis = new Redis();
+
+// redis.set('foo', 'bar1111');
+redis.get('foo', function (err, result) {
+  console.log(result);
+});
+*/
+
+/*
+import redraft from 'redraft'
+
+const renderers = {
+  inline: {
+    // The key passed here is just an index based on rendering order inside a block
+    BOLD: (children, { key }) => `<strong key=${key}>${children}</strong>`,
+    ITALIC: (children, { key }) => `<em key=${key}>${children}</em>`,
+    UNDERLINE: (children, { key }) => `<u key=${key}>${children}</u>`,
+    CODE: (children, { key }) => `<span key=${key}>${children}</span>`
+  },
+  blocks: {
+    unstyled: (children) => children.map(child => `<p>${child}</p>`),
+    blockquote: (children, key) => {
+      // console.log(key)
+      return `<blockquote key=${key.keys[0]}>${addBreaklines(children)}</blockquote>`
+    },
+    'header-one': (children) => children.map(child => `<h1>${child}</h1>`),
+    'header-two': (children) => children.map(child => `<h2>${child}</h2>`),
+    // You can also access the original keys of the blocks
+    'code-block': (children, { keys }) => `<pre key=${keys[0]} >${addBreaklines(children)}</pre>`,
+    // or depth for nested lists
+    'unordered-list-item': (children, { depth, keys }) => `<ul key=${keys[keys.length - 1]}>${children.map((child, index) => `<li key=${keys[index]}>${child}</li>`)}</ul>`,
+    'ordered-list-item': (children, { depth, keys }) => `<ol key=${keys.join('|')}>${children.map((child, index)=> `<li key=${keys[index]}>${child}</li>`)}</ol>`,
+    // If your blocks use meta data it can also be accessed like keys
+    atomic: (children, data) => {
+      return children[0]
+      // children.map((child, i) => {
+        // console.log(children, data)
+    }
+  },
+  entities: {
+    youku: (children, data, { key }) => `<div key=${key} data-youku=${data.src}></div>`,
+    tudou: (children, data, { key }) => `<div key=${key} data-tudou=${data.src}></div>`,
+    qq: (children, data, { key }) => `<div key=${key} data-qq=${data.src}></div>`,
+    youtube: (children, data, { key }) => `<div key=${key} data-youtube=${data.src}></div>`,
+    image: (children, data, { key }) => `<img key=${key} src=${data.src} />`,
+    '163-music-song': (children, data, { key }) => `<div key=${key} data-163musicsong=${data.src}></div>`,
+    '163-music-playlist': (children, data, { key }) => `<div key=${key} data-163musicplaylist=${data.src}></div>`,
+    LINK: (children, data, { key }) => `<a key=${key} href=${data.url} target="_blank" rel="nofollow">${children}</a>`
+  }
+}
+
+
+let json ={"entityMap":{"0":{"type":"image","mutability":"IMMUTABLE","data":{"src":"//img.xiaoduyu.com/ED7AC36B-A150-4C38-BB8C-B6D696F4F2ED?imageMogr2/auto-orient/thumbnail/!600/quality/85"}}},"blocks":[{"key":"eh1ip","text":"123","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9sl5i","text":"3333","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"enjis","text":"444","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"2vl8a","text":"5555","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"2drjn","text":" ","type":"atomic","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":1,"key":0}],"data":{}},{"key":"apv2r","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}]}
+let html = redraft(json, renderers)
+
+console.log(renderToString(`<div>${html}</div>`));
+*/
+
 
 var APIRequire = function() {
 
@@ -26,7 +93,6 @@ var APIRequire = function() {
 
   router.post('/get-captcha', auth.openType, Captcha.add);
   router.get('/captcha-image/:id', Captcha.showImage);
-  // router.get('/add-captcha-by-ip', Captcha.addCaptchaByIP);
   router.get('/get-captcha-id', Captcha.getCaptchaId);
 
   router.post('/signin', account.signin);
@@ -76,6 +142,14 @@ var APIRequire = function() {
   // 解除绑定
   router.post('/unbinding-qq', auth.userRequired, qq.unbinding);
   router.post('/unbinding-weibo', auth.userRequired, weibo.unbinding);
+  router.post('/unbinding-github', auth.userRequired, github.unbinding);
+
+  router.post('/weibo-get-user-info', auth.openType, weibo.getUserInfo);
+  router.post('/qq-get-user-info', auth.openType, qq.getUserInfo);
+  
+  // 旧token兑换新的token
+  router.post('/exchange-new-token', token.exchange);
+  // router.post('/check-token', token.check);
 
   return router;
 };
