@@ -14,7 +14,7 @@
 
 ## 安装部署
 不保证 Windows 系统的兼容性  
-线上运行版本 Node.js v6.11.0，MongoDB 是 v3.0.0
+线上运行版本 Node.js 是 v6.11.0，MongoDB 是 v3.0.0
 
 	1. 安装 Node.js[必须] MongoDB[必须]
 	2. git clone git@github.com:54sword/api.xiaoduyu.com.git
