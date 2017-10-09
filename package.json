@@ -8,6 +8,7 @@
     "mongodb": "/users/wuseijian/mongodb/bin/mongod --dbpath /users/wuseijian/mongodb/data/db"
   },
   "dependencies": {
+    "@alicloud/sms-sdk": "^1.0.2",
     "async": "^1.4.2",
     "babel-polyfill": "^6.23.0",
     "babel-preset-es2015": "^6.24.1",

@@ -22,6 +22,16 @@ exports.refreshToken = function(req, res, next) {
   var refreshToken = req.body['refresh_token'];
 }
 
+/*
+Account.find({}, {}, {}, (err, res)=>{
+  res.map((item)=>{
+    User.update({ _id: item.user_id }, { password: item.password }, ()=>{
+
+    })
+  })
+})
+*/
+
 // 账号登录
 exports.signin = function(req, res, next) {
 
@@ -31,7 +41,6 @@ exports.signin = function(req, res, next) {
   var captcha = req.body['captcha'] || '';
   var captchaId = req.body['captcha_id'] || '';
   var ip = Tools.getIP(req);
-  // console.log(req.body);
 
   async.waterfall([
 
@@ -49,7 +58,7 @@ exports.signin = function(req, res, next) {
 
     function(callback) {
 
-      Captcha.findOne({ ip: ip }, { _id: 1 }, { sort:{ create_at: -1 } },function(err, result){
+      Captcha.findOne({ ip: ip }, { _id: 1 }, { sort:{ create_at: -1 } }, function(err, result){
         if (err) console.log(err);
 
         if (!result) {
@@ -89,7 +98,7 @@ exports.signin = function(req, res, next) {
         if (err) console.log(err);
 
         if (account) {
-          Account.verifyPassword(password, account.password, function(bl, s){
+          Account.verifyPassword(password, account.user_id.password, function(bl, s){
 
             if (bl) {
 
@@ -153,7 +162,7 @@ exports.signup = function(req, res, next) {
     source: parseInt(req.body.source) || 0,
     captcha: req.body.captcha || '',
     createDate: new Date()
-  };
+  }
 
   async.waterfall([
     function(callback) {
@@ -199,6 +208,7 @@ exports.signup = function(req, res, next) {
       }
 
     },
+
     function(checkResult, callback) {
 
       Account.fetchByEmail(user.email, function(err, doc){
@@ -216,6 +226,7 @@ exports.signup = function(req, res, next) {
       });
 
     },
+
     function(checkResult, callback) {
 
       Captcha.fetchByEmail(user.email, function(err, captcha){
@@ -229,6 +240,22 @@ exports.signup = function(req, res, next) {
       })
 
     },
+
+    function(checkResult, callback) {
+
+      bcrypt.genSalt(10, function(err, salt) {
+        if (err) return next(err);
+
+        bcrypt.hash(user.password, salt, function(err, hash) {
+          if (err) return next(err);
+
+          user.password = hash;
+          callback(null, checkResult)
+        });
+      });
+
+    },
+
     function(checkResult, callback) {
 
       // create user accounts
@@ -238,8 +265,8 @@ exports.signup = function(req, res, next) {
 
         Account.create({
             user_id: doc._id,
-            email: user.email,
-            password: user.password
+            email: user.email
+            // password: user.password
           },
 
           function(err, acc){
@@ -538,6 +565,7 @@ exports.signupEmailVerify = function(req, res) {
  *   	"err": ''
  * }
  */
+/*
 exports.resetPassword = function(req, res) {
 
   var user = req.user,
@@ -603,7 +631,7 @@ exports.resetPassword = function(req, res) {
   });
 
 };
-
+*/
 // 检测新邮箱，邮箱地址正确，则发送验证码
 exports.checkEmailAndSendVerifyCaptcha = function(req, res, next) {
 
@@ -752,31 +780,13 @@ exports.resetEmail = function(req, res, next) {
           });
 
         } else {
-          // checkResult.captcha = 'captcha error';
           callback(13010);
         }
       })
-
-      /*
-      var expire = new Date(account.verify_email_captcha_expire).getTime();
-      var now = new Date().getTime();
-
-      if (account.verify_email_captcha == captcha && now < expire &&
-        account.replace_email == email
-      ) {
-
-        Account.updateEmail(account._id, email, function(err){
-          if (err) console.log(err);
-          callback('');
-        });
-
-      } else {
-        callback('captcha error');
-      }
-      */
     }
 
   ], function(err, result){
+
     if (err) {
       res.status(400);
       return res.send({
@@ -785,10 +795,7 @@ exports.resetEmail = function(req, res, next) {
       });
     }
 
-    return res.send({
-      success: true
-    });
-    // res.send({ err: result });
+    return res.send({ success: true })
   });
 
 };

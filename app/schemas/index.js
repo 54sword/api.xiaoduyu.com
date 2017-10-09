@@ -46,12 +46,14 @@ require('./posts');
 require('./topic');
 require('./follow');
 require('./token');
+require('./phone');
 
 exports.User = mongoose.model('User');
 exports.Account = mongoose.model('Account');
 exports.Oauth = mongoose.model('Oauth');
 exports.Captcha = mongoose.model('Captcha');
 exports.Token = mongoose.model('Token');
+exports.Phone = mongoose.model('Phone');
 
 exports.Posts = mongoose.model('Posts');
 exports.Comment = mongoose.model('Comment');

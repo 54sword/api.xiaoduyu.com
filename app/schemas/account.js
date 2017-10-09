@@ -9,7 +9,7 @@ var AccountSchema = new Schema({
   email: { type: String, lowercase: true, unique: true, trim: true },
   // 密码
   password: String,
-
+  
   // 对应的用户信息
   user_id: { type: ObjectId, ref: 'User' },
   create_at: { type: Date, default: Date.now },

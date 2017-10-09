@@ -2,10 +2,18 @@ var Account = require('../schemas').Account;
 var bcrypt = require('bcryptjs');
 
 
+exports.find = function(query, select, options, callback) {
+  var find = Account.find(query, select)
+  for (var i in options) {
+    find[i](options[i])
+  }
+  find.exec(callback)
+}
+
 exports.create = function(info, callback) {
   var account = new Account();
   account.email = info.email;
-  account.password = info.password;
+  // account.password = info.password;
   account.user_id = info.user_id;
   account.save(callback);
 };
@@ -45,10 +53,12 @@ exports.updateEmail = function(id, email, callback) {
   Account.update({ _id: id }, { email: email }).exec(callback);
 };
 
+/*
 // 更新邮箱验证状态
 exports.updateEmailVerify = function(id, bl, callback) {
   Account.update({ _id: id }, { email_verify: bl }).exec(callback);
 };
+*/
 
 // 重置密码
 exports.resetPassword = function(id, newPassword, callback) {
@@ -72,6 +82,7 @@ exports.resetPassword = function(id, newPassword, callback) {
 
 };
 
+/*
 // 更新更改密码口令
 exports.setPasswordCaptcha = function(id, captcha, callback) {
 
@@ -98,6 +109,7 @@ exports.updateEmailVerifyCaptcha = function(id, captcha, callback) {
   Account.update(conditions, update).exec(callback);
 };
 
+
 // 设置替换邮箱
 exports.setRepaceEmail = function(id, email, callback) {
   var conditions = { _id: id };
@@ -106,3 +118,4 @@ exports.setRepaceEmail = function(id, email, callback) {
   }};
   Account.update(conditions, update).exec(callback);
 };
+*/

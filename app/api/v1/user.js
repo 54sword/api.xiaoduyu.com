@@ -8,6 +8,8 @@ var Follow = require('../../models').Follow;
 var Validate = require('../../common/validate');
 var xss = require('xss');
 var async = require('async');
+var bcrypt = require('bcryptjs');
+var uuid = require('node-uuid');
 
 
 
@@ -292,6 +294,124 @@ exports.resetNickname = function(req, res) {
   */
 
 }
+
+
+/**
+ * @api {get} /v1/reset-password 重置密码
+ * @apiName Password
+ * @apiGroup Password
+ * @apiVersion 1.0.0
+ *
+ * @apiParam {String} current_password 当前密码
+ * @apiParam {String} new_password 新密码
+ *
+ * @apiSuccess {String} err 错误信息，如果为空，则发送成功
+ *
+ * @apiSuccessExample 成功:
+ * HTTP/1.1 200 OK
+ * {
+ *   	"err": ''
+ * }
+ */
+exports.resetPassword = function(req, res) {
+
+  var user = req.user,
+      currentPassword = req.body.current_password || '',
+      newPassword = req.body.new_password || '';
+
+  async.waterfall([
+    function(callback) {
+      if (currentPassword === newPassword) {
+        callback(13017);
+      } else {
+        // var result = Validate.password(newPassword);
+        if (Validate.password(newPassword) != 'ok') {
+          callback(13013);
+        } else {
+          callback(null);
+        }
+      }
+    },
+    /*
+    function(callback) {
+      Account.fetchByUserId(user._id, function(err, account){
+        if (err) console.log(err);
+        if (!account) {
+          callback(13000);
+        } else {
+          callback(null, account);
+        }
+      });
+    },
+    */
+    function(callback) {
+
+      bcrypt.compare(currentPassword, user.password, function(err, res){
+        if (err) console.log(err);
+        if (!res) {
+          callback(13018);
+        } else {
+          callback(null);
+        }
+      });
+
+    },
+
+    function(callback) {
+
+      bcrypt.genSalt(10, function(err, salt) {
+        if (err) return next(err);
+
+        bcrypt.hash(newPassword, salt, function(err, hash) {
+          if (err) return next(err);
+          callback(null, hash)
+        });
+      });
+
+    },
+
+    function(_password, callback) {
+
+      User.update({ _id: user._id }, { password: _password, access_token: uuid.v4() }, function(err){
+        if (err) console.log(err);
+        callback(null);
+      })
+
+      /*
+      Account.verifyPassword(currentPassword, user.password, function(result){
+        if (!result) {
+          callback(13018);
+        } else {
+          Account.resetPassword(account._id, newPassword, function(err, password){
+            if (err) console.log(err);
+
+            User.updateAccessTokenById(user._id, function(err){
+              if (err) console.log(err);
+              callback(null);
+            })
+
+          });
+        }
+      });
+      */
+    }
+  ], function(err){
+
+    if (err) {
+      res.status(400);
+      return res.send({
+        success: false,
+        error: err
+      });
+    }
+
+    return res.send({
+      success: true
+    });
+
+  });
+
+};
 
 function Countdown(nowDate, endDate) {
 

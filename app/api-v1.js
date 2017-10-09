@@ -107,7 +107,7 @@ var APIRequire = function() {
   router.post('/reset-password-by-captcha', account.resetPasswordByCaptcha);
   router.post('/binding-email', auth.userRequired, account.bindingEmail);
 
-  router.post('/reset-password', auth.userRequired, account.resetPassword);
+  router.post('/reset-password', auth.userRequired, user.resetPassword);
   router.post('/reset-nickname', auth.userRequired, user.resetNickname);
   router.post('/reset-gender', auth.userRequired, user.resetGender);
   router.post('/reset-brief', auth.userRequired, user.resetBrief);
@@ -146,7 +146,7 @@ var APIRequire = function() {
 
   router.post('/weibo-get-user-info', auth.openType, weibo.getUserInfo);
   router.post('/qq-get-user-info', auth.openType, qq.getUserInfo);
-  
+
   // 旧token兑换新的token
   router.post('/exchange-new-token', token.exchange);
   // router.post('/check-token', token.check);

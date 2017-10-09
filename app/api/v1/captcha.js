@@ -9,6 +9,7 @@ var captchapng = require('captchapng');
 var Tools = require('../../common/tools');
 
 
+
 var generateEmailHTMLContent = function(content) {
 
   return '<table width="100%" height="100%" bgcolor="#e0e0e0" style="min-width: 348px; font-family: \'Helvetica Neue\', \'Luxi Sans\', \'DejaVu Sans\', Tahoma, \'Hiragino Sans GB\', \'Microsoft Yahei\', sans-serif;" border="0" cellspacing="0" cellpadding="0">'+
@@ -72,11 +73,8 @@ var generateEmailHTMLContent = function(content) {
   '</table>';
 }
 
-exports.add = function(req, res) {
 
-  var user = req.user,
-      email = req.body.email,
-      type = req.body.type
+const sendEmail = ({ user, email, type, callback }) => {
 
   async.waterfall([
 
@@ -230,7 +228,183 @@ exports.add = function(req, res) {
       var textContent = content;
       var htmlContent = generateEmailHTMLContent(content);
 
+      var mailOptions = {
+        to: email,
+        subject: subject,
+        text: textContent,
+        html: htmlContent // html body
+      };
 
+      // console.log(mailOptions)
+      // callback(null);
+
+      Email.send(mailOptions, function(err, response){
+
+        if (err.message != 'success') {
+          callback(13016);
+        } else {
+          callback(null);
+        }
+      });
+
+    }
+
+  ], callback);
+
+}
+
+const sendSMS = ({ user, phone, type, callback }) => {
+
+  async.waterfall([
+
+    // function(callback) {
+    //   if (Validate.email(email) != 'ok') {
+    //     callback(13012)
+    //   } else {
+    //     callback(null)
+    //   }
+    // },
+
+    function(callback) {
+
+      var code = Math.round(900000*Math.random()+100000);
+      
+      if (type == 'binding-phone') {
+
+        if (!user) return callback(13000)
+        if (!phone) return callback(13005)
+
+        /*
+        Account.fetchByEmail(email, function(err, account){
+          if (err) console.log(err);
+          if (!account) {
+            // 创建一个验证码
+            Captcha.add({ email: email, captcha: code, user_id: user._id }, function(err){
+              if (err) console.log(err)
+
+              var title = '请输入验证码 '+code+' 完成绑定邮箱';
+
+              var content = '<div style="font-size:18px;">尊敬的 '+user.nickname+'，您好！</div>'+
+                              '<div>您正在绑定小度鱼账号，若不是您本人操作，请忽略此邮件。</div>'+
+                              '如下是您的注册验证码:<br />'+
+                              '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
+                              code+
+                              '</span>'+
+                              '<div>请注意: 为了保障您帐号的安全性，验证码1小时后过期，请尽快验证!</div>';
+
+              callback(null, title, content)
+            })
+          } else {
+            callback(13009);
+          }
+        });
+        */
+
+      } else if (type == 'signup') {
+        /*
+        Account.fetchByEmail(email, function(err, account){
+          if (err) console.log(err);
+          if (!account) {
+            Captcha.addEmail(email, code, function(err){
+              if (err) console.log(err)
+              // callback(null, email, code)
+
+              var title = '请输入验证码 '+code+' 完成账号注册';
+
+              var content = '<div style="font-size:18px;">尊敬的 '+email+'，您好！</div>'+
+                              '<div>您正在注册小度鱼账号，若不是您本人操作，请忽略此邮件。</div>'+
+                              '如下是您的注册验证码:<br />'+
+                              '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
+                              code+
+                              '</span>'+
+                              '<div>请注意: 为了保障您帐号的安全性，验证码1小时后过期，请尽快验证!</div>';
+
+              callback(null, title, content)
+
+            })
+          } else {
+            callback(13009);
+          }
+        });
+        */
+      } else if (type == 'forgot') {
+
+        if (!email) {
+          callback(13005)
+          return
+        }
+        /*
+        Account.fetchByEmail(email, function(err, account){
+          if (err) console.log(err);
+          if (account) {
+            Captcha.addEmail(email, code, function(err){
+              if (err) console.log(err)
+              // callback(null, email, code)
+
+              var title = '请输入验证码 '+code+' 完成找回密码';
+
+              var content = '<div style="font-size:18px;">尊敬的 '+account.user_id.nickname+'，您好！</div>'+
+                              '<div>您正在操作小度鱼账号密码找回，若不是您本人操作，请忽略此邮件。</div>'+
+                              '如下是您的注册验证码:<br />'+
+                              '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
+                              code+
+                              '</span>'+
+                              '<div>请注意: 为了保障您帐号的安全性，验证码1小时后过期，请尽快验证!</div>';
+
+              callback(null, title, content)
+
+            })
+          } else {
+            callback(13000);
+          }
+        });
+        */
+      } else if (type == 'reset-email') {
+
+        /*
+        if (!user) return callback(13000)
+        if (!email) return callback(13005)
+
+        Account.fetchByEmail(email, function(err, account){
+          if (err) console.log(err);
+          if (account) return callback(13009)
+
+          Captcha.add({
+            email: email,
+            captcha: code,
+            user_id: user._id
+          }, function(err){
+            if (err) console.log(err)
+
+            var title = '请输入验证码 '+code+' 完成绑定邮箱';
+
+            var content = '<div style="font-size:18px;">尊敬的 '+user.nickname+'，您好！</div>'+
+                            '<div>您正在绑定新的小度鱼账号邮箱，若不是您本人操作，请忽略此邮件。</div>'+
+                            '如下是您的验证码:<br />'+
+                            '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
+                            code+
+                            '</span>'+
+                            '<div>请注意: 为了保障您帐号的安全性，验证码1小时后过期，请尽快验证!</div>';
+
+            callback(null, title, content)
+
+            // callback(null, email, code)
+          })
+
+        })
+        */
+
+      } else {
+        callback(10005)
+      }
+
+    },
+
+    function(title, content, callback) {
+
+      var subject = title;
+      var textContent = content;
+      var htmlContent = generateEmailHTMLContent(content);
 
       var mailOptions = {
         to: email,
@@ -253,19 +427,37 @@ exports.add = function(req, res) {
 
     }
 
-  ], function(err, result){
+  ], callback);
 
-    if (err) {
-      // 账号的邮箱已经验证
-      res.status(400);
-      return res.send({
-        success: false,
-        error: err
-      });
-    }
+}
 
-    res.send({ success: true });
-  });
+exports.add = function(req, res) {
+
+  var user = req.user,
+      email = req.body.email || '',
+      phone = req.body.phone || '',
+      type = req.body.type
+
+  if (email) {
+    sendEmail({
+      user,
+      email,
+      type,
+      callback: (err, result)=>{
+
+        if (err) {
+          // 账号的邮箱已经验证
+          res.status(400);
+          return res.send({
+            success: false,
+            error: err
+          });
+        }
+
+        res.send({ success: true });
+      }
+    })
+  }
 
 };
 /*

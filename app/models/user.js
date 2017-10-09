@@ -12,6 +12,7 @@ exports.create = function(user, callback) {
   _user.gender = user.gender;
   _user.source = user.source;
   _user.access_token = uuid.v4();
+  _user.password = user.password;
   _user.save(callback);
 };
 
