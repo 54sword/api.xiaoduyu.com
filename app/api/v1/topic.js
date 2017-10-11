@@ -219,7 +219,7 @@ exports.fetch = function(req, res, next) {
     options.skip = page * perPage
   }
 
-  options.limit = perPage
+  options.limit = parseInt(perPage)
 
   options.sort = { 'question_count': -1 }
 

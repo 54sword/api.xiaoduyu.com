@@ -8,14 +8,15 @@ var AccountSchema = new Schema({
   // 邮箱地址
   email: { type: String, lowercase: true, unique: true, trim: true },
   // 密码
-  password: String,
-  
+  // password: String,
+
   // 对应的用户信息
   user_id: { type: ObjectId, ref: 'User' },
   create_at: { type: Date, default: Date.now },
   deleted: { type: Boolean, default: false }
 });
 
+/*
 AccountSchema.pre('save', function(next){
 
   var that = this;
@@ -37,6 +38,7 @@ AccountSchema.pre('save', function(next){
   });
 
 });
+*/
 
 AccountSchema.index({ email: 1 }, { unique: true });
 AccountSchema.index({ user_id: 1 }, { unique: true });

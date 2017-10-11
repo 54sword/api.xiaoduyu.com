@@ -1,5 +1,13 @@
-var Captcha = require('../schemas').Captcha;
+// var Captcha = require('../schemas').Captcha;
 
+import { Captcha } from '../schemas'
+import baseMethod from './base-method'
+
+let Schemas = baseMethod(Captcha)
+
+module.exports = Schemas;
+
+/*
 exports.fetchByEmail = function(email, callback) {
   Captcha.findOne({ email: email })
   .sort({ 'create_at': -1 })
@@ -48,7 +56,7 @@ exports.findOne = function(query, select, options, callback) {
   find.exec(callback)
 }
 
-/*
+
 var captcha = new Captcha({ captcha: 123456 });
 captcha.save(function(err, res){
   console.log(res._id);

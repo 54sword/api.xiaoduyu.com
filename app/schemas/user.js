@@ -65,6 +65,7 @@ UserSchema.virtual('avatar_url').get(function () {
 
 });
 
+
 UserSchema.set('toJSON', { getters: true });
 
 mongoose.model('User', UserSchema);
