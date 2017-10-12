@@ -204,6 +204,8 @@ const sendEmail = ({ user, email, type, callback }) => {
 
 const sendSMS = ({ user, phone, type, callback }) => {
 
+  console.log(type);
+
   async.waterfall([
 
     function(callback) {
@@ -214,10 +216,8 @@ const sendSMS = ({ user, phone, type, callback }) => {
 
     function(callback) {
       Phone.findOne({
-        query: { phone }
-      }).then((err, res)=>{
-        if (err) console.log(err);
-        callback(null, res)
+        query: { phone },
+        callback
       })
     },
 
@@ -235,7 +235,9 @@ const sendSMS = ({ user, phone, type, callback }) => {
         data.user_id = user._id
       }
 
-      if (type == 'binding-phone' || type == 'forgot') {
+      if (type == 'binding-phone') {
+        if (phoneAccount) return callback(30002)
+      } else if (type == 'forgot') {
         if (!phoneAccount) return callback(30002)
       } else if (type == 'signup' || type == 'reset-phone') {
         if (phoneAccount) return callback(30002)
@@ -243,10 +245,12 @@ const sendSMS = ({ user, phone, type, callback }) => {
         return callback(10005)
       }
 
-      Captcha.save({ data })
-      .then((err, result)=>{
-        if (err) console.log(err);
-        callback(null, code)
+      Captcha.save({
+        data,
+        callback: (err, result) => {
+          if (err) console.log(err);
+          callback(null, code)
+        }
       })
 
     },

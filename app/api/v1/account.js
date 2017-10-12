@@ -946,7 +946,7 @@ exports.resetPasswordByCaptcha = function(req, res, next) {
                 User.update({ _id: account.user_id._id }, { password: hash }, function(err, password){
                   if (err) console.log(err);
                   callback(null);
-                  Captcha.remove({ conditions: { email } })
+                  Captcha.remove({ condition: { email } })
                 })
 
               })
@@ -981,27 +981,44 @@ exports.bindingEmail = function(req, res, next) {
   var user = req.user;
   var email = req.body.email;
   var captcha = req.body.captcha;
-  var password = req.body.password;
 
   async.waterfall([
+
     function(callback) {
-      Captcha.fetchByEmail(email, function(err, _captcha){
+      Captcha.findOne({
+        query: { email },
+        options: { sort:{ create_at: -1 } },
+        callback: function(err, _captcha){
 
-        if (_captcha && _captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
-          callback(null)
-          return
+          if (_captcha && _captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
+            callback(null)
+            return
+          }
+
+          callback(13010)
         }
-
-        callback(13010)
-
-      });
+      })
     },
+
+    function(callback) {
+
+      Account.fetchByEmail(email, function(err, acc){
+        if (err) console.log(err);
+
+        if (!acc) {
+          callback(null)
+        } else {
+          callback(13009)
+        }
+      })
+
+    },
+
     function(callback) {
 
       Account.create({
           user_id: user._id,
-          email: email,
-          password: password
+          email: emailå
         },
         function(err, acc){
           if (err) console.log(err);

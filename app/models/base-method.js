@@ -25,8 +25,8 @@ export default (Schemas) => {
     return Schemas.update(condition, contents, callback)
   }
 
-  method.remove = ({ conditions = {}, callback = ()=>{} }) => {
-    return Schemas.remove(conditions, callback)
+  method.remove = ({ condition = {}, callback = ()=>{} }) => {
+    return Schemas.remove(condition, callback)
   }
 
   return method
