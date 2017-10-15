@@ -6,10 +6,13 @@ import { Captcha, Account, Phone } from '../../models'
 var async = require('async');
 var Email = require('../../common/email');
 var alicloud = require('../../common/alicloud');
+var yunpian = require('../../common/yunpian');
 var config = require('../../../config');
 var Validate = require('../../common/validate');
 var captchapng = require('captchapng');
 var Tools = require('../../common/tools');
+
+import Countries from '../../data/countries'
 
 
 var generateEmailHTMLContent = function(content) {
@@ -202,9 +205,7 @@ const sendEmail = ({ user, email, type, callback }) => {
 
 }
 
-const sendSMS = ({ user, phone, type, callback }) => {
-
-  console.log(type);
+const sendSMS = ({ user, areaCode, phone, type, callback }) => {
 
   async.waterfall([
 
@@ -217,7 +218,10 @@ const sendSMS = ({ user, phone, type, callback }) => {
     function(callback) {
       Phone.findOne({
         query: { phone },
-        callback
+        callback: (err, res) => {
+          if (err) console.log(err)
+          callback(null, res)
+        }
       })
     },
 
@@ -230,17 +234,32 @@ const sendSMS = ({ user, phone, type, callback }) => {
         captcha: code
       }
 
-      if (type == 'binding-phone' || type == 'reset-phone') {
-        if (!user) return callback(13000)
-        data.user_id = user._id
-      }
+      // 判断区号是否有效
+      let existAreaCode = false
 
-      if (type == 'binding-phone') {
+      Countries.map(item=>{
+        if (item.code == areaCode) existAreaCode = true
+      })
+
+      if (type == 'binding-phone' || type == 'reset-phone') {
+        // 未登陆
+        if (!user) return callback(13000)
+        // 账号已经存在
         if (phoneAccount) return callback(30002)
+        // 区号不存在
+        if (!existAreaCode) return callback(30004)
+
+        data.user_id = user._id
+        data.area_code = areaCode
+
       } else if (type == 'forgot') {
+        // 账号不存在
         if (!phoneAccount) return callback(30002)
-      } else if (type == 'signup' || type == 'reset-phone') {
+      } else if (type == 'signup') {
+        // 账号已存在
         if (phoneAccount) return callback(30002)
+        // 区号不存在
+        if (!existAreaCode) return callback(30004)
       } else {
         return callback(10005)
       }
@@ -249,19 +268,34 @@ const sendSMS = ({ user, phone, type, callback }) => {
         data,
         callback: (err, result) => {
           if (err) console.log(err);
-          callback(null, code)
+          callback(null, code, phoneAccount)
         }
       })
 
     },
 
-    function(code, callback) {
-      alicloud.sendSMS({
-        PhoneNumbers: phone,
+    function(code, phoneAccount, callback) {
+
+      let serviceProvider = alicloud
+      // 阿里云仅支持国内短信，因此不需要加区号
+      let _areaCode = ''
+
+      if (phoneAccount && phoneAccount.area_code) {
+        areaCode = phoneAccount.area_code
+      }
+
+      if (areaCode != '+86') {
+        serviceProvider = yunpian
+        _areaCode = areaCode
+      }
+
+      serviceProvider.sendSMS({
+        PhoneNumbers: encodeURI(_areaCode + phone),
         SignName: config.alicloud.sms.signName,
         TemplateCode: config.alicloud.sms.templateCode,
         TemplateParam: { code }
       }, callback)
+
     }
 
   ], callback);
@@ -273,6 +307,7 @@ exports.add = function(req, res) {
   var user = req.user,
       email = req.body.email || '',
       phone = req.body.phone || '',
+      areaCode = req.body.area_code || '',
       type = req.body.type
       // ip = Tools.getIP(req)
 
@@ -296,8 +331,10 @@ exports.add = function(req, res) {
       }
     })
   } else if (phone) {
+
     sendSMS({
       user,
+      areaCode,
       phone,
       type,
       callback: (err)=>{

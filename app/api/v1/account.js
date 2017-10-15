@@ -17,6 +17,9 @@ var config = require('../../../config');
 var Validate = require('../../common/validate');
 var Tools = require('../../common/tools');
 
+import Countries from '../../data/countries'
+
+
 // 刷新token，延续登录状态
 exports.refreshToken = function(req, res, next) {
   var accessToken = req.body['access_token'];
@@ -172,12 +175,34 @@ exports.signup = function(req, res, next) {
   var user = {
     nickname: req.body.nickname || '',
     email: req.body.email.toLowerCase() || '',
+    areaCode: req.body.area_code || '',
     phone: req.body.phone || '',
     password: req.body.password || '',
     gender: parseInt(req.body.gender),
     source: parseInt(req.body.source) || 0,
     captcha: req.body.captcha || '',
     createDate: new Date()
+  }
+
+
+  let areaCodeStatus = false
+
+  if (user.phone) {
+    Countries.map(item=>{
+      if (item.code == user.areaCode) {
+        areaCodeStatus = true
+      }
+    })
+
+    if (!areaCodeStatus) {
+      res.status(400);
+      res.send({
+        success: false,
+        error: 30004
+      })
+      return
+    }
+
   }
 
   async.waterfall([
@@ -356,7 +381,8 @@ exports.signup = function(req, res, next) {
           Phone.save({
             data: {
               user_id: doc._id,
-              phone: user.phone
+              phone: user.phone,
+              area_code: user.areaCode
             },
             callback: function(err, acc){
               if (err) console.log(err);

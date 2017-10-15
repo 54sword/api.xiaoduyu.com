@@ -12,6 +12,7 @@ var Posts = require('./api/v1/posts');
 var Topic = require('./api/v1/topic');
 var Follow = require('./api/v1/follow');
 var Phone = require('./api/v1/phone');
+import Countries from './api/v1/countries'
 
 var token = require('./api/v1/token')
 
@@ -91,6 +92,8 @@ var APIRequire = function() {
   router.post('/user', auth.userRequired, user.fetch);
 
   router.get('/people/:id', auth.openType, user.fetchById);
+
+  router.get('/countries', Countries.fetch);
 
   router.post('/get-captcha', auth.openType, Captcha.add);
   router.get('/captcha-image/:id', Captcha.showImage);

@@ -92,7 +92,7 @@ exports.fetch = function(req, res, next) {
         query: { user_id: user._id },
         callback: (err, result) => {
           if (err) console.log(err)
-          user.phone = result ? changeString(result.phone) : ''
+          user.phone = result ? changeString(result.phone + '') : ''
           callback(null)
         }
       })
@@ -310,11 +310,12 @@ exports.resetNickname = function(req, res) {
 
 
 /**
- * @api {get} /v1/reset-password 重置密码
+ * @api {post} /v1/reset-password 重置密码
  * @apiName Password
  * @apiGroup Password
  * @apiVersion 1.0.0
  *
+ * @apiParam {String} token 访问令牌
  * @apiParam {String} current_password 当前密码
  * @apiParam {String} new_password 新密码
  *
@@ -417,8 +418,6 @@ exports.resetPasswordByCaptcha = function(req, res, next) {
   var captcha = req.body.captcha;
   const ip = Tools.getIP(req);
 
-  console.log(req.body);
-
   async.waterfall([
 
     function(callback) {
@@ -493,7 +492,7 @@ exports.resetPasswordByCaptcha = function(req, res, next) {
 
       bcrypt.genSalt(10, function(err, salt) {
         if (err) return callback(err);
-        
+
         bcrypt.hash(newPassword, salt, function(err, hash) {
           if (err) return callback(err);
 

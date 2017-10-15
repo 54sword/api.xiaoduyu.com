@@ -112,6 +112,8 @@ var onlineUserCount = 0
 var io = require("socket.io").listen(server)
 io.on('connection', function(socket){
 
+	// console.log(socket.handshake.query);
+
 	onlineUserCount += 1
 	io.sockets.emit("online-user-count", onlineUserCount);
 
@@ -120,12 +122,12 @@ io.on('connection', function(socket){
 		onlineUserCount -= 1
 		io.sockets.emit("online-user-count", onlineUserCount);
 	});
-
-	socket.on('heartbeat', function(){
+	
+	// socket.on('heartbeat', function(){
 		// console.log('心跳...');
 		// onlineUserCount -= 1
 		// io.sockets.emit("online-user-count", onlineUserCount);
-	});
+	// });
 
 });
 global.io = io
