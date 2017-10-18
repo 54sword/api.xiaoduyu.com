@@ -1,7 +1,6 @@
 var Account = require('../schemas').Account;
 var bcrypt = require('bcryptjs');
 
-
 exports.find = function(query, select, options, callback) {
   var find = Account.find(query, select)
   for (var i in options) {

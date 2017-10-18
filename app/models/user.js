@@ -3,6 +3,8 @@ var User = require('../schemas').User;
 // var bcrypt = require('bcryptjs');
 var uuid = require('node-uuid');
 
+
+
 // 创建账号
 exports.create = function(user, callback) {
   var _user = new User();

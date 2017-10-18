@@ -28,11 +28,21 @@ exports.refreshToken = function(req, res, next) {
 
 /*
 Account.find({}, {}, {}, (err, res)=>{
-  res.map((item)=>{
-    User.update({ _id: item.user_id }, { password: item.password }, ()=>{
 
+  // console.log(res);
+
+
+  res.map((item)=>{
+
+    let _item = JSON.stringify(item);
+    _item = JSON.parse(_item);
+
+    User.update({ _id: _item.user_id }, { password: _item.password }, (err, res)=>{
+      if (err) console.log(err);
+      // console.log();
     })
   })
+
 })
 */
 

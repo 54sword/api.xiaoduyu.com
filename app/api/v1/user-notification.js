@@ -84,14 +84,16 @@ exports.fetch = function(req, res, next) {
       var _notices = JSON.stringify(notices);
       _notices = JSON.parse(_notices);
 
-      _notices.map(function(item, key){
-        if (typeof item.comment_id != 'undefined' && item.comment_id == null ||
-          typeof item.posts_id != 'undefined' && item.posts_id == null
-          ) {
-          _notices.splice(key, 1);
-          return
-        }
-      })
+      if (_notices && _notices.map) {
+        _notices.map(function(item, key){
+          if (typeof item.comment_id != 'undefined' && item.comment_id == null ||
+            typeof item.posts_id != 'undefined' && item.posts_id == null
+            ) {
+            _notices.splice(key, 1);
+            return
+          }
+        })
+      }
 
       // 未读的通知设置成已读
       for (var i = 0, max = notices.length; i < max; i++) {

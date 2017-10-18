@@ -417,8 +417,8 @@ exports.fetch = function(req, res, next) {
       page = parseInt(req.query.page) || 0,
       perPage = parseInt(req.query.per_page) || 20,
       userId = req.query.user_id,
-      topicId = req.query.topic_id,
-      postsId = req.query.posts_id,
+      topicId = req.query.topic_id || '',
+      postsId = req.query.posts_id || '',
       // 大于创建日期
       gtCreateAt = req.query.gt_create_at,
       gtDate = req.query.gt_date,
@@ -468,6 +468,8 @@ exports.fetch = function(req, res, next) {
     query['$or'] = []
   }
 
+  // console.log(user);
+
   // 根据用户的关注偏好获取帖子
   if (user && method == 'user_custom') {
 
@@ -491,6 +493,9 @@ exports.fetch = function(req, res, next) {
     } else {
       topicId = user.follow_topic.join(',')
     }
+
+    postsId = postsId + (postsId ? ',' : '') + user.follow_posts.join(',')
+
   }
 
   // 用户偏好

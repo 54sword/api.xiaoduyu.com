@@ -15,6 +15,7 @@ var uuid = require('node-uuid');
 
 var Tools = require('../../common/tools');
 
+
 function changeString(str) {
   var length = str.length
   var s = ''
