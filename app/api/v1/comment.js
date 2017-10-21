@@ -493,7 +493,7 @@ exports.fetch = function(req, res) {
   if (answerId) query.answer_id = answerId
   if (gt_create_at) query.create_at = { '$gt': gt_create_at }
   if (page > 0) options.skip = page * perPage
-  if (perPage) options.limit = perPage
+  if (perPage) options.limit = parseInt(perPage)
 
   options.sort = {}
   options.sort[sortBy] = sort > 0 ? 1 : -1

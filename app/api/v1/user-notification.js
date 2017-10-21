@@ -32,7 +32,7 @@ exports.fetch = function(req, res, next) {
         query.create_at = { '$gt': gtCreateAt }
       }
 
-      options.limit = perPage
+      options.limit = parseInt(perPage)
 
       options.sort = { create_at: -1 }
 

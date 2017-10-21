@@ -430,7 +430,7 @@ exports.fetch = function(req, res, next) {
 
       // 是否包含部分评论一起返回
       includeComments = req.query.include_comments || 0,
-      commentsLimit = req.query.comments_limit || 5,
+      commentsLimit = parseInt(req.query.comments_limit) || 5,
       commentsSort = req.query.comments_sort || 'reply_count:-1,like_count:-1',
 
       postsSort = req.query.posts_sort || 'sort_by_date:-1',

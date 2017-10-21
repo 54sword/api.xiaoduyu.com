@@ -42,7 +42,7 @@ exports.fetch = function(req, res, next) {
 
   if (page > 0) options.skip = page * perPage
   if (perPage > 300) perPage = 300
-  options.limit = perPage
+  options.limit = parseInt(perPage)
   options.sort = { 'create_at': -1 }
 
   options.populate = [
@@ -98,17 +98,21 @@ exports.fetch = function(req, res, next) {
 
       var peopleIds = []
 
-      follows.map(function(item){
+      if (follows && follows.length > 0) {
 
-        if (item.user_id && peopleIds.indexOf(item.user_id._id) == -1) {
-          peopleIds.push(item.user_id._id)
-        }
+        follows.map(function(item){
 
-        if (item.people_id && peopleIds.indexOf(item.people_id._id) == -1) {
-          peopleIds.push(item.people_id._id)
-        }
+          if (item.user_id && peopleIds.indexOf(item.user_id._id) == -1) {
+            peopleIds.push(item.user_id._id)
+          }
 
-      })
+          if (item.people_id && peopleIds.indexOf(item.people_id._id) == -1) {
+            peopleIds.push(item.people_id._id)
+          }
+
+        })
+
+      }
 
       Follow.find({
         user_id: user._id,
