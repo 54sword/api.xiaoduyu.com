@@ -351,6 +351,11 @@ exports.add = function(req, res) {
         res.send({ success: true });
       }
     })
+  } else {
+    res.send({
+      success: false,
+      error: 10005
+    })
   }
 
 };

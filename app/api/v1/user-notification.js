@@ -257,19 +257,21 @@ exports.fetchUnreadCount = function(req, res) {
         query.create_at = { '$gt': user.find_notification_at }
       }
 
+      // console.log(query);
+
       Notification.find(query, {}, { sort:{ 'create_at': -1 } },
         function(err, notice){
           if (err) console.log(err);
 
           if (notice.length > 0) {
 
+            // 更新用户最近一次拉取通知的时间
             User.update({ _id: user._id }, { find_notification_at: notice[0].create_at }, function(err, result){
               if (err) console.log(err);
             })
 
             var notificationArr = []
 
-            // 问题关键
             notice.map(function(item){
               if (item.type == 'new-comment') {
                 notificationArr.push({
@@ -294,12 +296,29 @@ exports.fetchUnreadCount = function(req, res) {
 
     },
     function(callback){
-      UserNotification.count({ addressee_id: user._id, has_read: false, deleted: false }, function(err, count){
+      UserNotification.find({ addressee_id: user._id, has_read: false, deleted: false }, { _id:1 }, {}, function(err, result){
+        if (err) console.log(err);
+
+        let ids = []
+        if (result) {
+          result.map(item=>{
+            ids.push(item._id)
+          })
+        }
+
+        // console.log(ids);
+
         res.send({
           success: true,
-          data: count
+          data: ids
         })
       })
+      // UserNotification.count({ addressee_id: user._id, has_read: false, deleted: false }, function(err, count){
+      //   res.send({
+      //     success: true,
+      //     data: count
+      //   })
+      // })
     }
   ], function(err, result){
 

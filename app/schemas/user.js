@@ -28,7 +28,7 @@ var UserSchema = new Schema({
   gender: { type: Number, default: 0 },
   // 简介,一句话介绍自己，70个字符限制
   brief: { type: String, default: '' },
-  // 用户注册来源 0->iPhone, 1->iPad, 2->Android, 3->H5, 4->网站
+  // 用户注册来源 0->iPhone, 1->iPad, 2->Android, 3->H5, 4->网站, 5->iOS
   source: { type: Number, default: 0 },
   // 帖子累积
   posts_count: { type: Number, default: 0 },
