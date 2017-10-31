@@ -220,12 +220,15 @@ exports.update = function(req, res, next) {
 
       Topic.fetch({ _id: topicId }, {}, {}, function(err, data){
         if (err) console.log(err);
+
         if (!data || data.length == 0) {
-          callback(15000);
+          callback(15000)
+        } else if (user._id + '' != data[0].user_id + '') {
+          callback(10007)
         } else {
           callback(null);
         }
-      });
+      })
 
     },
 
@@ -473,7 +476,15 @@ exports.fetch = function(req, res, next) {
   // 根据用户的关注偏好获取帖子
   if (user && method == 'user_custom') {
 
-    user.follow_people.push(user._id)
+    if (!user.follow_people.length && !user.follow_topic.length && !user.follow_posts.length) {
+      res.send({
+        success: true,
+        data: []
+      })
+      return
+    }
+
+    // user.follow_people.push(user._id)
     userId = user.follow_people.join(',')
 
     // if (user.follow_topic.length > 0) {

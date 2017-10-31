@@ -51,9 +51,6 @@ exports.add = function(req, res) {
         //   callback(12006)
         } else {
           posts = data[0]
-
-          console.log(posts);
-
           callback(null)
         }
       })
@@ -176,7 +173,11 @@ exports.add = function(req, res) {
         }
       });
 
-      if (!content || !contentHTML || contentHTML.replace(/<[^>]+>/g,"") == '') {
+      let _contentHTML = contentHTML
+      _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1")
+      _contentHTML = _contentHTML.replace(/<[^>]+>/g,"")
+
+      if (!content || !contentHTML || _contentHTML == '') {
         callback(12004);
         return;
       }
