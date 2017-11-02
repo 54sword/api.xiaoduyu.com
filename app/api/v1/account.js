@@ -1055,7 +1055,7 @@ exports.bindingEmail = function(req, res, next) {
 
       Account.create({
           user_id: user._id,
-          email: emailå
+          email: email
         },
         function(err, acc){
           if (err) console.log(err);

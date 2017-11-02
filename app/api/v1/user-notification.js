@@ -335,6 +335,7 @@ exports.add = function(data, callback) {
     if (notice) {
       UserNotification.update({ _id: notice._id }, { deleted: false }, function(err){
         if (err) console.log(err)
+        global.io.sockets.emit('notiaction', [data.addressee_id]);
         callback()
       })
       return
@@ -343,9 +344,6 @@ exports.add = function(data, callback) {
     // 添加通知
     UserNotification.save(data, function(err){
       if (err) console.log(err)
-
-      // console.log(data);
-
       global.io.sockets.emit('notiaction', [data.addressee_id]);
       callback()
     })
@@ -361,6 +359,11 @@ exports.delete = function(query, callback) {
     if (notice) {
       UserNotification.update({ _id: notice._id }, { deleted: true }, function(err){
         if (err) console.log(err)
+
+        console.log('123123');
+
+        global.io.sockets.emit('cancel-notiaction', notice._id);
+
         callback()
       })
     } else {

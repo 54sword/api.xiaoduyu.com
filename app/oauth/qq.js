@@ -18,8 +18,9 @@ var appConfig = {
 }
 
 var goToNoticePage = function(req, res, string) {
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
-  res.redirect(landingPage+'/notice?source=oauth_qq&notice='+string)
+  // var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  var landingPageDomain = req.cookies['landing_page_domain']
+  res.redirect(landingPageDomain+'/notice?source=oauth_qq&notice='+string)
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
@@ -181,7 +182,7 @@ exports.show = function(req, res, next) {
   let domain = []
 
   let _arr = landingPage.split('/')
-
+  
   domain.push(_arr[0])
   domain.push(_arr[1])
   domain.push(_arr[2])
@@ -266,9 +267,7 @@ exports.signin = function(req, res) {
     },
 
     function(tokenInfo, callback) {
-
       signInAndSignUp(user, tokenInfo, (err, result)=>{
-
         if (err) {
           goToNoticePage(req, res, err)
         } else {
@@ -287,7 +286,7 @@ exports.getUserInfo = (req, res, next) => {
 
   const user = req.user || null;
 
-  const { qq_access_token, refresh_token, openid, expires_in } = req.body
+  const { qq_access_token, refresh_token = '', openid, expires_in } = req.body
 
   signInAndSignUp(user, {
     access_token: qq_access_token,
@@ -307,9 +306,9 @@ exports.getUserInfo = (req, res, next) => {
       }
 
       res.send({
-        success: false,
+        success: _err[err] == 20000 ? true : false,
         error: _err[err] || 10007
-      });
+      })
     } else {
       res.send({
         success: true,

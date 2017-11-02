@@ -19,8 +19,9 @@ var appConfig = {
 }
 
 var goToNoticePage = function(req, res, string) {
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
-  res.redirect(landingPage+'/notice?source=oauth_github&notice='+string)
+  // var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  var landingPageDomain = req.cookies['landing_page_domain']
+  res.redirect(landingPageDomain+'/notice?source=oauth_github&notice='+string)
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
