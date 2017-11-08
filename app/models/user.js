@@ -3,6 +3,8 @@ var User = require('../schemas').User;
 // var bcrypt = require('bcryptjs');
 var uuid = require('node-uuid');
 
+
+
 // 创建账号
 exports.create = function(user, callback) {
   var _user = new User();
@@ -12,6 +14,7 @@ exports.create = function(user, callback) {
   _user.gender = user.gender;
   _user.source = user.source;
   _user.access_token = uuid.v4();
+  _user.password = user.password;
   _user.save(callback);
 };
 
@@ -33,6 +36,10 @@ exports.find = function(query, select, options, callback) {
   find.exec(callback)
 }
 
+
+exports.findOne = function(query, select, callback) {
+  User.findOne(query, select).exec(callback)
+}
 
 /*
 var find = User.find({}, {})

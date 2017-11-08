@@ -8,6 +8,7 @@ var xss = require('xss');
 var Account = require('../../models').Account;
 var User = require('../../models').User;
 var Captcha = require('../../models').Captcha;
+var Phone = require('../../models').Phone;
 
 var JWT = require('../../common/jwt');
 var Email = require('../../common/email');
@@ -16,28 +17,51 @@ var config = require('../../../config');
 var Validate = require('../../common/validate');
 var Tools = require('../../common/tools');
 
+import Countries from '../../data/countries'
+
+
 // 刷新token，延续登录状态
 exports.refreshToken = function(req, res, next) {
   var accessToken = req.body['access_token'];
   var refreshToken = req.body['refresh_token'];
 }
 
+/*
+Account.find({}, {}, {}, (err, res)=>{
+
+  // console.log(res);
+
+
+  res.map((item)=>{
+
+    let _item = JSON.stringify(item);
+    _item = JSON.parse(_item);
+
+    User.update({ _id: _item.user_id }, { password: _item.password }, (err, res)=>{
+      if (err) console.log(err);
+      // console.log();
+    })
+  })
+
+})
+*/
+
 // 账号登录
 exports.signin = function(req, res, next) {
 
   var ip = Tools.getIP(req);
   var email = req.body['email'];
+  var phone = req.body['phone'];
   var password = req.body['password'];
   var captcha = req.body['captcha'] || '';
   var captchaId = req.body['captcha_id'] || '';
-  var ip = Tools.getIP(req);
-  // console.log(req.body);
+  // var ip = Tools.getIP(req);
 
   async.waterfall([
 
     function(callback) {
-      if (!email) {
-        callback(13005);
+      if (!email && !phone) {
+        callback(13023);
       } else if (!password) {
         callback(13006);
       } else if (!ip) {
@@ -49,23 +73,25 @@ exports.signin = function(req, res, next) {
 
     function(callback) {
 
-      Captcha.findOne({ ip: ip }, { _id: 1 }, { sort:{ create_at: -1 } },function(err, result){
-        if (err) console.log(err);
+      // 查找是否有验证码
+      Captcha.findOne({
+        query:{ ip: ip },
+        select:{ _id: 1 },
+        options:{ sort:{ create_at: -1 } },
+        callback: (err, result)=>{
 
-        if (!result) {
-          callback(null)
-          return
-        }
+          if (err) console.log(err);
+          if (!result) return callback(null)
 
-        if (captcha && captchaId) {
+          /*
+           * 如果存在验证码，那么检测验证码是否正确
+           */
+          if (!captcha || !captchaId) return callback(13010)
 
-          Captcha.findOne(
-            { _id: captchaId },
-            {},
-            {},
-            function(err, result){
-              if (err) console.log(err);
-
+          Captcha.findOne({
+            query: { _id: captchaId },
+            callback: (err, result)=>{
+              if (err) console.log(err)
               // 不需要验证
               if (result && result.captcha == captcha) {
                 callback(null)
@@ -73,45 +99,61 @@ exports.signin = function(req, res, next) {
                 callback(13010)
               }
             }
-          )
+          })
 
-        } else {
-          callback(13010)
         }
-
       })
     },
 
     function(callback) {
 
+      if (!phone) return callback(null, null)
+
+      Phone.findOne({
+        query: { phone },
+        options: { populate: { path: 'user_id' } },
+        callback: function(err, account){
+          if (err) console.log(err);
+          if (!account) return callback(13007)
+          callback(null, account)
+        }
+      });
+
+    },
+
+    function(account, callback) {
+
+      if (!email) return callback(null, account)
+
       Account.fetchByEmail(email, function(err, account){
+        if (err) console.log(err)
+        if (!account) return callback(13007)
+        callback(null, account)
+      });
 
-        if (err) console.log(err);
+    },
 
-        if (account) {
-          Account.verifyPassword(password, account.password, function(bl, s){
+    (account, callback)=>{
 
-            if (bl) {
+      Account.verifyPassword(password, account.user_id.password, function(bl, s){
 
-              User.fetch({ _id: account.user_id }, {}, {}, function(err, user){
-                if (err) { console.log(err); }
+        if (bl) {
 
-                user = user[0]
+          User.fetch({ _id: account.user_id }, {}, {}, function(err, user){
+            if (err) { console.log(err); }
 
-                var result = JWT.encode(req.jwtTokenSecret, user._id, user.access_token, ip)
+            user = user[0]
 
-                callback(null, result)
+            var result = JWT.encode(req.jwtTokenSecret, user._id, user.access_token, ip)
 
-              });
+            callback(null, result)
 
-            } else {
-              callback(13007);
-            }
           });
+
         } else {
           callback(13007);
         }
-      });
+      })
 
     }
   ], function(err, result){
@@ -123,15 +165,10 @@ exports.signin = function(req, res, next) {
       meg.success = false;
       meg.error = err;
 
-      var code = Math.round(900000*Math.random()+100000);
+      var captcha = Math.round(900000*Math.random()+100000);
       var ip = Tools.getIP(req);
 
-      // console.log(ip);
-
-      //  type:1,
-      Captcha.add({ captcha: code, ip:ip }, function(err){
-        if (err) console.log(err);
-      })
+      Captcha.save({ data: { captcha, ip } })
 
     } else {
       meg.success = true;
@@ -147,13 +184,35 @@ exports.signup = function(req, res, next) {
   // 用户信息
   var user = {
     nickname: req.body.nickname || '',
-    email: req.body.email.toLowerCase() || '',
+    email: req.body.email ? req.body.email.toLowerCase() : '',
+    areaCode: req.body.area_code || '',
+    phone: req.body.phone || '',
     password: req.body.password || '',
-    gender: parseInt(req.body.gender),
+    gender: req.body.gender ? parseInt(req.body.gender) : -1,
     source: parseInt(req.body.source) || 0,
     captcha: req.body.captcha || '',
     createDate: new Date()
-  };
+  }
+
+  let areaCodeStatus = false
+
+  if (user.phone) {
+    Countries.map(item=>{
+      if (item.code == user.areaCode) {
+        areaCodeStatus = true
+      }
+    })
+
+    if (!areaCodeStatus) {
+      res.status(400);
+      res.send({
+        success: false,
+        error: 30004
+      })
+      return
+    }
+
+  }
 
   async.waterfall([
     function(callback) {
@@ -168,21 +227,16 @@ exports.signup = function(req, res, next) {
       // 验证信息
       var checkResult = {};
 
-      if (Validate.nickname(user.nickname) != 'ok') {
-        checkResult.nickname = 13011
-      }
-
-      if (Validate.email(user.email) != 'ok') {
+      if (Validate.nickname(user.nickname) != 'ok') checkResult.nickname = 13011
+      // if (Validate.email(user.email) != 'ok') checkResult.email = 13012
+      if (Validate.password(user.password) != 'ok') checkResult.password = 13013
+      if (Validate.gender(user.gender) != 'ok') checkResult.gender = 13014
+      if (!user.email && !user.phone) {
         checkResult.email = 13012
+        checkResult.phone = 30001
       }
-
-      if (Validate.password(user.password) != 'ok') {
-        checkResult.password = 13013
-      }
-
-      if (Validate.gender(user.gender) != 'ok') {
-        checkResult.gender = 13014
-      }
+      if (!user.captcha) checkResult.captcha = 40000
+      if (user.gender != 0 && user.gender != 1) checkResult.gender = 13014
 
       var err = false;
 
@@ -199,6 +253,51 @@ exports.signup = function(req, res, next) {
       }
 
     },
+
+    function(checkResult, callback) {
+      if (!user.email) return callback(null, checkResult)
+
+      Account.fetchByEmail(user.email, function(err, doc){
+
+        if (err) console.log(err);
+
+        if (doc) {
+          checkResult.email = 13009;
+          callback(checkResult);
+          return;
+        } else {
+          callback(null, checkResult);
+        }
+
+      });
+
+    },
+
+    function(checkResult, callback) {
+      if (!user.phone) return callback(null, checkResult)
+
+      Phone.findOne({
+        query: { phone: user.phone },
+        options: { populate: { path: 'user_id', select: { password: 1 } } },
+        callback: (err, doc) => {
+
+          if (err) console.log(err);
+
+          if (doc) {
+            checkResult.phone = 30003;
+            callback(checkResult);
+            return;
+          } else {
+            callback(null, checkResult);
+          }
+
+        }
+
+      })
+
+    },
+
+    /*
     function(checkResult, callback) {
 
       Account.fetchByEmail(user.email, function(err, doc){
@@ -216,8 +315,30 @@ exports.signup = function(req, res, next) {
       });
 
     },
+    */
+
     function(checkResult, callback) {
 
+      let query = {}
+
+      if (user.phone) query.phone = user.phone
+      if (user.email) query.email = user.email
+
+      Captcha.findOne({
+        query,
+        options: { sort:{ create_at: -1 } },
+        callback: function(err, captcha){
+          if (err) console.log(err)
+          if (captcha && captcha.captcha == user.captcha) {
+            callback(null, checkResult)
+          } else {
+            checkResult.captcha = 13010;
+            callback(checkResult);
+          }
+        }
+      })
+
+      /*
       Captcha.fetchByEmail(user.email, function(err, captcha){
         if (err) console.log(err)
         if (captcha && captcha.captcha == user.captcha) {
@@ -227,8 +348,25 @@ exports.signup = function(req, res, next) {
           callback(checkResult);
         }
       })
+      */
 
     },
+
+    function(checkResult, callback) {
+
+      bcrypt.genSalt(10, function(err, salt) {
+        if (err) return next(err);
+
+        bcrypt.hash(user.password, salt, function(err, hash) {
+          if (err) return next(err);
+
+          user.password = hash;
+          callback(null, checkResult)
+        });
+      });
+
+    },
+
     function(checkResult, callback) {
 
       // create user accounts
@@ -236,18 +374,34 @@ exports.signup = function(req, res, next) {
 
         if (err) console.log(err);
 
-        Account.create({
-            user_id: doc._id,
-            email: user.email,
-            password: user.password
-          },
+        if (user.email) {
+          Account.create({
+              user_id: doc._id,
+              email: user.email
+              // password: user.password
+            },
 
-          function(err, acc){
+            function(err, acc){
 
-            if (err) console.log(err);
-            callback(null);
+              if (err) console.log(err);
+              callback(null);
 
-        });
+          });
+        } else if (user.phone) {
+
+          Phone.save({
+            data: {
+              user_id: doc._id,
+              phone: user.phone,
+              area_code: user.areaCode
+            },
+            callback: function(err, acc){
+              if (err) console.log(err);
+              callback(null);
+            }
+          });
+
+        }
 
       });
 
@@ -538,6 +692,7 @@ exports.signupEmailVerify = function(req, res) {
  *   	"err": ''
  * }
  */
+/*
 exports.resetPassword = function(req, res) {
 
   var user = req.user,
@@ -603,7 +758,7 @@ exports.resetPassword = function(req, res) {
   });
 
 };
-
+*/
 // 检测新邮箱，邮箱地址正确，则发送验证码
 exports.checkEmailAndSendVerifyCaptcha = function(req, res, next) {
 
@@ -742,41 +897,28 @@ exports.resetEmail = function(req, res, next) {
 
     function(account, callback) {
 
-      Captcha.fetchByUserId(user._id, function(err, _captcha){
-        if (err) console.log(err)
-        if (_captcha && _captcha.captcha == captcha && _captcha.email == email) {
+      Captcha.findOne({
+        query: { user_id: user._id },
+        options: { sort:{ create_at: -1 } },
+        callback: (err, _captcha) => {
+          if (err) console.log(err)
+          if (_captcha && _captcha.captcha == captcha && _captcha.email == email) {
 
-          Account.updateEmail(account._id, email, function(err){
-            if (err) console.log(err);
-            callback(null);
-          });
+            Account.updateEmail(account._id, email, function(err){
+              if (err) console.log(err);
+              callback(null);
+            });
 
-        } else {
-          // checkResult.captcha = 'captcha error';
-          callback(13010);
+          } else {
+            callback(13010);
+          }
         }
       })
 
-      /*
-      var expire = new Date(account.verify_email_captcha_expire).getTime();
-      var now = new Date().getTime();
-
-      if (account.verify_email_captcha == captcha && now < expire &&
-        account.replace_email == email
-      ) {
-
-        Account.updateEmail(account._id, email, function(err){
-          if (err) console.log(err);
-          callback('');
-        });
-
-      } else {
-        callback('captcha error');
-      }
-      */
     }
 
   ], function(err, result){
+
     if (err) {
       res.status(400);
       return res.send({
@@ -785,10 +927,7 @@ exports.resetEmail = function(req, res, next) {
       });
     }
 
-    return res.send({
-      success: true
-    });
-    // res.send({ err: result });
+    return res.send({ success: true })
   });
 
 };
@@ -800,19 +939,17 @@ exports.resetPasswordByCaptcha = function(req, res, next) {
   var email = req.body.email;
   var newPassword = req.body.new_password;
   var captcha = req.body.captcha;
+  const ip = Tools.getIP(req);
 
   async.waterfall([
 
     function(callback) {
       if (!email) {
-        callback(10005);
+        callback(10005)
+      } else if (Validate.email(email) != 'ok') {
+        callback(13012)
       } else {
-        // var result = Validate.email(email);
-        if (Validate.email(email) != 'ok') {
-          callback(13012);
-        } else {
-          callback(null);
-        }
+        callback(null)
       }
     },
 
@@ -829,38 +966,35 @@ exports.resetPasswordByCaptcha = function(req, res, next) {
 
     function(account, callback) {
 
-      Captcha.fetchByEmail(email, function(err, _captcha){
-        if (err) console.log(err)
-        if (_captcha && _captcha.captcha == captcha) {
+      Captcha.findOne({
+        query: { email },
+        options: { sort:{ create_at: -1 } },
+        callback: function(err, _captcha){
+          if (err) console.log(err)
 
-          Account.resetPassword(account._id, newPassword, function(err, password){
-            if (err) console.log(err);
-            callback(null);
-          });
+          if (_captcha && _captcha.captcha == captcha) {
 
-        } else {
-          // checkResult.captcha = 13010;
-          callback(13010);
+            bcrypt.genSalt(10, function(err, salt) {
+              if (err) return callback(err);
+
+              bcrypt.hash(newPassword, salt, function(err, hash) {
+                if (err) return callback(err);
+
+                User.update({ _id: account.user_id._id }, { password: hash }, function(err, password){
+                  if (err) console.log(err);
+                  callback(null);
+                  Captcha.remove({ condition: { email } })
+                })
+
+              })
+            })
+
+          } else {
+            callback(13010);
+          }
         }
       })
 
-      /*
-      var expire = new Date(account.verify_email_captcha_expire).getTime();
-      var now = new Date().getTime();
-
-      if (account.verify_email_captcha == captcha && now < expire &&
-        account.replace_email == email
-      ) {
-
-        Account.resetPassword(account._id, newPassword, function(err, password){
-          if (err) console.log(err);
-          callback(null);
-        });
-
-      } else {
-        callback('captcha error');
-      }
-      */
     }
 
   ], function(err, result){
@@ -884,27 +1018,44 @@ exports.bindingEmail = function(req, res, next) {
   var user = req.user;
   var email = req.body.email;
   var captcha = req.body.captcha;
-  var password = req.body.password;
 
   async.waterfall([
+
     function(callback) {
-      Captcha.fetchByEmail(email, function(err, _captcha){
+      Captcha.findOne({
+        query: { email },
+        options: { sort:{ create_at: -1 } },
+        callback: function(err, _captcha){
 
-        if (_captcha && _captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
-          callback(null)
-          return
+          if (_captcha && _captcha.user_id + '' == user._id + '' && _captcha.captcha == captcha) {
+            callback(null)
+            return
+          }
+
+          callback(13010)
         }
-
-        callback(13010)
-
-      });
+      })
     },
+
+    function(callback) {
+
+      Account.fetchByEmail(email, function(err, acc){
+        if (err) console.log(err);
+
+        if (!acc) {
+          callback(null)
+        } else {
+          callback(13009)
+        }
+      })
+
+    },
+
     function(callback) {
 
       Account.create({
           user_id: user._id,
-          email: email,
-          password: password
+          email: email
         },
         function(err, acc){
           if (err) console.log(err);

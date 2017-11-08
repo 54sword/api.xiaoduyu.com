@@ -23,8 +23,9 @@ var appConfig = {
 }
 
 var goToNoticePage = function(req, res, string) {
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
-  res.redirect(config.oauth.landingPage+'/notice?source=oauth_weibo&notice='+string)
+  // var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  var landingPageDomain = req.cookies['landing_page_domain']
+  res.redirect(landingPageDomain+'/notice?source=oauth_weibo&notice='+string)
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
@@ -302,7 +303,7 @@ exports.signin = function(req, res, next) {
         }
       });
     },
-    
+
     function(userInfo, callback) {
       signInAndSignUp(user, userInfo, (err, result)=>{
         if (err) {
@@ -458,9 +459,9 @@ exports.getUserInfo = (req, res, next) => {
       }
 
       res.send({
-        success: false,
+        success: _err[err] == 20000 ? true : false,
         error: _err[err] || 10007
-      });
+      })
     } else {
       res.send({
         success: true,

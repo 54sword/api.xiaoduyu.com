@@ -13,3 +13,5 @@ exports.Token = require('./token');
 exports.Posts = require('./posts');
 exports.Topic = require('./topic');
 exports.Follow = require('./follow');
+exports.Phone = require('./phone');
+exports.Report = require('./report');

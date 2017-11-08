@@ -16,7 +16,7 @@ var verifyToken = function(req, callback) {
   }
 
   let decoded = JWT.decode(token, req.jwtTokenSecret)
-  
+
   // console.log(decoded);
 
   // 解析错误
@@ -53,13 +53,11 @@ var verifyToken = function(req, callback) {
         })
       }
 
-      /*
       // 判断访问令牌是否正确
-      if (!decoded.access_token || decoded.access_token != user[0].access_token) {
-        callback(false);
-        return
-      }
-      */
+      // if (!decoded.access_token || decoded.access_token != user[0].access_token) {
+      //   callback(false);
+      //   return
+      // }
 
       callback(true);
     } else {

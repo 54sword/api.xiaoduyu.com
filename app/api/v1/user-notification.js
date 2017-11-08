@@ -32,7 +32,7 @@ exports.fetch = function(req, res, next) {
         query.create_at = { '$gt': gtCreateAt }
       }
 
-      options.limit = perPage
+      options.limit = parseInt(perPage)
 
       options.sort = { create_at: -1 }
 
@@ -84,20 +84,24 @@ exports.fetch = function(req, res, next) {
       var _notices = JSON.stringify(notices);
       _notices = JSON.parse(_notices);
 
-      _notices.map(function(item, key){
-        if (typeof item.comment_id != 'undefined' && item.comment_id == null ||
-          typeof item.posts_id != 'undefined' && item.posts_id == null
-          ) {
-          _notices.splice(key, 1);
-          return
-        }
-      })
+      if (_notices && _notices.map) {
+        _notices.map(function(item, key){
+          if (typeof item.comment_id != 'undefined' && item.comment_id == null ||
+            typeof item.posts_id != 'undefined' && item.posts_id == null
+            ) {
+            _notices.splice(key, 1);
+            return
+          }
+        })
+      }
 
-      // 未读的通知设置成已读
-      for (var i = 0, max = notices.length; i < max; i++) {
-        if (notices[i].has_read == false) {
-          notices[i].has_read = true;
-          notices[i].save();
+      if (notices && notices.length) {
+        // 未读的通知设置成已读
+        for (var i = 0, max = notices.length; i < max; i++) {
+          if (notices[i].has_read == false) {
+            notices[i].has_read = true;
+            notices[i].save();
+          }
         }
       }
 
@@ -255,19 +259,21 @@ exports.fetchUnreadCount = function(req, res) {
         query.create_at = { '$gt': user.find_notification_at }
       }
 
+      // console.log(query);
+
       Notification.find(query, {}, { sort:{ 'create_at': -1 } },
         function(err, notice){
           if (err) console.log(err);
 
           if (notice.length > 0) {
 
+            // 更新用户最近一次拉取通知的时间
             User.update({ _id: user._id }, { find_notification_at: notice[0].create_at }, function(err, result){
               if (err) console.log(err);
             })
 
             var notificationArr = []
 
-            // 问题关键
             notice.map(function(item){
               if (item.type == 'new-comment') {
                 notificationArr.push({
@@ -292,12 +298,29 @@ exports.fetchUnreadCount = function(req, res) {
 
     },
     function(callback){
-      UserNotification.count({ addressee_id: user._id, has_read: false, deleted: false }, function(err, count){
+      UserNotification.find({ addressee_id: user._id, has_read: false, deleted: false }, { _id:1 }, {}, function(err, result){
+        if (err) console.log(err);
+
+        let ids = []
+        if (result) {
+          result.map(item=>{
+            ids.push(item._id)
+          })
+        }
+
+        // console.log(ids);
+
         res.send({
           success: true,
-          data: count
+          data: ids
         })
       })
+      // UserNotification.count({ addressee_id: user._id, has_read: false, deleted: false }, function(err, count){
+      //   res.send({
+      //     success: true,
+      //     data: count
+      //   })
+      // })
     }
   ], function(err, result){
 
@@ -314,6 +337,7 @@ exports.add = function(data, callback) {
     if (notice) {
       UserNotification.update({ _id: notice._id }, { deleted: false }, function(err){
         if (err) console.log(err)
+        global.io.sockets.emit('notiaction', [data.addressee_id]);
         callback()
       })
       return
@@ -322,9 +346,6 @@ exports.add = function(data, callback) {
     // 添加通知
     UserNotification.save(data, function(err){
       if (err) console.log(err)
-
-      // console.log(data);
-
       global.io.sockets.emit('notiaction', [data.addressee_id]);
       callback()
     })
@@ -340,6 +361,11 @@ exports.delete = function(query, callback) {
     if (notice) {
       UserNotification.update({ _id: notice._id }, { deleted: true }, function(err){
         if (err) console.log(err)
+
+        console.log('123123');
+
+        global.io.sockets.emit('cancel-notiaction', notice._id);
+
         callback()
       })
     } else {

@@ -11,6 +11,9 @@ var QiNiu = require('./api/v1/qiniu');
 var Posts = require('./api/v1/posts');
 var Topic = require('./api/v1/topic');
 var Follow = require('./api/v1/follow');
+var Phone = require('./api/v1/phone');
+import Countries from './api/v1/countries'
+import Report from './api/v1/report'
 
 var token = require('./api/v1/token')
 
@@ -91,6 +94,8 @@ var APIRequire = function() {
 
   router.get('/people/:id', auth.openType, user.fetchById);
 
+  router.get('/countries', Countries.fetch);
+
   router.post('/get-captcha', auth.openType, Captcha.add);
   router.get('/captcha-image/:id', Captcha.showImage);
   router.get('/get-captcha-id', Captcha.getCaptchaId);
@@ -104,14 +109,16 @@ var APIRequire = function() {
   router.post('/check-email-and-send-verify-captcha', auth.userRequired, account.checkEmailAndSendVerifyCaptcha);
   router.post('/reset-email', auth.userRequired, account.resetEmail);
   router.post('/send-captcha-to-mailbox', account.sendEmailCaptcha);
-  router.post('/reset-password-by-captcha', account.resetPasswordByCaptcha);
+  router.post('/reset-password-by-captcha', user.resetPasswordByCaptcha);
   router.post('/binding-email', auth.userRequired, account.bindingEmail);
 
-  router.post('/reset-password', auth.userRequired, account.resetPassword);
+  router.post('/reset-password', auth.userRequired, user.resetPassword);
   router.post('/reset-nickname', auth.userRequired, user.resetNickname);
   router.post('/reset-gender', auth.userRequired, user.resetGender);
   router.post('/reset-brief', auth.userRequired, user.resetBrief);
   router.post('/reset-avatar', auth.userRequired, user.resetAvatar);
+  router.post('/reset-phone', auth.userRequired, Phone.reset);
+  router.post('/binding-phone', auth.userRequired, Phone.binding);
 
   router.post('/add-posts', auth.userRequired, Posts.add);
   router.post('/update-posts', auth.userRequired, Posts.update);
@@ -146,10 +153,13 @@ var APIRequire = function() {
 
   router.post('/weibo-get-user-info', auth.openType, weibo.getUserInfo);
   router.post('/qq-get-user-info', auth.openType, qq.getUserInfo);
-  
+
   // 旧token兑换新的token
   router.post('/exchange-new-token', token.exchange);
   // router.post('/check-token', token.check);
+
+  router.post('/add-report', auth.userRequired, Report.add)
+  router.get('/get-report-list', Report.getList)
 
   return router;
 };

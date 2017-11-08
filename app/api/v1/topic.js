@@ -13,7 +13,7 @@ exports.add = function(req, res, next) {
     description: req.body.description,
     user_id: user._id
   }
-
+  
   if (req.body.parent_id) {
     newNode.parent_id = req.body.parent_id
   }
@@ -219,7 +219,7 @@ exports.fetch = function(req, res, next) {
     options.skip = page * perPage
   }
 
-  options.limit = perPage
+  options.limit = parseInt(perPage)
 
   options.sort = { 'question_count': -1 }
 

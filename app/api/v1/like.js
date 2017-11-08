@@ -129,7 +129,7 @@ exports.add = function(req, res, next) {
     function(callback) {
 
       var model = null
-
+      
       if (type == 'comment' || type == 'reply') {
         model = Comment
       } else if (type == 'posts') {
@@ -235,7 +235,7 @@ exports.unlike = function(req, res, next) {
     // 取消like的通知
     function(answer, callback) {
 
-      if (user._id + '' == answer.user_id._id + '') {
+      if (user._id + '' == answer.user_id + '') {
         callback(null)
         return
       }
@@ -246,21 +246,21 @@ exports.unlike = function(req, res, next) {
         params = {
           type: 'like-comment',
           sender_id: user._id,
-          addressee_id: answer.user_id._id,
+          addressee_id: answer.user_id,
           comment_id: answer._id
         }
       } else if (type == 'reply') {
         params = {
           type: 'like-reply',
           sender_id: user._id,
-          addressee_id: answer.user_id._id,
+          addressee_id: answer.user_id,
           comment_id: answer._id
         }
       } else if (type == 'posts') {
         params = {
           type: 'like-posts',
           sender_id: user._id,
-          addressee_id: answer.user_id._id,
+          addressee_id: answer.user_id,
           posts_id: answer._id
         }
       }

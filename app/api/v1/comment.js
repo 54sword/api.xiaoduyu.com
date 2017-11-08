@@ -14,7 +14,7 @@ var jpush = require('../../common/jpush');
 
 // 添加
 exports.add = function(req, res) {
-
+  
   var user          = req.user;
   var postsId       = req.body.posts_id;
   var replyId       = req.body.reply_id || '';
@@ -51,9 +51,6 @@ exports.add = function(req, res) {
         //   callback(12006)
         } else {
           posts = data[0]
-
-          console.log(posts);
-
           callback(null)
         }
       })
@@ -176,7 +173,11 @@ exports.add = function(req, res) {
         }
       });
 
-      if (!content || !contentHTML || contentHTML.replace(/<[^>]+>/g,"") == '') {
+      let _contentHTML = contentHTML
+      _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1")
+      _contentHTML = _contentHTML.replace(/<[^>]+>/g,"")
+
+      if (!content || !contentHTML || _contentHTML == '') {
         callback(12004);
         return;
       }
@@ -493,7 +494,7 @@ exports.fetch = function(req, res) {
   if (answerId) query.answer_id = answerId
   if (gt_create_at) query.create_at = { '$gt': gt_create_at }
   if (page > 0) options.skip = page * perPage
-  if (perPage) options.limit = perPage
+  if (perPage) options.limit = parseInt(perPage)
 
   options.sort = {}
   options.sort[sortBy] = sort > 0 ? 1 : -1
@@ -510,7 +511,7 @@ exports.fetch = function(req, res) {
     },
     {
       path: 'posts_id',
-      select: { _id:1, title:1 }
+      select: { _id:1, title:1, content_html:1 }
     },
     {
       path: 'reply',

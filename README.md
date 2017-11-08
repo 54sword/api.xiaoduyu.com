@@ -21,7 +21,7 @@
 	3. cd api.xiaoduyu.com
 	4. npm install
 	5. cp config.default.js config.js 请根据需要修改 config.js 配置文件
-	6. node app.js
+	6. node server.js
 	7. 访问 http://localhost:3000
 	8. 完成
 

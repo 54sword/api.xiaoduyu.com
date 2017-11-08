@@ -220,12 +220,15 @@ exports.update = function(req, res, next) {
 
       Topic.fetch({ _id: topicId }, {}, {}, function(err, data){
         if (err) console.log(err);
+
         if (!data || data.length == 0) {
-          callback(15000);
+          callback(15000)
+        } else if (user._id + '' != data[0].user_id + '') {
+          callback(10007)
         } else {
           callback(null);
         }
-      });
+      })
 
     },
 
@@ -417,8 +420,8 @@ exports.fetch = function(req, res, next) {
       page = parseInt(req.query.page) || 0,
       perPage = parseInt(req.query.per_page) || 20,
       userId = req.query.user_id,
-      topicId = req.query.topic_id,
-      postsId = req.query.posts_id,
+      topicId = req.query.topic_id || '',
+      postsId = req.query.posts_id || '',
       // 大于创建日期
       gtCreateAt = req.query.gt_create_at,
       gtDate = req.query.gt_date,
@@ -430,7 +433,7 @@ exports.fetch = function(req, res, next) {
 
       // 是否包含部分评论一起返回
       includeComments = req.query.include_comments || 0,
-      commentsLimit = req.query.comments_limit || 5,
+      commentsLimit = parseInt(req.query.comments_limit) || 5,
       commentsSort = req.query.comments_sort || 'reply_count:-1,like_count:-1',
 
       postsSort = req.query.posts_sort || 'sort_by_date:-1',
@@ -468,10 +471,20 @@ exports.fetch = function(req, res, next) {
     query['$or'] = []
   }
 
+  // console.log(user);
+
   // 根据用户的关注偏好获取帖子
   if (user && method == 'user_custom') {
 
-    user.follow_people.push(user._id)
+    if (!user.follow_people.length && !user.follow_topic.length && !user.follow_posts.length) {
+      res.send({
+        success: true,
+        data: []
+      })
+      return
+    }
+
+    // user.follow_people.push(user._id)
     userId = user.follow_people.join(',')
 
     // if (user.follow_topic.length > 0) {
@@ -491,6 +504,9 @@ exports.fetch = function(req, res, next) {
     } else {
       topicId = user.follow_topic.join(',')
     }
+
+    postsId = postsId + (postsId ? ',' : '') + user.follow_posts.join(',')
+
   }
 
   // 用户偏好

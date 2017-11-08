@@ -1,6 +1,5 @@
-var JPush = require("jpush-sdk/lib/JPush/JPush.js")
-// var config = require("../../config")
-
+// var JPush = require("jpush-sdk/lib/JPush/JPush.js")
+import JPush from 'jpush-sdk/lib/JPush/JPush.js'
 import { jpush } from '../../config'
 
 /*
@@ -59,10 +58,8 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
     // 开启正式环境的推送
     .setOptions(null, null, null, jpush.production)
     .send(function(err, res) {
-      if (err) {
-        console.log(err.message)
-      }
-    });
+      if (err) console.log(err.message)
+    })
 
 }
 
@@ -91,9 +88,7 @@ exports.pushReplyToUser = function({ comment, reply, user }) {
     // 开启正式环境的推送
     .setOptions(null, null, null, jpush.production)
     .send(function(err, res) {
-      if (err) {
-        console.log(err.message)
-      }
-    });
+      if (err) console.log(err.message)
+    })
 
 }
