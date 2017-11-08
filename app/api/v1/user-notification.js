@@ -95,11 +95,13 @@ exports.fetch = function(req, res, next) {
         })
       }
 
-      // 未读的通知设置成已读
-      for (var i = 0, max = notices.length; i < max; i++) {
-        if (notices[i].has_read == false) {
-          notices[i].has_read = true;
-          notices[i].save();
+      if (notices && notices.length) {
+        // 未读的通知设置成已读
+        for (var i = 0, max = notices.length; i < max; i++) {
+          if (notices[i].has_read == false) {
+            notices[i].has_read = true;
+            notices[i].save();
+          }
         }
       }
 

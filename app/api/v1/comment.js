@@ -14,7 +14,7 @@ var jpush = require('../../common/jpush');
 
 // 添加
 exports.add = function(req, res) {
-
+  
   var user          = req.user;
   var postsId       = req.body.posts_id;
   var replyId       = req.body.reply_id || '';
@@ -511,7 +511,7 @@ exports.fetch = function(req, res) {
     },
     {
       path: 'posts_id',
-      select: { _id:1, title:1 }
+      select: { _id:1, title:1, content_html:1 }
     },
     {
       path: 'reply',

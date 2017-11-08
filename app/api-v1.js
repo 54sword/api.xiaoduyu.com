@@ -13,6 +13,7 @@ var Topic = require('./api/v1/topic');
 var Follow = require('./api/v1/follow');
 var Phone = require('./api/v1/phone');
 import Countries from './api/v1/countries'
+import Report from './api/v1/report'
 
 var token = require('./api/v1/token')
 
@@ -156,6 +157,9 @@ var APIRequire = function() {
   // 旧token兑换新的token
   router.post('/exchange-new-token', token.exchange);
   // router.post('/check-token', token.check);
+
+  router.post('/add-report', auth.userRequired, Report.add)
+  router.get('/get-report-list', Report.getList)
 
   return router;
 };

@@ -37,6 +37,10 @@ exports.find = function(query, select, options, callback) {
 }
 
 
+exports.findOne = function(query, select, callback) {
+  User.findOne(query, select).exec(callback)
+}
+
 /*
 var find = User.find({}, {})
 find.exec(function(err, result){

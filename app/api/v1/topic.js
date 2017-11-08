@@ -13,7 +13,7 @@ exports.add = function(req, res, next) {
     description: req.body.description,
     user_id: user._id
   }
-
+  
   if (req.body.parent_id) {
     newNode.parent_id = req.body.parent_id
   }
