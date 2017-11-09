@@ -60,6 +60,28 @@ var config = {
 		production: false,
 		appKey: '',
 		masterSecret: ''
+	},
+
+	// 阿里云
+	alicloud: {
+		// 短信服务
+		sms: {
+			accessKeyId: '',
+			secretAccessKey: '',
+			// 短信签名
+			signName: '小度鱼',
+			// 短信模版CODE
+			templateCode: 'SMS_****'
+		}
+	},
+
+	// 云片
+	yunpian: {
+		// 国际短信
+		international: {
+			apikey: '',
+			text: '【XiaoDuYu】security code: {code}. Use this to finish verification.'
+		}
 	}
 
 };
