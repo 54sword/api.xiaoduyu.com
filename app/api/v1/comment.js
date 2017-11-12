@@ -14,7 +14,7 @@ var jpush = require('../../common/jpush');
 
 // 添加
 exports.add = function(req, res) {
-  
+
   var user          = req.user;
   var postsId       = req.body.posts_id;
   var replyId       = req.body.reply_id || '';
@@ -480,6 +480,11 @@ exports.fetch = function(req, res) {
   },
   options = {}
 
+  // 添加屏蔽条件
+  if (user && !comment_id) {
+    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+  }
+
   // 是否查询有父节点的数据
   // query.parent_id = { $exists : parent_exists ? true : false }
 
@@ -512,13 +517,29 @@ exports.fetch = function(req, res) {
     {
       path: 'posts_id',
       select: { _id:1, title:1, content_html:1 }
-    },
-    {
+    }
+    // {
+    //   path: 'reply',
+    //   select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+    //   options: { limit: 10 }
+    // }
+  ]
+  
+  // reply 添加屏蔽条件
+  if (user && !comment_id) {
+    options.populate.push({
+      path: 'reply',
+      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+      options: { limit: 10 },
+      match: { user_id: { '$nin': user.block_people } }
+    })
+  } else {
+    options.populate.push({
       path: 'reply',
       select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
       options: { limit: 10 }
-    }
-  ]
+    })
+  }
 
   var select = {
     __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0

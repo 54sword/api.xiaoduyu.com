@@ -14,6 +14,7 @@ var Follow = require('./api/v1/follow');
 var Phone = require('./api/v1/phone');
 import Countries from './api/v1/countries'
 import Report from './api/v1/report'
+import Block from './api/v1/block'
 
 var token = require('./api/v1/token')
 
@@ -160,6 +161,11 @@ var APIRequire = function() {
 
   router.post('/add-report', auth.userRequired, Report.add)
   router.get('/get-report-list', Report.getList)
+
+  // 拉黑/屏蔽
+  router.get('/block', auth.userRequired, Block.fetch)
+  router.post('/add-block', auth.userRequired, Block.add)
+  router.post('/remove-block', auth.userRequired, Block.remove)
 
   return router;
 };

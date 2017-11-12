@@ -41,12 +41,23 @@ var UserSchema = new Schema({
   // 用户关注的人
   follow_people: [{ type: ObjectId, ref: 'User' }],
   follow_people_count: { type: Number, default: 0 },
+
   // 用户关注的节点
   follow_topic: [{ type: ObjectId, ref: 'Topic' }],
   follow_topic_count: { type: Number, default: 0 },
+
   // 关注的话题
   follow_posts: [{ type: ObjectId, ref: 'Posts' }],
   follow_posts_count: { type: Number, default: 0 },
+
+  // 屏蔽的用户
+  block_people: [{ type: ObjectId, ref: 'User' }],
+  block_people_count: { type: Number, default: 0 },
+
+  // 屏蔽的帖子
+  block_posts: [{ type: ObjectId, ref: 'Posts' }],
+  block_posts_count: { type: Number, default: 0 },
+
   // 最近一次查询Notification的日期
   find_notification_at: { type: Date },
   // 访问令牌

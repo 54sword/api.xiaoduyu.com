@@ -24,13 +24,13 @@ exports.fetch = function(req, res, next) {
       query.addressee_id = user._id
       query.deleted = false
 
-      if (ltCreateAt) {
-        query.create_at = { '$lt': ltCreateAt }
+      // 增加屏蔽条件
+      if (user) {
+        if (user.block_people_count > 0) query.sender_id = { '$nin': user.block_people }
       }
 
-      if (gtCreateAt) {
-        query.create_at = { '$gt': gtCreateAt }
-      }
+      if (ltCreateAt) query.create_at = { '$lt': ltCreateAt }
+      if (gtCreateAt) query.create_at = { '$gt': gtCreateAt }
 
       options.limit = parseInt(perPage)
 
@@ -111,9 +111,6 @@ exports.fetch = function(req, res, next) {
 
   ], function(err, _notices){
 
-    // var _notices = JSON.stringify(notices);
-    // _notices = JSON.parse(_notices);
-
     _notices.map(function(item, key){
 
       if (item.comment_id) {
@@ -189,57 +186,6 @@ exports.fetch = function(req, res, next) {
 
   })
 
-  /*
-  query.addressee_id = user._id
-  query.deleted = false
-
-  if (gtCreateAt) {
-    query.create_at = { '$lt': gtCreateAt }
-  }
-
-  options.sort = { create_at: -1 }
-
-  options.populate = [
-    { path: 'sender_id', select: { _id: 1, nickname: 1, avatar: 1, create_at: 1  } },
-    { path: 'question_id', select: { _id: 1, title: 1, content_html: 1 } },
-    { path: 'answer_id', select: { _id: 1, content_html: 1, question_id: 1 } },
-    { path: 'comment_id', select: { _id: 1, content: 1, answer_id: 1  }  }
-  ]
-
-  UserNotification.fetch(query, select, options, function(err, notices){
-
-    if (err) console.log(err);
-
-    var options = [
-      {
-        path: 'answer_id.question_id',
-        model: 'Question',
-        select: { '_id': 1, 'title': 1 }
-      }
-    ]
-
-    Question.populate(notices, options, function(err, notices){
-
-      var _notices = JSON.stringify(notices);
-      _notices = JSON.parse(_notices);
-
-      // 未读的通知设置成已读
-      for (var i = 0, max = notices.length; i < max; i++) {
-        if (notices[i].has_read == false) {
-          notices[i].has_read = true;
-          notices[i].save();
-        }
-      }
-
-      res.send({
-        success: true,
-        data: _notices
-      })
-
-    })
-
-  })
-  */
 }
 
 
@@ -251,15 +197,9 @@ exports.fetchUnreadCount = function(req, res) {
     // 拉取通知
     function(callback) {
 
-      var query = {
-        addressee_id: user._id, deleted: false
-      }
+      var query = { addressee_id: user._id, deleted: false }
 
-      if (user.find_notification_at) {
-        query.create_at = { '$gt': user.find_notification_at }
-      }
-
-      // console.log(query);
+      if (user.find_notification_at) query.create_at = { '$gt': user.find_notification_at }
 
       Notification.find(query, {}, { sort:{ 'create_at': -1 } },
         function(err, notice){
@@ -298,29 +238,28 @@ exports.fetchUnreadCount = function(req, res) {
 
     },
     function(callback){
-      UserNotification.find({ addressee_id: user._id, has_read: false, deleted: false }, { _id:1 }, {}, function(err, result){
+
+      let query = {
+        addressee_id: user._id, has_read: false, deleted: false
+      }
+
+      // 增加屏蔽条件
+      if (user) {
+        if (user.block_people_count > 0) query.sender_id = { '$nin': user.block_people }
+      }
+
+      UserNotification.find(query, { _id:1 }, {}, function(err, result){
         if (err) console.log(err);
 
         let ids = []
-        if (result) {
-          result.map(item=>{
-            ids.push(item._id)
-          })
-        }
-
-        // console.log(ids);
+        if (result) result.map(item=>ids.push(item._id))
 
         res.send({
           success: true,
           data: ids
         })
       })
-      // UserNotification.count({ addressee_id: user._id, has_read: false, deleted: false }, function(err, count){
-      //   res.send({
-      //     success: true,
-      //     data: count
-      //   })
-      // })
+
     }
   ], function(err, result){
 
@@ -361,8 +300,6 @@ exports.delete = function(query, callback) {
     if (notice) {
       UserNotification.update({ _id: notice._id }, { deleted: true }, function(err){
         if (err) console.log(err)
-
-        console.log('123123');
 
         global.io.sockets.emit('cancel-notiaction', notice._id);
 
