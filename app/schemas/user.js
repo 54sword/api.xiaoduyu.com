@@ -24,8 +24,8 @@ var UserSchema = new Schema({
   role: { type: Number, default: 0 },
   // 头像
   avatar: { type: String, default: '' },
-  // 性别
-  gender: { type: Number, default: 0 },
+  // 性别 0女 \ 1男
+  gender: { type: Number },
   // 简介,一句话介绍自己，70个字符限制
   brief: { type: String, default: '' },
   // 用户注册来源 0->iPhone, 1->iPad, 2->Android, 3->H5, 4->网站, 5->iOS
