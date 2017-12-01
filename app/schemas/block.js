@@ -11,4 +11,8 @@ var BlockSchema = new Schema({
   create_at: { type: Date, default: Date.now }
 })
 
+// BlockSchema.index({ user_id: 1 })
+// BlockSchema.index({ user_id: 1, posts_id: 1 })
+// BlockSchema.index({ user_id: 1, people_id: 1 })
+
 mongoose.model('Block', BlockSchema);

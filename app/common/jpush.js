@@ -53,6 +53,9 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
     .setNotification(title,
       JPush.ios(title, 'comment', 1, true, {
         routeName: 'CommentDetail', params: { title:summary, id:comment._id }
+      }),
+      JPush.android(title, title, 1, {
+        routeName: 'CommentDetail', params: { title:summary, id:comment._id }
       })
     )
     // 开启正式环境的推送
@@ -82,6 +85,9 @@ exports.pushReplyToUser = function({ comment, reply, user }) {
     .setAudience(JPush.alias(reply.reply_id.user_id._id + ''))
     .setNotification(title,
       JPush.ios(title, 'comment', 1, true, {
+        routeName: 'CommentDetail', params: { title:summaryComment, id:comment._id }
+      }),
+      JPush.android(title, title, 1, {
         routeName: 'CommentDetail', params: { title:summaryComment, id:comment._id }
       })
     )

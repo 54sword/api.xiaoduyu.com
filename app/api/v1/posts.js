@@ -628,7 +628,7 @@ exports.fetch = function(req, res, next) {
     },
     {
       path: 'comment',
-      match: { 'deleted': false, weaken: false },
+      match: { 'deleted': false, weaken: false, like_count: { '$gt': 2 } },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },

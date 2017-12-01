@@ -90,8 +90,13 @@ const signInAndSignUp = (user, authorize, _callback) => {
       } else if (!user && !oauth) {
 
         // 创建 user，并绑定
+        // console.log(authorize);
+        // console.log(appConfig);
+
 
         getUserinfo(authorize.access_token, appConfig.appid, authorize.openid, function(user_info){
+
+          // console.log(user_info);
 
           authorize.nickname = user_info.nickname;
           authorize.gender = user_info.gender;
@@ -182,7 +187,7 @@ exports.show = function(req, res, next) {
   let domain = []
 
   let _arr = landingPage.split('/')
-  
+
   domain.push(_arr[0])
   domain.push(_arr[1])
   domain.push(_arr[2])
