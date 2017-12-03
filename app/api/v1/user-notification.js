@@ -87,9 +87,13 @@ exports.fetch = function(req, res, next) {
       if (_notices && _notices.map) {
         _notices.map(function(item, key){
           if (typeof item.comment_id != 'undefined' && item.comment_id == null ||
-            typeof item.posts_id != 'undefined' && item.posts_id == null
+            typeof item.posts_id != 'undefined' && item.posts_id == null ||
+            item.comment_id && typeof item.comment_id.posts_id != 'undefined' && item.comment_id.posts_id == null ||
+            item.comment_id && typeof item.comment_id.parent_id != 'undefined' && item.comment_id.parent_id == null ||
+            item.comment_id && typeof item.comment_id.reply_id != 'undefined' && item.comment_id.reply_id == null
             ) {
-            _notices.splice(key, 1);
+              item.type = 'delete'
+            // _notices.splice(key, 1);
             return
           }
         })
