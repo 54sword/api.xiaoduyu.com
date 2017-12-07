@@ -60,6 +60,10 @@ var UserSchema = new Schema({
 
   // 最近一次查询Notification的日期
   find_notification_at: { type: Date },
+
+  // 最后一次查询关注帖子的日期
+  last_find_posts_at: { type: Date },
+
   // 访问令牌
   access_token: { type: String },
   // 密码

@@ -628,7 +628,7 @@ exports.fetch = function(req, res, next) {
     },
     {
       path: 'comment',
-      match: { 'deleted': false, weaken: false, like_count: { '$gt': 2 } },
+      match: { 'deleted': false, weaken: false },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
@@ -799,6 +799,10 @@ exports.fetch = function(req, res, next) {
     }
 
   ], function(result){
+
+    if (user && method == 'user_custom' && perPage != 1) {
+      User.update({ _id: user._id }, { last_find_posts_at: new Date() }, err=>{})
+    }
 
     res.send({
       success: true,
