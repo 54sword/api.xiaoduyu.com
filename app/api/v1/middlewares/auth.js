@@ -42,6 +42,9 @@ var verifyToken = function(req, callback) {
 
     if (result) {
       let user = result.user_id;
+
+      // console.log(user);
+
       req.user = user;
 
       // console.log(user);

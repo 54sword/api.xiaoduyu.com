@@ -14,7 +14,7 @@ var jpush = require('../../common/jpush');
 
 // 添加
 exports.add = function(req, res) {
-  
+
   var user          = req.user;
   var postsId       = req.body.posts_id;
   var replyId       = req.body.reply_id || '';
@@ -33,6 +33,20 @@ exports.add = function(req, res) {
     // 判断ip是否存在
     function(callback) {
       callback(ip ? null : 10000);
+    },
+
+    (callback) => {
+
+      // 判断是否禁言
+      if (user && user.banned_to_post &&
+        new Date(user.banned_to_post).getTime() > new Date().getTime()
+      ) {
+        let countdown = Countdown(new Date(), user.banned_to_post)
+        callback({ error: 10008, error_data: countdown })
+      } else {
+        callback(null)
+      }
+
     },
 
     function(callback) {
@@ -105,6 +119,8 @@ exports.add = function(req, res) {
       callback(null)
       return
 
+      /*
+      // 一个用户只能评论一次
       if (postsId && !parentId && !replyId) {
 
         Comment.fetch(
@@ -125,6 +141,7 @@ exports.add = function(req, res) {
       } else {
         callback(null)
       }
+      */
 
     },
 
@@ -322,19 +339,26 @@ exports.add = function(req, res) {
 
     if (err) {
       res.status(401);
-      res.send({
-        success: false,
-        error: err
-      });
+
+      if (typeof err == 'number') {
+        res.send({
+          success: false,
+          error: err
+        })
+      } else {
+        err.success = false
+        res.send(err)
+      }
+
     } else {
       res.send({
         success: true,
         data: result
       });
     }
-  });
+  })
 
-};
+}
 
 
 exports.update = function(req, res, next) {
@@ -480,6 +504,11 @@ exports.fetch = function(req, res) {
   },
   options = {}
 
+  // 添加屏蔽条件
+  if (user && !comment_id) {
+    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+  }
+
   // 是否查询有父节点的数据
   // query.parent_id = { $exists : parent_exists ? true : false }
 
@@ -512,13 +541,30 @@ exports.fetch = function(req, res) {
     {
       path: 'posts_id',
       select: { _id:1, title:1, content_html:1 }
-    },
-    {
+    }
+    // {
+    //   path: 'reply',
+    //   select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+    //   options: { limit: 10 }
+    // }
+  ]
+
+  // reply 添加屏蔽条件
+  if (user && !comment_id) {
+    options.populate.push({
       path: 'reply',
       select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-      options: { limit: 10 }
-    }
-  ]
+      options: { limit: 10 },
+      match: { user_id: { '$nin': user.block_people }, deleted: false }
+    })
+  } else {
+    options.populate.push({
+      path: 'reply',
+      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+      options: { limit: 10 },
+      match: { deleted: false }
+    })
+  }
 
   var select = {
     __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0
@@ -666,5 +712,24 @@ exports.fetch = function(req, res) {
       });
     }
   })
+
+}
+
+function Countdown(nowDate, endDate) {
+
+  var lastDate = Math.ceil(new Date(endDate).getTime()/1000)
+  var now = Math.ceil(new Date(nowDate).getTime()/1000)
+  var timeCount = lastDate - now
+  var days = parseInt( timeCount / (3600*24) )
+  var hours = parseInt( (timeCount - (3600*24*days)) / 3600 )
+  var mintues = parseInt( (timeCount - (3600*24*days) - (hours*3600)) / 60)
+  var seconds = timeCount - (3600*24*days) - (3600*hours) - (60*mintues)
+
+  return {
+    days: days,
+    hours: hours,
+    mintues: mintues,
+    seconds: seconds
+  }
 
 }

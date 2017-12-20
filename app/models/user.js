@@ -11,7 +11,9 @@ exports.create = function(user, callback) {
   _user.nickname = user.nickname;
   _user.create_at = user.createDate;
   _user.last_sign_at = user.createDate;
-  _user.gender = user.gender;
+  if (typeof user.gender != 'undefined') {
+    _user.gender = user.gender;
+  }
   _user.source = user.source;
   _user.access_token = uuid.v4();
   _user.password = user.password;

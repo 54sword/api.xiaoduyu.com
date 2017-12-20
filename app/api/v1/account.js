@@ -133,6 +133,7 @@ exports.signin = function(req, res, next) {
 
     },
 
+    // 验证码密码
     (account, callback)=>{
 
       Account.verifyPassword(password, account.user_id.password, function(bl, s){
@@ -156,6 +157,7 @@ exports.signin = function(req, res, next) {
       })
 
     }
+
   ], function(err, result){
 
     var meg = {};
@@ -188,10 +190,13 @@ exports.signup = function(req, res, next) {
     areaCode: req.body.area_code || '',
     phone: req.body.phone || '',
     password: req.body.password || '',
-    gender: req.body.gender ? parseInt(req.body.gender) : -1,
     source: parseInt(req.body.source) || 0,
     captcha: req.body.captcha || '',
     createDate: new Date()
+  }
+
+  if (typeof req.body.gender != 'undefined') {
+    user.gender = parseInt(req.body.gender)
   }
 
   let areaCodeStatus = false
@@ -230,13 +235,16 @@ exports.signup = function(req, res, next) {
       if (Validate.nickname(user.nickname) != 'ok') checkResult.nickname = 13011
       // if (Validate.email(user.email) != 'ok') checkResult.email = 13012
       if (Validate.password(user.password) != 'ok') checkResult.password = 13013
-      if (Validate.gender(user.gender) != 'ok') checkResult.gender = 13014
       if (!user.email && !user.phone) {
         checkResult.email = 13012
         checkResult.phone = 30001
       }
       if (!user.captcha) checkResult.captcha = 40000
-      if (user.gender != 0 && user.gender != 1) checkResult.gender = 13014
+
+      if (user.gender) {
+        if (Validate.gender(user.gender) != 'ok') checkResult.gender = 13014
+        if (user.gender != 0 && user.gender != 1) checkResult.gender = 13014
+      }
 
       var err = false;
 
@@ -284,7 +292,7 @@ exports.signup = function(req, res, next) {
           if (err) console.log(err);
 
           if (doc) {
-            checkResult.phone = 30003;
+            checkResult.phone = 30002;
             callback(checkResult);
             return;
           } else {
@@ -384,7 +392,7 @@ exports.signup = function(req, res, next) {
             function(err, acc){
 
               if (err) console.log(err);
-              callback(null);
+              callback(null, doc);
 
           });
         } else if (user.phone) {
@@ -397,7 +405,7 @@ exports.signup = function(req, res, next) {
             },
             callback: function(err, acc){
               if (err) console.log(err);
-              callback(null);
+              callback(null, doc);
             }
           });
 
@@ -405,8 +413,20 @@ exports.signup = function(req, res, next) {
 
       });
 
+    },
+
+    (user, callback) => {
+
+      Captcha.remove({
+        condition: { user_id: user._id },
+        callback: ()=>{
+          callback(null)
+        }
+      })
+
     }
-  ], function(err, result){
+
+  ], function(err){
     if (err) {
       res.status(400);
       res.send({

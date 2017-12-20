@@ -23,6 +23,6 @@ var LikeSchema = new Schema({
   create_at: { type: Date, default: Date.now }
 });
 
-LikeSchema.index({ user_id: 1, type: 1, target_id: 1, mood: 1 });
+LikeSchema.index({ user_id: 1, type: 1, target_id: 1, mood: 1 }, { unique: true });
 
 mongoose.model('Like', LikeSchema);

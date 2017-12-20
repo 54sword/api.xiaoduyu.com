@@ -12,7 +12,7 @@ var async = require('async');
 var xss = require('xss');
 
 exports.add = function(req, res, next) {
-
+  
   // 用户的信息
   var user        = req.user;
   var title       = req.body.title;
@@ -32,6 +32,20 @@ exports.add = function(req, res, next) {
 
     // 判断ip是否存在
     (callback) => callback(!ip ? 10000 : null),
+
+    (callback) => {
+
+      // 判断是否禁言
+      if (user && user.banned_to_post &&
+        new Date(user.banned_to_post).getTime() > new Date().getTime()
+      ) {
+        let countdown = Countdown(new Date(), user.banned_to_post)
+        callback({ error: 10008, error_data: countdown })
+      } else {
+        callback(null)
+      }
+
+    },
 
     // 不存在的类型
     (callback) => callback(type > 3 || type < 1 ? 11001 : null),
@@ -149,8 +163,18 @@ exports.add = function(req, res, next) {
   ], (err, posts) => {
 
     if (err) {
-      res.status(400);
-      res.send({ success: false, error: err })
+      res.status(400)
+
+      if (typeof err == 'number') {
+        res.send({
+          success: false,
+          error: err
+        })
+      } else {
+        err.success = false
+        res.send(err)
+      }
+
     } else {
       res.send({ success: true, data: posts });
     }
@@ -448,6 +472,18 @@ exports.fetch = function(req, res, next) {
 
       // console.log(req.query.include_comments);
 
+
+  /**
+   * 增加屏蔽条件
+   *
+   * 如果是登陆状态，那么增加屏蔽条件
+   * 如果通过posts查询，那么不增加屏蔽条件
+   */
+  if (user && !postsId) {
+    if (user.block_posts_count > 0) query._id = { '$nin': user.block_posts }
+    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+  }
+
   if (commentsLimit > 100) commentsLimit = 100
   if (perPage > 100) perPage = 100
 
@@ -677,23 +713,14 @@ exports.fetch = function(req, res, next) {
 
     function(posts, callback) {
 
-      if (!user) {
-        callback(posts)
-        return
-      }
+      if (!user) return callback(posts)
 
       // 如果是登录状态，那么查询是否关注了该问题
 
       var ids = []
-      // var commentsIds = []
 
       for (var i = 0, max = posts.length; i < max; i++) {
         ids.push(posts[i]._id)
-
-        // posts[i].comment.map(function(comment){
-        //   commentsIds.push(comment._id)
-        // })
-
       }
 
       Follow.fetch({
@@ -717,52 +744,11 @@ exports.fetch = function(req, res, next) {
 
       })
 
-      /*
-      FollowQuestion.fetchByUserIdAndQuestionIds(user._id, ids, function(err, follows){
-        if (err) console.log(err)
-
-        var ids = {}
-
-        for (var i = 0, max = follows.length; i < max; i++) {
-          ids[follows[i].question_id] = 1
-        }
-
-        Like.fetch({
-          user_id: user._id,
-          type: 'answer',
-          target_id: { "$in": answerIds },
-          deleted: false
-        }, {}, {}, function(err, likes){
-          if (err) console.log(err)
-
-          var answerIds = {}
-
-          for (var i = 0, max = likes.length; i < max; i++) {
-            answerIds[likes[i].target_id] = 1
-          }
-
-          questions.map(function(question, key){
-            questions[key].follow = ids[question._id] ? true : false
-            questions[key].answers.map(function(answer, index){
-              questions[key].answers[index].like = answerIds[answer._id] ? true : false
-            })
-          })
-
-          callback(questions)
-
-        })
-
-      })
-      */
-
     },
 
     function(posts, callback) {
 
-      if (!user) {
-        callback(posts)
-        return
-      }
+      if (!user) return callback(posts)
 
       // 如果是登录状态，那么查询是否赞了帖子
 
@@ -792,10 +778,7 @@ exports.fetch = function(req, res, next) {
 
     function(posts, callback) {
 
-      if (!user) {
-        callback(posts)
-        return
-      }
+      if (!user) return callback(posts)
 
       var ids = []
 
@@ -836,10 +819,13 @@ exports.fetch = function(req, res, next) {
 
       })
 
-
     }
 
   ], function(result){
+
+    if (user && method == 'user_custom' && perPage != 1) {
+      User.update({ _id: user._id }, { last_find_posts_at: new Date() }, err=>{})
+    }
 
     res.send({
       success: true,
@@ -893,3 +879,22 @@ exports.delete = function(req, res){
   })
 }
 */
+
+function Countdown(nowDate, endDate) {
+
+  var lastDate = Math.ceil(new Date(endDate).getTime()/1000)
+  var now = Math.ceil(new Date(nowDate).getTime()/1000)
+  var timeCount = lastDate - now
+  var days = parseInt( timeCount / (3600*24) )
+  var hours = parseInt( (timeCount - (3600*24*days)) / 3600 )
+  var mintues = parseInt( (timeCount - (3600*24*days) - (hours*3600)) / 60)
+  var seconds = timeCount - (3600*24*days) - (3600*hours) - (60*mintues)
+
+  return {
+    days: days,
+    hours: hours,
+    mintues: mintues,
+    seconds: seconds
+  }
+
+}
