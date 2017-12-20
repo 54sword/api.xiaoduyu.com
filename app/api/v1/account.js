@@ -133,6 +133,7 @@ exports.signin = function(req, res, next) {
 
     },
 
+    // 验证码密码
     (account, callback)=>{
 
       Account.verifyPassword(password, account.user_id.password, function(bl, s){
@@ -156,6 +157,7 @@ exports.signin = function(req, res, next) {
       })
 
     }
+
   ], function(err, result){
 
     var meg = {};

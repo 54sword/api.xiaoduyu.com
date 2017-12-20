@@ -12,7 +12,7 @@ var async = require('async');
 var xss = require('xss');
 
 exports.add = function(req, res, next) {
-
+  
   // 用户的信息
   var user        = req.user;
   var title       = req.body.title;
@@ -32,6 +32,20 @@ exports.add = function(req, res, next) {
 
     // 判断ip是否存在
     (callback) => callback(!ip ? 10000 : null),
+
+    (callback) => {
+
+      // 判断是否禁言
+      if (user && user.banned_to_post &&
+        new Date(user.banned_to_post).getTime() > new Date().getTime()
+      ) {
+        let countdown = Countdown(new Date(), user.banned_to_post)
+        callback({ error: 10008, error_data: countdown })
+      } else {
+        callback(null)
+      }
+
+    },
 
     // 不存在的类型
     (callback) => callback(type > 3 || type < 1 ? 11001 : null),
@@ -149,8 +163,18 @@ exports.add = function(req, res, next) {
   ], (err, posts) => {
 
     if (err) {
-      res.status(400);
-      res.send({ success: false, error: err })
+      res.status(400)
+
+      if (typeof err == 'number') {
+        res.send({
+          success: false,
+          error: err
+        })
+      } else {
+        err.success = false
+        res.send(err)
+      }
+
     } else {
       res.send({ success: true, data: posts });
     }
@@ -795,7 +819,6 @@ exports.fetch = function(req, res, next) {
 
       })
 
-
     }
 
   ], function(result){
@@ -856,3 +879,22 @@ exports.delete = function(req, res){
   })
 }
 */
+
+function Countdown(nowDate, endDate) {
+
+  var lastDate = Math.ceil(new Date(endDate).getTime()/1000)
+  var now = Math.ceil(new Date(nowDate).getTime()/1000)
+  var timeCount = lastDate - now
+  var days = parseInt( timeCount / (3600*24) )
+  var hours = parseInt( (timeCount - (3600*24*days)) / 3600 )
+  var mintues = parseInt( (timeCount - (3600*24*days) - (hours*3600)) / 60)
+  var seconds = timeCount - (3600*24*days) - (3600*hours) - (60*mintues)
+
+  return {
+    days: days,
+    hours: hours,
+    mintues: mintues,
+    seconds: seconds
+  }
+
+}

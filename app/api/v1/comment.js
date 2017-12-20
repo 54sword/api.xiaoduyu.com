@@ -35,6 +35,20 @@ exports.add = function(req, res) {
       callback(ip ? null : 10000);
     },
 
+    (callback) => {
+
+      // 判断是否禁言
+      if (user && user.banned_to_post &&
+        new Date(user.banned_to_post).getTime() > new Date().getTime()
+      ) {
+        let countdown = Countdown(new Date(), user.banned_to_post)
+        callback({ error: 10008, error_data: countdown })
+      } else {
+        callback(null)
+      }
+
+    },
+
     function(callback) {
 
       if (!postsId) {
@@ -105,6 +119,8 @@ exports.add = function(req, res) {
       callback(null)
       return
 
+      /*
+      // 一个用户只能评论一次
       if (postsId && !parentId && !replyId) {
 
         Comment.fetch(
@@ -125,6 +141,7 @@ exports.add = function(req, res) {
       } else {
         callback(null)
       }
+      */
 
     },
 
@@ -322,19 +339,26 @@ exports.add = function(req, res) {
 
     if (err) {
       res.status(401);
-      res.send({
-        success: false,
-        error: err
-      });
+
+      if (typeof err == 'number') {
+        res.send({
+          success: false,
+          error: err
+        })
+      } else {
+        err.success = false
+        res.send(err)
+      }
+
     } else {
       res.send({
         success: true,
         data: result
       });
     }
-  });
+  })
 
-};
+}
 
 
 exports.update = function(req, res, next) {
@@ -688,5 +712,24 @@ exports.fetch = function(req, res) {
       });
     }
   })
+
+}
+
+function Countdown(nowDate, endDate) {
+
+  var lastDate = Math.ceil(new Date(endDate).getTime()/1000)
+  var now = Math.ceil(new Date(nowDate).getTime()/1000)
+  var timeCount = lastDate - now
+  var days = parseInt( timeCount / (3600*24) )
+  var hours = parseInt( (timeCount - (3600*24*days)) / 3600 )
+  var mintues = parseInt( (timeCount - (3600*24*days) - (hours*3600)) / 60)
+  var seconds = timeCount - (3600*24*days) - (3600*hours) - (60*mintues)
+
+  return {
+    days: days,
+    hours: hours,
+    mintues: mintues,
+    seconds: seconds
+  }
 
 }

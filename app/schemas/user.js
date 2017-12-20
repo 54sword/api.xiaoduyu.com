@@ -17,8 +17,10 @@ var UserSchema = new Schema({
   last_sign_at: { type: Date, default: Date.now },
   // 屏蔽用户
   blocked: { type: Boolean, default: false },
+  // 禁言，在该时间前不能发布言论
+  banned_to_post: { type: Date },
   // 限制发送消息
-  disable_send_reply: { type: Date, default: Date.now },
+  // disable_send_reply: { type: Date, default: Date.now },
   // 用户等级
   // 100 后台管理员
   role: { type: Number, default: 0 },
