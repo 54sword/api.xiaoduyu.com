@@ -40,6 +40,46 @@ function changeString(str) {
 }
 
 
+// 获取用户列表
+exports.fetchList = (req, res) => {
+  var user = req.user
+
+  let query = {},
+      select = { access_token: -1 },
+      options = { skip: 0, limit: 20 },
+      // 参数
+      // 第几页
+      page = parseInt(req.query.page) || 0,
+      // 每页显示数量
+      per_page = parseInt(req.query.per_page) || 20,
+      // 查询某个用户
+      people_id = req.query.people_id || '',
+      selectField = req.query.select || {}
+
+  if (per_page) options.limit = per_page
+  if (page) options.skip = page * options.limit
+  if (people_id) query._id = people_id
+
+  if (selectField) {
+    selectField.split(',').map(item=>{
+      select[item] = 1
+    })
+  }
+
+  async.waterfall([
+    async (callback) => {
+      User.find(query, select, options, function(err, users){
+        callback(null, users)
+      })
+    }
+  ], (err, result) => {
+    res.send({
+      success: true,
+      data: result
+    })
+  })
+}
+
 exports.fetch = function(req, res, next) {
 
   var user = req.user

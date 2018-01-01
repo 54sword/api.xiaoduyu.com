@@ -92,6 +92,7 @@ var APIRequire = function() {
   var router = express.Router();
 
   router.post('/user', auth.userRequired, user.fetch);
+  router.get('/people', auth.openType, user.fetchList);
 
   router.get('/people/:id', auth.openType, user.fetchById);
 

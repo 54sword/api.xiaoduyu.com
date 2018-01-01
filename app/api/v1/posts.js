@@ -506,8 +506,6 @@ exports.fetch = function(req, res, next) {
     query['$or'] = []
   }
 
-  console.log(user);
-
   // 根据用户的关注偏好获取帖子
   if (user && method == 'user_custom') {
 
