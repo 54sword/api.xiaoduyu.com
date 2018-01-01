@@ -12,7 +12,7 @@ var async = require('async');
 var xss = require('xss');
 
 exports.add = function(req, res, next) {
-  
+
   // 用户的信息
   var user        = req.user;
   var title       = req.body.title;
@@ -472,7 +472,6 @@ exports.fetch = function(req, res, next) {
 
       // console.log(req.query.include_comments);
 
-
   /**
    * 增加屏蔽条件
    *
@@ -663,6 +662,21 @@ exports.fetch = function(req, res, next) {
       select: { '_id': 1, 'name': 1 }
     }
   ]
+
+  /* 如果是管理员则显示一些额外的属性 */
+
+  if (user.role == 100) {
+    if (typeof query.deleted != 'undefined') {
+      delete query.deleted
+    }
+    delete select.deleted
+    delete select.weaken
+  }
+
+  /* 管理员 end */
+
+  // console.log(query);
+
 
   // ------- options end -------
 
