@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node --max-old-space-size=1700 ./bin/www",
     "dev": "supervisor node server.js",
-    "mongodb": "/Users/wushijian/Documents/mongodb/bin/mongod --dbpath /Users/wushijian/Documents/mongodb/data/db"
+    "mongodb": "/Users/wuseijian/mongodb/bin/mongod --dbpath /Users/wuseijian/mongodb/data/db"
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",

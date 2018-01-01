@@ -506,7 +506,7 @@ exports.fetch = function(req, res, next) {
     query['$or'] = []
   }
 
-  // console.log(user);
+  console.log(user);
 
   // 根据用户的关注偏好获取帖子
   if (user && method == 'user_custom') {
@@ -651,7 +651,12 @@ exports.fetch = function(req, res, next) {
     },
     {
       path: 'comment',
-      match: { 'deleted': false, weaken: false },
+      match: {
+        $or: [
+          { deleted: false, weaken: false, like_count: { $gte: 2 } },
+          { deleted: false, weaken: false, reply_count: { $gte: 1 } }
+        ]
+      },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
