@@ -1,28 +1,28 @@
 
 var express = require('express');
 
-var user = require('./api/v1/user');
-var account = require('./api/v1/account');
-var commment = require('./api/v1/comment');
-var like = require('./api/v1/like');
-var UserNotification = require('./api/v1/user-notification');
-var Captcha = require('./api/v1/captcha');
-var QiNiu = require('./api/v1/qiniu');
-var Posts = require('./api/v1/posts');
-var Topic = require('./api/v1/topic');
-var Follow = require('./api/v1/follow');
-var Phone = require('./api/v1/phone');
-import Countries from './api/v1/countries'
-import Report from './api/v1/report'
-import Block from './api/v1/block'
+var user = require('./api/v2/user');
+var account = require('./api/v2/account');
+var commment = require('./api/v2/comment');
+var like = require('./api/v2/like');
+var UserNotification = require('./api/v2/user-notification');
+var Captcha = require('./api/v2/captcha');
+var QiNiu = require('./api/v2/qiniu');
+var Posts = require('./api/v2/posts');
+var Topic = require('./api/v2/topic');
+var Follow = require('./api/v2/follow');
+var Phone = require('./api/v2/phone');
+import Countries from './api/v2/countries'
+import Report from './api/v2/report'
+import Block from './api/v2/block'
 
-var token = require('./api/v1/token')
+var token = require('./api/v2/token')
 
 var qq = require('./oauth/qq');
 var weibo = require('./oauth/weibo');
 var github = require('./oauth/github');
 
-var auth = require('./api/v1/middlewares/auth');
+var auth = require('./api/v2/middlewares/auth');
 
 /*
 import { renderToString } from 'react-dom/server'
@@ -128,6 +128,7 @@ var APIRequire = function() {
   router.get('/posts', auth.openType, Posts.fetch);
   router.get('/view-posts', Posts.view);
   router.post('/posts/update', auth.adminRequired, Posts.adminUpdatePosts)
+  router.post('/posts', auth.adminRequired, Posts.findPosts)
 
   router.post('/write-comment', auth.userRequired, commment.add);
   router.post('/update-comment', auth.userRequired, commment.update);

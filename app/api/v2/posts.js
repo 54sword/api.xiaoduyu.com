@@ -826,32 +826,131 @@ exports.view = function(req, res, next) {
   })
 }
 
+// query 参数白名单，以及监测参数是否合法
+const queryWhiteList = {
+  _id: data => new Promise((resolve) => resolve({ name: '_id', value: data })),
+  user_id: data => new Promise((resolve) => resolve({ name: 'user_id', value: data })),
+  deleted: data => new Promise((resolve) => {
+    let obj = { name: 'deleted', value: data }
+    if (typeof data != 'boolean') obj.err = 90000
+    resolve(obj)
+  }),
+  weaken: data => new Promise((resolve) => {
+    let obj = { name: 'weaken', value: data }
+    if (typeof data != 'boolean') obj.err = 90000
+    resolve(obj)
+  }),
+  topic_id: data => new Promise((resolve) => resolve({ name: 'topic_id', value: data })),
+  type: data => new Promise((resolve) => resolve({ name: 'type', value: data })),
+  title: data => new Promise((resolve) => resolve({ name: 'title', value: data })),
+  content: data => new Promise((resolve) => resolve({ name: 'content', value: data })),
+  content_html: data => new Promise((resolve) => resolve({ name: 'content_html', value: data })),
+  verify: data => new Promise((resolve) => resolve({ name: 'verify', value: data })),
+  recommend: data => new Promise((resolve) => {
+    let obj = { name: 'recommend', value: data }
+    if (typeof data != 'boolean') obj.err = 90000
+    resolve(obj)
+  }),
+  sort_by_date: data => new Promise((resolve) => resolve({ name: 'sort_by_date', value: data })),
+  // 小于
+  lt_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$lt': data } })),
+  // 小于等于
+  lte_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$lte': data } })),
+  // 大于
+  gt_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$gt': data } })),
+  // 大于等于
+  gte_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$gte': data } })),
+}
+
+const selectWhiteList = [
+  "__v", "_id", "comments", "comments_count", "last_comment_at",
+  "topic_id", "user_id", "sort_by_date", "weaken", "recommend", "verify", "deleted",
+  "ip", "device", "like_count", "follow_count", "view_count", "comment_count", "comment",
+  "create_at", "content_html", "content", "title", "type"
+]
+
+const optionWhiteList = {
+  skip: data => new Promise((resolve) => resolve({ name: 'skip', value: parseInt(data) })),
+  limit: data => new Promise((resolve) => resolve({ name: 'limit', value: parseInt(data) })),
+  sort: data => new Promise((resolve) => resolve({ name: 'sort', value: data })),
+}
+
 exports.findPosts = async (req, res) => {
+
   const user = req.user
-  let queryJSON = req.body.query_json || '{}'
-  let selectJSON = req.body.select_json || '{}'
-  let optionJSON = req.body.option_json || '{}'
+  let dataJSON = req.body.data_json || '{}'
 
   try {
-    queryJSON = JSON.parse(queryJSON)
+    dataJSON = JSON.parse(dataJSON)
   } catch(err) {
     res.send({ error: 11000, success: false })
     return
   }
 
-  try {
-    selectJSON = JSON.parse(selectJSON)
-  } catch(err) {
-    res.send({ error: 11000, success: false })
-    return
+  let queryJSON = dataJSON.query || {}
+  let selectJSON = dataJSON.select || {}
+  let optionJSON = dataJSON.option || {}
+
+  let query = {}, select = {}, option = {}
+
+  for (let i in queryJSON) {
+    if (queryWhiteList[i]) {
+      let result = await queryWhiteList[i](queryJSON[i])
+      if (result && result.err) {
+        res.send({ success: false, error: result.err })
+        return
+      } else {
+        query[result.name] = result.value
+      }
+    }
   }
 
-  try {
-    optionJSON = JSON.parse(optionJSON)
-  } catch(err) {
-    res.send({ error: 11000, success: false })
-    return
+  for (let i in selectJSON) {
+    if (selectWhiteList.indexOf(i) != -1) {
+      select[i] = parseInt(selectJSON[i])
+    }
   }
+
+  for (let i in optionJSON) {
+    if (optionWhiteList[i]) {
+      let result = await optionWhiteList[i](optionJSON[i])
+      if (result && result.err) {
+        res.send({ success: false, error: result.err })
+        return
+      } else {
+        option[result.name] = result.value
+      }
+    }
+  }
+
+  option.populate = [
+    {
+      path: 'user_id',
+      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
+    },
+    {
+      path: 'comment',
+      match: {
+        $or: [
+          { deleted: false, weaken: false, like_count: { $gte: 2 } },
+          { deleted: false, weaken: false, reply_count: { $gte: 1 } }
+        ]
+      },
+      select: {
+        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
+      },
+      options: { limit: 1 }
+    },
+    {
+      path: 'topic_id',
+      select: { '_id': 1, 'name': 1 }
+    }
+  ]
+
+  Posts.find(query, select, option, (err, posts)=>{
+    if (err) console.log(err)
+    res.send({ success: true, data: posts })
+  })
 
 }
 
