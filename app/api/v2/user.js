@@ -1,5 +1,5 @@
 
-var User = require('../../models').User;
+// var User = require('../../models').User;
 var Account = require('../../models').Account;
 // var Notification = require('../../models').Notification;
 var Oauth = require('../../models').Oauth;
@@ -14,6 +14,18 @@ var bcrypt = require('bcryptjs');
 var uuid = require('node-uuid');
 
 var Tools = require('../../common/tools');
+
+
+import isJSON from 'is-json'
+
+import User from '../../modelsa/user'
+
+import _user from './params-white-list/user'
+import _checkParams from './params-white-list'
+
+const checkParams = (dataJSON) => {
+  return _checkParams(dataJSON, _user)
+}
 
 
 function changeString(str) {
@@ -41,43 +53,37 @@ function changeString(str) {
 
 
 // 获取用户列表
-exports.fetchList = (req, res) => {
-  var user = req.user
+exports.fetchList = async (req, res) => {
 
-  let query = {},
-      select = { access_token: -1 },
-      options = { skip: 0, limit: 20 },
-      // 参数
-      // 第几页
-      page = parseInt(req.query.page) || 0,
-      // 每页显示数量
-      per_page = parseInt(req.query.per_page) || 20,
-      // 查询某个用户
-      people_id = req.query.people_id || '',
-      selectField = req.query.select || {}
+  const user = req.user
+  let json = req.query[0] || ''
 
-  if (per_page) options.limit = per_page
-  if (page) options.skip = page * options.limit
-  if (people_id) query._id = people_id
+  if (!isJSON(json)) return res.send({ error: 11000, success: false })
 
-  if (selectField) {
-    selectField.split(',').map(item=>{
-      select[item] = 1
-    })
+  // 检查参数是否合法
+  json = checkParams(JSON.parse(json))
+
+  // 如果有非法参数，返回错误
+  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
+    return res.send(json)
+  }
+  
+  let { query, select, options } = json
+
+  if (user.role == 100) select = {}
+
+  if (!options.limit || options.limit >= 100) {
+    options.limit = 100
   }
 
-  async.waterfall([
-    async (callback) => {
-      User.find(query, select, options, function(err, users){
-        callback(null, users)
-      })
-    }
-  ], (err, result) => {
-    res.send({
-      success: true,
-      data: result
-    })
-  })
+  try {
+    let user = await User.find({ query, select, options })
+    res.send({ success: true, data: user })
+  } catch (err) {
+    console.log(err);
+    res.send({ success: false })
+  }
+
 }
 
 exports.fetch = function(req, res, next) {

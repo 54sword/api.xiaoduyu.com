@@ -1,9 +1,9 @@
-var Question = require('../../models').Question;
-var Node = require('../../models').Node;
+// var Question = require('../../models').Question;
+// var Node = require('../../models').Node;
 var User = require('../../models').User;
 var Like = require('../../models').Like;
 
-var Posts = require('../../models').Posts;
+// var Posts = require('../../modelsa').Posts;
 var Topic = require('../../models').Topic;
 var Follow = require('../../models').Follow;
 
@@ -11,7 +11,19 @@ var Tools = require('../../common/tools');
 var async = require('async');
 var xss = require('xss');
 
-import Promise from 'promise'
+import Posts from '../../modelsa/posts'
+
+// import Promise from 'promise'
+import isJSON from 'is-json'
+
+// console.log(Posts);
+
+import _posts from './params-white-list/posts'
+import _checkParams from './params-white-list'
+
+const checkParams = (dataJSON) => {
+  return _checkParams(dataJSON, _posts)
+}
 
 exports.add = function(req, res, next) {
 
@@ -185,7 +197,7 @@ exports.add = function(req, res, next) {
 
 };
 
-
+/*
 exports.update = function(req, res, next) {
 
   // 用户的信息
@@ -335,7 +347,7 @@ exports.update = function(req, res, next) {
   });
 
 };
-
+*/
 /**
  * @api {get} /v1/questions 获取问题
  * @apiName Fetch question
@@ -393,7 +405,7 @@ exports.update = function(req, res, next) {
  */
 
 
-exports.fetch = function(req, res, next) {
+exports.fetch_backup = function(req, res, next) {
 
   var user = req.user || null,
       page = parseInt(req.query.page) || 0,
@@ -826,104 +838,23 @@ exports.view = function(req, res, next) {
   })
 }
 
-// query 参数白名单，以及监测参数是否合法
-const queryWhiteList = {
-  _id: data => new Promise((resolve) => resolve({ name: '_id', value: data })),
-  user_id: data => new Promise((resolve) => resolve({ name: 'user_id', value: data })),
-  deleted: data => new Promise((resolve) => {
-    let obj = { name: 'deleted', value: data }
-    if (typeof data != 'boolean') obj.err = 90000
-    resolve(obj)
-  }),
-  weaken: data => new Promise((resolve) => {
-    let obj = { name: 'weaken', value: data }
-    if (typeof data != 'boolean') obj.err = 90000
-    resolve(obj)
-  }),
-  topic_id: data => new Promise((resolve) => resolve({ name: 'topic_id', value: data })),
-  type: data => new Promise((resolve) => resolve({ name: 'type', value: data })),
-  title: data => new Promise((resolve) => resolve({ name: 'title', value: data })),
-  content: data => new Promise((resolve) => resolve({ name: 'content', value: data })),
-  content_html: data => new Promise((resolve) => resolve({ name: 'content_html', value: data })),
-  verify: data => new Promise((resolve) => resolve({ name: 'verify', value: data })),
-  recommend: data => new Promise((resolve) => {
-    let obj = { name: 'recommend', value: data }
-    if (typeof data != 'boolean') obj.err = 90000
-    resolve(obj)
-  }),
-  sort_by_date: data => new Promise((resolve) => resolve({ name: 'sort_by_date', value: data })),
-  // 小于
-  lt_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$lt': data } })),
-  // 小于等于
-  lte_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$lte': data } })),
-  // 大于
-  gt_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$gt': data } })),
-  // 大于等于
-  gte_create_at: data => new Promise((resolve) => resolve({ name: 'create_at', value: { '$gte': data } })),
-}
 
-const selectWhiteList = [
-  "__v", "_id", "comments", "comments_count", "last_comment_at",
-  "topic_id", "user_id", "sort_by_date", "weaken", "recommend", "verify", "deleted",
-  "ip", "device", "like_count", "follow_count", "view_count", "comment_count", "comment",
-  "create_at", "content_html", "content", "title", "type"
-]
-
-const optionWhiteList = {
-  skip: data => new Promise((resolve) => resolve({ name: 'skip', value: parseInt(data) })),
-  limit: data => new Promise((resolve) => resolve({ name: 'limit', value: parseInt(data) })),
-  sort: data => new Promise((resolve) => resolve({ name: 'sort', value: data })),
-}
-
-exports.findPosts = async (req, res) => {
+exports.find = async (req, res) => {
 
   const user = req.user
-  let dataJSON = req.body.data_json || '{}'
+  let json = req.json
 
-  try {
-    dataJSON = JSON.parse(dataJSON)
-  } catch(err) {
-    res.send({ error: 11000, success: false })
-    return
+  // 检查参数是否合法
+  json = checkParams(json)
+
+  // 如果有非法参数，返回错误
+  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
+    return res.send(json)
   }
 
-  let queryJSON = dataJSON.query || {}
-  let selectJSON = dataJSON.select || {}
-  let optionJSON = dataJSON.option || {}
+  let { query, select, options } = json
 
-  let query = {}, select = {}, option = {}
-
-  for (let i in queryJSON) {
-    if (queryWhiteList[i]) {
-      let result = await queryWhiteList[i](queryJSON[i])
-      if (result && result.err) {
-        res.send({ success: false, error: result.err })
-        return
-      } else {
-        query[result.name] = result.value
-      }
-    }
-  }
-
-  for (let i in selectJSON) {
-    if (selectWhiteList.indexOf(i) != -1) {
-      select[i] = parseInt(selectJSON[i])
-    }
-  }
-
-  for (let i in optionJSON) {
-    if (optionWhiteList[i]) {
-      let result = await optionWhiteList[i](optionJSON[i])
-      if (result && result.err) {
-        res.send({ success: false, error: result.err })
-        return
-      } else {
-        option[result.name] = result.value
-      }
-    }
-  }
-
-  option.populate = [
+  options.populate = [
     {
       path: 'user_id',
       select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
@@ -947,70 +878,38 @@ exports.findPosts = async (req, res) => {
     }
   ]
 
-  Posts.find(query, select, option, (err, posts)=>{
-    if (err) console.log(err)
-    res.send({ success: true, data: posts })
-  })
+  try {
+    let postList = await Posts.find({ query, select, options })
+    res.send({ success: true, data: postList })
+  } catch (err) {
+    console.log(err);
+    res.send({ success: false })
+  }
 
 }
 
 
-exports.adminUpdatePosts = async (req, res) => {
+exports.update = async (req, res) => {
+
   const user = req.user
-  const id = req.body.id || ''
-  let dataJson = req.body.data_json || {}
+
+  let obj = checkParams(req.body)
+
+  // 如果有非法参数，返回错误
+  if (Reflect.has(obj, 'success') && Reflect.has(obj, 'error')) {
+    return res.send(obj)
+  }
+
+  let { query, update, options } = obj
 
   try {
-    dataJson = JSON.parse(dataJson)
-  } catch(err) {
-    res.send({ error: 11000, success: false })
-    return
-  }
-
-  // [白名单]允许修改的字段
-  const whiteList = {
-    deleted: data => new Promise((resolve) => {
-      if (typeof data != 'boolean') {
-        resolve({ err: 90000 })
-      } else {
-        resolve({ err: false, data })
-      }
-    }),
-    weaken: data => new Promise((resolve) => {
-      if (typeof data != 'boolean') {
-        resolve({ err: 90000 })
-      } else {
-        resolve({ err: false, data })
-      }
-    }),
-    topic_id: data => new Promise((resolve) => resolve({ err: false, data })),
-    type: data => new Promise((resolve) => resolve({ err: false, data })),
-    title: data => new Promise((resolve) => resolve({ err: false, data })),
-    content: data => new Promise((resolve) => resolve({ err: false, data })),
-    content_html: data => new Promise((resolve) => resolve({ err: false, data })),
-    verify: data => new Promise((resolve) => resolve({ err: false, data })),
-    recommend: data => new Promise((resolve) => resolve({ err: false, data })),
-    sort_by_date: data => new Promise((resolve) => resolve({ err: false, data }))
-  }
-
-  let updateData = {}
-
-  for (let i in dataJson) {
-    if (whiteList[i]) {
-      let result = await whiteList[i](dataJson[i])
-      if (result && result.err) {
-        res.send({ success: false, error: result.err })
-        return
-      } else {
-        updateData[i] = result.data
-      }
-    }
-  }
-
-  Posts.update({ _id: id }, updateData, err=>{
-    if (err) console.log(res);
+    await Posts.update({ query, update, options })
     res.send({ success: true })
-  })
+  } catch (err) {
+    console.log(err);
+    res.send({ success: false, error: 10003 })
+  }
+
 }
 
 

@@ -1,6 +1,19 @@
-var Topic = require('../../models').Topic;
-var User = require('../../models').User;
+// var Topic = require('../../modelsa').Topic;
+var User = require('../../modelsa').User;
 var async = require('async');
+
+import Topic from '../../modelsa/topic'
+
+ // var isJSON = require('is-json');
+import isJSON from 'is-json'
+
+import _topic from './params-white-list/topic'
+import _checkParams from './params-white-list'
+
+const checkParams = (dataJSON) => {
+  return _checkParams(dataJSON, _topic)
+}
+
 
 exports.add = function(req, res, next) {
 
@@ -181,104 +194,51 @@ exports.update = function(req, res, next) {
 
   })
 
-};
+}
 
+exports.fetch = async (req, res) => {
 
-exports.fetch = function(req, res, next) {
+  const user = req.user
+  let json = req.query[0] || ''
 
-  var user = req.user,
-      perPage = req.query.per_page || 20,
-      page = req.query.page || 0,
-      child = req.query.child,
-      nodeId = req.query.topic_id,
-      peopleId = req.query.people_id,
-      parentId = req.query.parent_id,
-      query = {},
-      select = { _id: 1, parent_id:1, comment_count: 1, posts_count: 1, follow_count: 1, avatar: 1, description: 1, brief: 1, name: 1 },
-      options = {
-        sort: { 'question_count': -1 }
-      }
+  if (!isJSON(json)) return res.send({ error: 11000, success: false })
 
-  if (child) {
-    if (child == 1) {
-      query.parent_id = { $exists : true }
-    } else {
-      query.parent_id = { $exists : false }
-    }
+  // 检查参数是否合法
+  json = checkParams(JSON.parse(json))
+
+  // 如果有非法参数，返回错误
+  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
+    return res.send(json)
   }
 
-  if (nodeId) {
-    query._id = { '$in': nodeId.split(',') }
-  }
+  let { query, select, options } = json
 
-  if (parentId) {
-    query.parent_id = { '$in': parentId.split(',') }
-  }
+  // 如果查询某个用户关注的话题
+  if (query.people_id) {
 
-  if (page > 0) {
-    options.skip = page * perPage
-  }
+    let people = await User.findOne({
+      query: { _id: people_id },
+      select: { 'follow_topic': 1 }
+    })
 
-  options.limit = parseInt(perPage)
-
-  options.sort = { 'question_count': -1 }
-
-  async.waterfall([
-    function(callback) {
-
-      if (!peopleId) {
-        callback(null)
-        return
-      }
-
-      User.fetch({ _id: peopleId }, { 'follow_topic': 1 }, {}, function(err, people){
-
-        if (!people || people.length == 0) {
-          callback(13000)
-          return
-        }
-
-        query._id = { '$in': people[0].follow_topic }
-
-        callback(null)
-      })
-
-    },
-    function(callback) {
-
-      Topic.fetch(query, select, options, function(err, nodes){
-
-        if (err) {
-          console.log(err)
-          callback(err.message)
-          return
-        }
-
-        if (user) {
-
-          nodes = JSON.stringify(nodes);
-          nodes = JSON.parse(nodes);
-
-          nodes.map(function(node, key){
-            node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
-          })
-        }
-
-        callback(null, nodes)
-
-      })
-
-    }
-  ],
-  function(err, result){
-
-    if (err) {
-      res.send({ success: true, error: err })
-    } else {
-      res.send({ success: true, data: result })
+    if (!people || !people.length) {
+      return res.send({ success: false, error: 13000 })
     }
 
-  })
+    delete query.people_id
+    query._id = { '$in': people[0].follow_topic }
+  }
 
+  let nodes = await Topic.find({ query, select, options })
 
+  if (!nodes) return res.send({ success: false, error: 10004 })
+
+  if (user && nodes) {
+    nodes = JSON.parse(JSON.stringify(nodes))
+    nodes.map(node => {
+      node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
+    })
+  }
+
+  res.send({ success: true, data: nodes })
 }

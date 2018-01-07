@@ -1,4 +1,4 @@
-var Comment = require('../../models').Comment;
+// var Comment = require('../../modelsa').Comment;
 var Posts = require('../../models').Posts;
 var User = require('../../models').User;
 var Like = require('../../models').Like;
@@ -11,6 +11,18 @@ var async = require('async');
 var xss = require('xss');
 var Tools = require('../../common/tools');
 var jpush = require('../../common/jpush');
+
+import Comment from '../../modelsa/comment'
+
+import isJSON from 'is-json'
+
+import _comment from './params-white-list/comment'
+import _checkParams from './params-white-list'
+
+const checkParams = (dataJSON) => {
+  return _checkParams(dataJSON, _comment)
+}
+
 
 // 添加
 exports.add = function(req, res) {
@@ -483,7 +495,176 @@ exports.update = function(req, res, next) {
 
 };
 
-exports.fetch = function(req, res) {
+exports.fetch = async (req, res) => {
+
+  const user = req.user
+  let json = req.query[0] || ''
+
+  if (!isJSON(json)) return res.send({ error: 11000, success: false })
+
+  // 检查参数是否合法
+  json = checkParams(JSON.parse(json))
+
+  // 如果有非法参数，返回错误
+  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
+    return res.send(json)
+  }
+
+  let { query, select, options } = json
+
+  options.populate = [
+    { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 } },
+    { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } },
+    { path: 'posts_id', select: { _id:1, title:1, content_html:1 } }
+  ]
+
+  // reply 添加屏蔽条件
+  if (user && !query._id) {
+    options.populate.push({
+      path: 'reply',
+      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+      options: { limit: 10 },
+      match: { user_id: { '$nin': user.block_people }, deleted: false }
+    })
+  } else {
+    options.populate.push({
+      path: 'reply',
+      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+      options: { limit: 10 },
+      match: { deleted: false }
+    })
+  }
+
+
+  let comments = []
+
+  try {
+    comments = await Comment.find({ query, select, options })
+
+    options = [
+      {
+        path: 'reply.user_id',
+        model: 'User',
+        select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
+      },
+      {
+        path: 'reply.reply_id',
+        model: 'Comment',
+        select:{ '_id': 1, 'user_id': 1 }
+      },
+      {
+        path: 'reply_id.user_id',
+        model: 'User',
+        select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
+      }
+    ]
+
+    comments = await Comment.populate({ collections: comments, options })
+
+    options = [
+      {
+        path: 'reply.reply_id.user_id',
+        model: 'User',
+        select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
+      }
+    ]
+
+    comments = await Comment.populate({ collections: comments, options })
+    // res.send({ success: true, data: comments })
+
+  } catch (err) {
+    console.log(err);
+    res.send({ success: false })
+    return
+  }
+
+  // 如果未登录，那么直接返回结果
+  if (!user) return res.send({ success: true, data: comments })
+
+
+  // 查询是否点赞了评论或回复
+
+  comments = JSON.stringify(comments);
+  comments = JSON.parse(comments);
+
+  var ids = []
+
+  comments.map(function(item){
+    ids.push(item._id)
+    if (item.reply) item.reply.map(item => ids.push(item._id))
+  })
+
+  Like.find({
+    $or: [
+      {
+        type: 'comment',
+        deleted: false,
+        target_id: { '$in': ids },
+        user_id: user._id
+      },
+      {
+        type: 'reply',
+        deleted: false,
+        target_id: { '$in': ids },
+        user_id: user._id
+      }
+    ]
+  }, { target_id: 1, _id: 0 }, {}, function(err, likes){
+    if (err) console.log(err)
+
+    var ids = {}
+
+    likes.map(function(item){
+      ids[item.target_id] = 1
+    })
+
+    comments.map(function(item){
+      if (ids[item._id]) {
+        item.like = true
+      } else {
+        item.like = false
+      }
+
+      if (item.reply) {
+        item.reply.map(function(item){
+          if (ids[item._id]) {
+            item.like = true
+          } else {
+            item.like = false
+          }
+        })
+      }
+
+    })
+
+    // callback(null, comments)
+
+    res.send({ success: true, data: comments })
+
+  })
+
+
+  /*
+  let result = await Comment.find({ query, select, options, callback:function(err, comments) {
+    if (err) console.log(err)
+
+    res.send({
+      success: true,
+      data: comments
+    })
+
+  }})
+
+  console.log(result);
+
+  res.send({
+    success: true,
+    data: comments
+  })
+  */
+
+  /*
+  return
 
   var user = req.user
   var page = parseInt(req.query.page) || 0,
@@ -712,6 +893,7 @@ exports.fetch = function(req, res) {
       });
     }
   })
+  */
 
 }
 
