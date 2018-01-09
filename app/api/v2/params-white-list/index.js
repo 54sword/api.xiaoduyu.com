@@ -1,15 +1,25 @@
 
 
-// import Topic from 'topic'
+export default (dataJSON, { saveWhiteList, queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }) => {
 
-export default (dataJSON, { queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }) => {
-
+  let saveJSON = dataJSON.save || {}
   let queryJSON = dataJSON.query || {}
   let selectJSON = dataJSON.select || {}
   let optionsJSON = dataJSON.options || {}
   let updateJSON = dataJSON.update || {}
 
-  let query = {}, select = {}, options = {}, update = {}
+  let save = {}, query = {}, select = {}, options = {}, update = {}
+
+  for (let i in saveJSON) {
+    if (saveWhiteList[i]) {
+      let result = saveWhiteList[i](saveJSON[i])
+      if (result && result.err) {
+        return { success: false, error: result.err }
+      } else {
+        save[result.name] = result.value
+      }
+    }
+  }
 
   for (let i in queryJSON) {
     if (queryWhiteList[i]) {
@@ -47,14 +57,9 @@ export default (dataJSON, { queryWhiteList, selectWhiteList, optionsWhiteList, u
     }
   }
 
-
-
   for (let i in updateJSON) {
-
     if (updateWhiteList[i]) {
-
       let result = updateWhiteList[i](updateJSON[i])
-
       if (result && result.error) {
         result.success = false
         return result
@@ -64,9 +69,6 @@ export default (dataJSON, { queryWhiteList, selectWhiteList, optionsWhiteList, u
     }
   }
 
-
-  // console.log(update);
-
-  return { query, select, options, update }
+  return { save, query, select, options, update }
 
 }

@@ -1,5 +1,6 @@
 
 export default (Schemas) => ({
+
   save: ({
     data = null,
     callback = ()=>{}
@@ -10,7 +11,7 @@ export default (Schemas) => ({
     query = {},
     select = {},
     callback = ()=>{}
-  }) => Schemas.find(query, select).exec(callback),
+  }) => Schemas.findOne(query, select).exec(callback),
 
   // 查询多个
   find: ({

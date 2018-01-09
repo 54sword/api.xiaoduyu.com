@@ -56,4 +56,6 @@ const updateWhiteList = {
 }
 
 
-export default { queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }
+const saveWhiteList = {}
+
+export default { saveWhiteList, queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }

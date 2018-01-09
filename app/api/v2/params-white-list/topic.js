@@ -53,5 +53,15 @@ const updateWhiteList = {
   recommend:   data => typeCheck('recommend', data, 'boolean')
 }
 
+// 储存字段白名单
+const saveWhiteList = {
+  name:        data => typeCheck('name', data, 'string'),
+  brief:       data => typeCheck('brief', data, 'string'),
+  avatar:      data => typeCheck('avatar', data, 'string'),
+  description: data => typeCheck('description', data, 'string'),
+  user_id:     data => typeCheck('user_id', data, 'string'),
+  parent_id:   data => typeCheck('parent_id', data, 'string')
+}
 
-export default { queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }
+
+export default { saveWhiteList, queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }

@@ -42,5 +42,6 @@ const updateWhiteList = {
   password: data => typeCheck('password', data, 'boolean')
 }
 
+const saveWhiteList = {}
 
-export default { queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }
+export default { saveWhiteList, queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }

@@ -69,4 +69,6 @@ const updateWhiteList = {
   sort_by_date: data => { return typeCheck('sort_by_date', data, 'number') }
 }
 
-export default { queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }
+const saveWhiteList = {}
+
+export default { saveWhiteList, queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }

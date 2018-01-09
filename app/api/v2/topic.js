@@ -15,67 +15,46 @@ const checkParams = (dataJSON) => {
 }
 
 
-exports.add = function(req, res, next) {
+exports.add = async function(req, res, next) {
 
-  var user = req.user;
+  const user = req.user
+  let obj = checkParams(req.body)
 
-  var newNode = {
-    name: req.body.name,
-    brief: req.body.brief,
-    avatar: req.body.avatar,
-    description: req.body.description,
-    user_id: user._id
+  let { save } = obj
+
+  let returnObj = { error: 10005 }
+
+  if (!save.name || !save.description || !save.brief) {
+    res.status(400)
+    return res.send(returnObj)
   }
 
-  if (req.body.parent_id) {
-    newNode.parent_id = req.body.parent_id
+  let result = await Topic.findOne({ query: { name: save.name } })
+
+  if (result) {
+    returnObj.error = 15003
+    res.status(400)
+    return res.send(returnObj)
   }
 
-  async.waterfall([
-
-    function(callback) {
-      if (!newNode.name || !newNode.description || !newNode.brief
-        // !newNode.avatar ||
-      ) {
-        callback(10005)
-      } else {
-        callback(null)
-      }
-    },
-
-    function(callback) {
-      Topic.fetch({ name: newNode.name }, {}, {}, function(err, node){
-        if (err) console.log(err)
-        if (node && node.length > 0) {
-          callback(15003)
-        } else {
-          callback(null)
-        }
-      })
-    },
-
-    function(callback) {
-      Topic.add(newNode, function(err, newnode){
-        if (err) console.log(err)
-        callback(null, newnode)
-      });
+  // 如果有父类，检查父类是否存在
+  if (save.parent_id) {
+    result = await Topic.findOne({ query: { _id: obj.parent_id } })
+    if (!result) {
+      returnObj.error = 15004
+      res.status(400)
+      return res.send(returnObj)
     }
-  ], function(err, result){
-    if (err) {
-      res.status(400);
-      res.send({
-        success: false,
-        error: err
-      });
-    } else {
-      res.send({
-        success: true,
-        data: result
-      });
-    }
-  })
+  }
 
-};
+  save.user_id = user._id
+  result = await Topic.save({ data: save })
+
+  console.log(result);
+
+  res.send({ success: true })
+
+}
 
 exports.update = function(req, res, next) {
 
