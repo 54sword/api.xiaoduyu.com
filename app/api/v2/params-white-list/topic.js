@@ -22,7 +22,7 @@ const queryWhiteList = {
 const selectWhiteList = [
   "__v", "_id", "user_id", "parent_id", "name", "description", "avatar",
   "background", "follow_count", "posts_count", "comment_count", "sort",
-  "create_at", "language", "recommend"
+  "create_at", "language", "recommend", "brief"
 ]
 
 const optionsWhiteList = {
