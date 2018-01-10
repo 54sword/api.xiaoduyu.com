@@ -12,8 +12,11 @@ var compress = require('compression');
 var config = require('./config');
 
 var API_V1 = require('./app/api-v1');
+var API_V2 = require('./app/api-v2');
 // var OauthRouter = require('./app/oauth');
 import OauthRouter from './app/oauth'
+
+import isJSON from 'is-json'
 
 var app = express();
 var server = http.createServer(app);
@@ -122,7 +125,7 @@ io.on('connection', function(socket){
 		onlineUserCount -= 1
 		io.sockets.emit("online-user-count", onlineUserCount);
 	});
-	
+
 	// socket.on('heartbeat', function(){
 		// console.log('心跳...');
 		// onlineUserCount -= 1
@@ -135,6 +138,22 @@ global.io = io
 
 app.use('/oauth', OauthRouter());
 app.use('/api/v1', API_V1());
+app.all('*', (req, res, next)=>{
+
+	// console.log(req);
+
+	// 只接收json的参数
+	if (req.query[0]) {
+		let json = req.query[0] || ''
+		if (!isJSON(json)) return res.send({ error: 11000, success: false })
+		req.json = JSON.parse(json)
+	} else {
+		req.json = {}
+	}
+
+	next()
+})
+app.use('/api/v2', API_V2());
 app.use('/', function(req, res){
 	res.send('运行中');
 });
