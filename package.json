@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",
+    "apollo-server-express": "^1.3.2",
     "async": "^1.4.2",
     "babel-polyfill": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
@@ -25,6 +26,7 @@
     "formidable": "^1.0.17",
     "gm": "^1.21.1",
     "graphql": "^0.12.3",
+    "graphql-tools": "^2.18.0",
     "helmet": "^1.3.0",
     "imageinfo": "^1.0.4",
     "ioredis": "^3.1.2",

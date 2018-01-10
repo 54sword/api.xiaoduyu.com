@@ -6,6 +6,11 @@ var schema = buildSchema(`
   type Query {
     hello: String
   }
+  type Character {
+    name: String
+    homeWorld: Planet
+    friends: [Character]
+  }
 `);
 
 var root = {

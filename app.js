@@ -13,9 +13,13 @@ var config = require('./config');
 
 var API_V1 = require('./app/api-v1');
 var API_V2 = require('./app/api-v2');
-var graphql = require('./app/graphql');
+// var graphql = require('./app/graphql');
+//
+// console.log(graphql);
 
-console.log(graphql);
+
+var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
+var schema = require('./app/graphql');
 
 // var OauthRouter = require('./app/oauth');
 import OauthRouter from './app/oauth'
@@ -141,7 +145,13 @@ io.on('connection', function(socket){
 });
 global.io = io
 
-app.use('/graphql', graphql);
+
+
+
+app.use('/graphql', bodyParser.json(), graphqlExpress({schema}))
+app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}))
+
+// app.use('/graphql', graphql);
 app.use('/oauth', OauthRouter());
 app.use('/api/v1', API_V1());
 
