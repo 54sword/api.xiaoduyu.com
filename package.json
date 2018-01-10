@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node --max-old-space-size=1700 ./bin/www",
-    "dev": "supervisor node server.js",
-    "mongodb": "/Users/wuseijian/mongodb/bin/mongod --dbpath /Users/wuseijian/mongodb/data/db"
+    "dev": "supervisor node server.js"
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",

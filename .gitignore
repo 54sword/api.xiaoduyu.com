@@ -29,3 +29,4 @@ dist
 config.js
 config/index.js
 *.DS_Store
+package-lock.json
