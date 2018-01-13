@@ -9,7 +9,11 @@ const checkParams = (dataJSON) => {
   return _checkParams(dataJSON, _posts)
 }
 
-exports.posts = async (root, args) => {
+let query = {}
+let mutation = {}
+
+
+query.posts = async (root, args) => {
 
   console.log(args);
 
@@ -62,3 +66,13 @@ exports.posts = async (root, args) => {
   return postList
 
 }
+
+mutation.addPosts = (root) => {
+
+  return { success: true, error: 10000 }
+
+  return 'ok'
+}
+
+exports.query = query
+exports.mutation = mutation

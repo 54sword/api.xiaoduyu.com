@@ -37,4 +37,9 @@ type Posts {
   sort_by_date: String
 }
 
+type addPosts {
+  success: Boolean
+  error: Int
+}
+
 `

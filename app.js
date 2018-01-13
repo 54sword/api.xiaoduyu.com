@@ -149,7 +149,8 @@ global.io = io
 
 
 app.use('/graphql', bodyParser.json(), graphqlExpress({schema}))
-app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}))
+// IDE
+app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
 
 // app.use('/graphql', graphql);
 app.use('/oauth', OauthRouter());

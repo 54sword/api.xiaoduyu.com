@@ -7,6 +7,8 @@ type Author {
   firstName: String
   lastName: String
   posts: [Post]
+  success: Boolean
+  error: Int
 }
 
 type Post {
@@ -18,22 +20,23 @@ type Post {
 }
 
 
+# 查
 type Query {
-  hello: String
+  hello(title: String!): String
   author(firstName: String, lastName: String): Author
   posts(_id: ID, json: String): [Posts]
 }
 
-mutation{
-  addUser(name:"testUser",sex:"男",intro:"简介",skills:[]){
-    name
-    sex
-    intro
-  }
+# 增、删、改
+type Mutation {
+  addPosts(message: String): addPosts
 }
 
 schema {
+  mutation: Mutation
   query: Query
-}`];
+}
+
+`];
 
 export default typeDefs;
