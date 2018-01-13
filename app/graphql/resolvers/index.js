@@ -1,10 +1,26 @@
-/*
-const resolvers = {
+// import Posts from '../modelsa/posts'
+// import User from './../modelsa/user'
+
+import { posts } from './posts'
+
+var resolvers = {
   Query: {
+    hello(root) {
+      return 'world';
+    },
     author(root, args){    // args就是上面schema中author的入参
       return { id: 1, firstName: 'Hello', lastName: 'World' };
     },
+    posts
   },
+
+  Mutation: {
+    addUser(root) {
+      console.log('123123');
+      return 'ok'
+    }
+  },
+
   Author: {
     // 定义author中的posts
     posts(author){
@@ -19,15 +35,6 @@ const resolvers = {
     author(post){
       return { id: 1, firstName: 'Hello', lastName: 'World' };
     },
-  },
-};
-*/
-
-var resolvers = {
-  Query: {
-    hello(root) {
-      return 'world';
-    }
   }
 };
 
