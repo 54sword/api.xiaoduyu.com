@@ -56,19 +56,7 @@ function changeString(str) {
 exports.fetchList = async (req, res) => {
 
   const user = req.user
-  let json = req.query[0] || ''
-
-  if (!isJSON(json)) return res.send({ error: 11000, success: false })
-
-  // 检查参数是否合法
-  json = checkParams(JSON.parse(json))
-
-  // 如果有非法参数，返回错误
-  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
-    return res.send(json)
-  }
-  
-  let { query, select, options } = json
+  let { query, select, options } = req.arguments
 
   if (user.role == 100) select = {}
 

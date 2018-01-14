@@ -498,6 +498,10 @@ exports.update = function(req, res, next) {
 exports.fetch = async (req, res) => {
 
   const user = req.user
+
+  let { query, select, options } = req.arguments
+
+  /*
   let json = req.query[0] || ''
 
   if (!isJSON(json)) return res.send({ error: 11000, success: false })
@@ -511,7 +515,7 @@ exports.fetch = async (req, res) => {
   }
 
   let { query, select, options } = json
-
+  */
   options.populate = [
     { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 } },
     { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } },

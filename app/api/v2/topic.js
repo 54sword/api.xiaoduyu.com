@@ -175,22 +175,22 @@ exports.update = function(req, res, next) {
 
 }
 
-exports.fetch = async (req, res) => {
+exports.find = async (req, res) => {
 
   const user = req.user
-  let json = req.query[0] || ''
+  // let json = req.query[0] || ''
 
-  if (!isJSON(json)) return res.send({ error: 11000, success: false })
+  // if (!isJSON(json)) return res.send({ error: 11000, success: false })
 
   // 检查参数是否合法
-  json = checkParams(JSON.parse(json))
+  // json = checkParams(JSON.parse(json))
 
   // 如果有非法参数，返回错误
-  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
-    return res.send(json)
-  }
+  // if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
+  //   return res.send(json)
+  // }
 
-  let { query, select, options } = json
+  let { query, select, options } = req.arguments
 
   // 如果查询某个用户关注的话题
   if (query.people_id) {
@@ -199,7 +199,7 @@ exports.fetch = async (req, res) => {
       query: { _id: people_id },
       select: { 'follow_topic': 1 }
     })
-
+    
     if (!people || !people.length) {
       return res.send({ success: false, error: 13000 })
     }

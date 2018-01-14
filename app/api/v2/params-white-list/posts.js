@@ -4,12 +4,12 @@ const queryWhiteList = {
   user_id: data => ({ name: 'user_id', value: data }),
   deleted: data => {
     let obj = { name: 'deleted', value: data }
-    if (typeof data != 'boolean') obj.err = 90000
+    if (typeof data != 'boolean') obj.error = 90000
     return obj
   },
   weaken: data => {
     let obj = { name: 'weaken', value: data }
-    if (typeof data != 'boolean') obj.err = 90000
+    if (typeof data != 'boolean') obj.error = 90000
     return obj
   },
   topic_id: data => ({ name: 'topic_id', value: data }),
@@ -20,18 +20,29 @@ const queryWhiteList = {
   verify: data => ({ name: 'verify', value: data }),
   recommend: data => {
     let obj = { name: 'recommend', value: data }
-    if (typeof data != 'boolean') obj.err = 90000
+    if (typeof data != 'boolean') obj.error = 90000
     return obj
   },
   sort_by_date: data => ({ name: 'sort_by_date', value: data }),
-  // 小于
-  lt_create_at: data => ({ name: 'create_at', value: { '$lt': data } }),
-  // 小于等于
-  lte_create_at: data => ({ name: 'create_at', value: { '$lte': data } }),
-  // 大于
-  gt_create_at: data => ({ name: 'create_at', value: { '$gt': data } }),
-  // 大于等于
-  gte_create_at: data => ({ name: 'create_at', value: { '$gte': data } })
+  
+  create_at: data => {
+    let obj = {}
+
+    if (typeof data != 'object') return { error: 90000 }
+
+    // 小于
+    if (data['$lt']) obj['$lt'] = data['$lt']
+    // 小于等于
+    if (data['$lte']) obj['$lte'] = data['$lte']
+    // 大于
+    if (data['$gt']) obj['$gt'] = data['$gt']
+    // 大于等于
+    if (data['$gte']) obj['$gte'] = data['$gte']
+
+    if (Reflect.ownKeys(obj).length == 0) return { error: 90000 }
+
+    return { name: 'create_at', value: obj }
+  }
 }
 
 const selectWhiteList = [

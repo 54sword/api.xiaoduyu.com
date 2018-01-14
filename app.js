@@ -18,13 +18,13 @@ var API_V2 = require('./app/api-v2');
 // console.log(graphql);
 
 
-var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
-var schema = require('./app/graphql');
+// var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
+// var schema = require('./app/graphql');
 
 // var OauthRouter = require('./app/oauth');
 import OauthRouter from './app/oauth'
+import outputError from './config/error'
 
-import isJSON from 'is-json'
 
 var app = express();
 var server = http.createServer(app);
@@ -148,29 +148,62 @@ global.io = io
 
 
 
-app.use('/graphql', bodyParser.json(), graphqlExpress({schema}))
+// app.use('/graphql', bodyParser.json(), graphqlExpress({schema}))
 // IDE
-app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
+// app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
 
 // app.use('/graphql', graphql);
 app.use('/oauth', OauthRouter());
 app.use('/api/v1', API_V1());
 
+/*
 app.all('*', (req, res, next)=>{
 
 	// console.log(req);
 
-	// 只接收json的参数
-	if (req.query[0]) {
+	if (req.method === 'GET') {
 		let json = req.query[0] || ''
 		if (!isJSON(json)) return res.send({ error: 11000, success: false })
-		req.json = JSON.parse(json)
-	} else {
-		req.json = {}
+		req.arguments = JSON.parse(json)
+	} else if (req.method === 'POST') {
+		req.arguments = req.body
 	}
+
+	// 只接收json的参数
+	// if (req.query[0]) {
+	// 	let json = req.query[0] || ''
+	// 	if (!isJSON(json)) return res.send({ error: 11000, success: false })
+	// 	req.json = JSON.parse(json)
+	// } else {
+	// 	req.json = {}
+	// }
 
 	next()
 })
+*/
+
+
+app.use(function (req, res, next) {
+  // 计算页面加载完成花费的时间
+  // var exec_start_at = Date.now();
+  var _send = res.send;
+  res.send = function () {
+
+		// 如果返回结果中，包含错误代码，则装换成普通语言提示
+		if (arguments[0] && typeof arguments[0].success != 'undefined' && !arguments[0].success && arguments[0].error) {
+			// arguments[0].error = '错误提醒测试'
+			console.log(arguments[0]);
+			arguments[0] = outputError(arguments[0])
+		}
+
+    // 发送Header
+    // res.set('X-Execution-Time', String(Date.now() - exec_start_at) + ' ms');
+    // 调用原始处理函数
+    return _send.apply(res, arguments);
+  };
+  next();
+});
+
 app.use('/api/v2', API_V2());
 
 

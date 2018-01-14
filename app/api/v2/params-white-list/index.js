@@ -1,6 +1,19 @@
 
+import comment from './comment'
+import topic from './topic'
+import posts from './posts'
+import user from './user'
 
-export default (dataJSON, { saveWhiteList, queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList }) => {
+let list = {
+  comment,
+  topic,
+  posts,
+  user
+}
+
+export default (dataJSON, name) => {
+
+  let { saveWhiteList, queryWhiteList, selectWhiteList, optionsWhiteList, updateWhiteList } = list[name]
 
   let saveJSON = dataJSON.save || {}
   let queryJSON = dataJSON.query || {}
@@ -29,6 +42,8 @@ export default (dataJSON, { saveWhiteList, queryWhiteList, selectWhiteList, opti
       } else {
         query[result.name] = result.value
       }
+    } else {
+      return { success: false, error: 90001, error_data: { params:i } }
     }
   }
 

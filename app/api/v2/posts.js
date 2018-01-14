@@ -842,18 +842,8 @@ exports.view = function(req, res, next) {
 exports.find = async (req, res) => {
 
   const user = req.user
-  let json = req.json
-
-  // 检查参数是否合法
-  json = checkParams(json)
-
-  // 如果有非法参数，返回错误
-  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
-    return res.send(json)
-  }
-
-  let { query, select, options } = json
-
+  let { query, select, options } = req.arguments
+  
   options.populate = [
     {
       path: 'user_id',
@@ -892,15 +882,11 @@ exports.find = async (req, res) => {
 exports.update = async (req, res) => {
 
   const user = req.user
+  let { query, update, options } = req.arguments
 
-  let obj = checkParams(req.body)
-
-  // 如果有非法参数，返回错误
-  if (Reflect.has(obj, 'success') && Reflect.has(obj, 'error')) {
-    return res.send(obj)
+  if (!query._id) {
+    return res.send({ success: false, error: 90002, error_data: { argument: 'query._id' } })
   }
-
-  let { query, update, options } = obj
 
   try {
     await Posts.update({ query, update, options })

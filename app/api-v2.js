@@ -92,7 +92,7 @@ var APIRequire = function() {
   var router = express.Router();
 
   router.post('/user', auth.userRequired, user.fetch);
-  router.get('/people', auth.openType, user.fetchList);
+  router.get('/people', auth.openType, auth.verifyArguments('user'), user.fetchList);
 
   router.get('/people/:id', auth.openType, user.fetchById);
 
@@ -125,16 +125,17 @@ var APIRequire = function() {
   // 帖子
   router.post('/add-posts', auth.userRequired, Posts.add);
   router.post('/update-posts', auth.userRequired, Posts.update);
-  router.get('/posts', auth.openType, Posts.find)
-  router.get('/view-posts', Posts.view);
-  router.post('/posts/update', auth.userRequired, Posts.update)
-  // router.post('/posts', auth.adminRequired, Posts.findPosts)
 
+  router.get('/view-posts', Posts.view)
+  router.get('/posts', auth.openType, auth.verifyArguments('posts'), Posts.find)
+  router.post('/posts/update', auth.userRequired, auth.verifyArguments('posts'), Posts.update)
+  // router.post('/posts', auth.adminRequired, Posts.findPosts)
+  
   router.post('/write-comment', auth.userRequired, commment.add);
   router.post('/update-comment', auth.userRequired, commment.update);
-  router.get('/comments', auth.openType, commment.fetch);
+  router.get('/comments', auth.openType, auth.verifyArguments('comment'), commment.fetch);
 
-  router.get('/topic', auth.openType, Topic.fetch)
+  router.get('/topic', auth.openType, auth.verifyArguments('topic'), Topic.find)
   // router.get('/topic/get/:json', auth.openType, Topic.fetch)
   // router.post('/topic/get', auth.openType, Topic.fetch)
 

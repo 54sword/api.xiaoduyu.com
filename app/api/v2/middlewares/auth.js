@@ -157,3 +157,39 @@ exports.adminRequired = function(req, res, next) {
   });
 
 };
+
+import isJSON from 'is-json'
+// import _posts from '../params-white-list/posts'
+import checkParams from '../params-white-list'
+
+// const checkParams = (dataJSON) => {
+//   return _checkParams(dataJSON, _posts)
+// }
+
+// 验证参数
+exports.verifyArguments = (schemaName) => {
+  return (req, res, next) =>{
+
+    // 请求的json对象
+    let JSONData = null
+
+    if (req.method === 'GET') {
+  		let json = req.query[0] || ''
+  		if (!isJSON(json)) return res.send({ error: 11000, success: false })
+  		JSONData = JSON.parse(json)
+  	} else if (req.method === 'POST') {
+  		JSONData = req.body
+  	}
+
+    // 检查参数是否合法
+    JSONData = checkParams(JSONData, schemaName)
+    // 如果有非法参数，返回错误
+    if (Reflect.has(JSONData, 'success') && Reflect.has(JSONData, 'error')) {
+      return res.send(JSONData)
+    }
+
+    req.arguments = JSONData
+
+    next()
+  }
+}
