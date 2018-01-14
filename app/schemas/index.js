@@ -4,7 +4,7 @@ var config = require('../../config');
 
 
 if (config.debug) {
-	// mongoose.set('debug', true);
+	mongoose.set('debug', true);
 }
 
 /*

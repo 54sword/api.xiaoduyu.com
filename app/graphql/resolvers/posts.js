@@ -15,20 +15,21 @@ let mutation = {}
 
 query.posts = async (root, args) => {
 
-  console.log(args);
+  let { _id, topic_id, user_id, lte_create_at, gte_create_at, weaken, recommend, deleted, sort, skip = 0, limit = 300 } = args
 
-  // 检查参数是否合法
-  // let json = checkParams(args.json)
+  let query = {},
+    options = { skip, limit }
 
-  // 如果有非法参数，返回错误
-  // if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
-  //   return res.send(json)
-  // }
-  //
-  // let { query, options } = json
-
-  let options = { limit: 30 }
-
+  if (_id) query._id = _id
+  if (topic_id) query.topic_id = topic_id
+  if (user_id) query.user_id = user_id
+  if (lte_create_at) query.create_at = { '$lte': lte_create_at }
+  if (gte_create_at) query.gte_create_at = { 'gte': gte_create_at }
+  if (weaken) query.weaken = weaken
+  if (recommend) query.recommend = recommend
+  if (deleted) query.deleted = deleted
+  if (sort) query.sort = sort
+  /*
   options.populate = [
     {
       path: 'user_id',
@@ -52,12 +53,13 @@ query.posts = async (root, args) => {
       select: { '_id': 1, 'name': 1 }
     }
   ]
+  */
 
   // return { error: 10000 }
 
   // console.log(query);
   // console.log(select);
-  console.log(options);
+  // console.log(options);
 
   let postList = await Posts.find({
     options

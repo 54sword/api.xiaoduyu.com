@@ -24,7 +24,30 @@ type Post {
 type Query {
   hello(title: String!): String
   author(firstName: String, lastName: String): Author
-  posts(_id: ID, json: String): [Posts]
+  posts(
+    _id: ID,
+    # 帖子id
+    topic_id: ID,
+    # 用户id
+    user_id: ID,
+    # 小于等于创建日期
+    lte_create_at: Int,
+    # 大于等于创建日期
+    gte_create_at: Int,
+    # 弱化
+    weaken: Boolean,
+    # 推荐
+    recommend: Boolean,
+    # 删除
+    deleted: Boolean,
+    # 排序
+    sort: String,
+    # 跳过多少个
+    skip: Int,
+    # 每个显示数量
+    limit: Int
+  ): [Posts]
+  #user(id: String): User
 }
 
 # 增、删、改
