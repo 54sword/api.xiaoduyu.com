@@ -3,7 +3,7 @@
 
 import posts from './posts'
 
-console.log(posts);
+// console.log(posts);
 
 let Query = {
   hello(root, params) {
@@ -35,13 +35,7 @@ var resolvers = {
   Query,
   Mutation,
 
-  Posts: {
-    user_id(posts) {
-      // console.log(posts);
-      // console.log('----');
-      return { _id: 1, name: 'Hello',brief: '2' };
-    }
-  },
+
 
   Author: {
     // 定义author中的posts
@@ -62,5 +56,9 @@ var resolvers = {
     },
   }
 };
+
+// Object.assign(resolvers, posts.resolvers);
+
+// console.log(resolvers);
 
 export default resolvers;

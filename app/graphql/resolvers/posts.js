@@ -1,4 +1,5 @@
 import Posts from '../../modelsa/posts'
+import User from '../../modelsa/user'
 
 // import isJSON from 'is-json'
 
@@ -11,6 +12,35 @@ const checkParams = (dataJSON) => {
 
 let query = {}
 let mutation = {}
+let resolvers = {
+  Posts: {
+    async user_id(posts) {
+
+      // console.log(posts);
+
+      var options = [
+        {
+          model: 'User',
+          path: 'user_id',
+          select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
+        }
+      ]
+
+      let t = await User.populate({
+        collections: posts,
+        options,
+      })
+
+      posts = t
+
+      // console.log(t);
+
+      // console.log(posts);
+      // console.log('----');
+      return { _id: 1, name: 'Hello',brief: '2' };
+    }
+  }
+}
 
 
 query.posts = async (root, args) => {
@@ -19,6 +49,8 @@ query.posts = async (root, args) => {
 
   let query = {},
     options = { skip, limit }
+
+    console.log(args);
 
   if (_id) query._id = _id
   if (topic_id) query.topic_id = topic_id
@@ -29,11 +61,11 @@ query.posts = async (root, args) => {
   if (recommend) query.recommend = recommend
   if (deleted) query.deleted = deleted
   if (sort) query.sort = sort
-  /*
+
   options.populate = [
     {
       path: 'user_id',
-      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
+      // select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
     },
     {
       path: 'comment',
@@ -43,25 +75,19 @@ query.posts = async (root, args) => {
           { deleted: false, weaken: false, reply_count: { $gte: 1 } }
         ]
       },
-      select: {
-        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
-      },
-      options: { limit: 1 }
+      // select: {
+      //   '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
+      // },
+      // options: { limit: 1 }
     },
     {
       path: 'topic_id',
-      select: { '_id': 1, 'name': 1 }
+      // select: { '_id': 1, 'name': 1 }
     }
   ]
-  */
-
-  // return { error: 10000 }
-
-  // console.log(query);
-  // console.log(select);
-  // console.log(options);
 
   let postList = await Posts.find({
+    query,
     options
   })
 
@@ -78,3 +104,4 @@ mutation.addPosts = (root) => {
 
 exports.query = query
 exports.mutation = mutation
+// exports.resolvers = resolvers

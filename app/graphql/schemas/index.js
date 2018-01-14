@@ -24,9 +24,11 @@ type Post {
 type Query {
   hello(title: String!): String
   author(firstName: String, lastName: String): Author
+  # 查询帖子
   posts(
-    _id: ID,
     # 帖子id
+    _id: ID,
+    # 话题id
     topic_id: ID,
     # 用户id
     user_id: ID,
