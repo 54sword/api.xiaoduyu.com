@@ -44,6 +44,12 @@ export default (Schemas) => ({
   remove: ({
     query = {},
     callback = ()=>{}
-  }) => Schemas.remove(query, callback)
+  }) => Schemas.remove(query, callback),
+
+  // 查询文档数量
+  count: ({
+    query = {},
+    callback = ()=>{}
+  }) => Schemas.count(query, callback)
 
 })

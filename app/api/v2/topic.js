@@ -15,14 +15,12 @@ const checkParams = (dataJSON) => {
 }
 
 
-exports.add = async function(req, res, next) {
+exports.add = async (req, res, next) => {
 
   const user = req.user
-  let obj = checkParams(req.body)
+  let { save } = req.arguments
 
-  let { save } = obj
-
-  let returnObj = { error: 10005 }
+  let returnObj = { success: false, error: 10005 }
 
   if (!save.name || !save.description || !save.brief) {
     res.status(400)
@@ -39,7 +37,7 @@ exports.add = async function(req, res, next) {
 
   // 如果有父类，检查父类是否存在
   if (save.parent_id) {
-    result = await Topic.findOne({ query: { _id: obj.parent_id } })
+    result = await Topic.findOne({ query: { _id: save.parent_id } })
     if (!result) {
       returnObj.error = 15004
       res.status(400)
@@ -47,15 +45,88 @@ exports.add = async function(req, res, next) {
     }
   }
 
-  save.user_id = user._id
-  result = await Topic.save({ data: save })
+  save.user_id = user._id + ''
+  if (!save.avatar) delete save.avatar
+  if (!save.parent_id) delete save.parent_id
 
-  console.log(result);
-
-  res.send({ success: true })
+  try {
+    result = await Topic.save({ data: save })
+    res.send({ success: true, data: result })
+  } catch (e) {
+    console.log(e)
+    res.send({ success: false })
+  }
 
 }
 
+exports.update = async (req, res, next) => {
+  const user = req.user
+  let { query, update } = req.arguments
+
+  let returnObj = { success: false, error: 10005 }
+
+  if (!query._id) {
+    // res.status(400)
+    return res.send(returnObj)
+  }
+
+  if (!update.name || !update.description || !update.brief) {
+    // res.status(400)
+    return res.send(returnObj)
+  }
+
+  let topic = await Topic.findOne({ query: { _id: query._id } })
+
+  if (!topic) {
+    returnObj.error = 15000
+    // res.status(400)
+    return res.send(returnObj)
+  }
+
+  let result
+
+  if (topic.name != update.name) {
+
+    // 判断是否存在这个话题
+    result = await Topic.findOne({ query: { name: update.name } })
+
+    if (result) {
+      returnObj.error = 15003
+      // res.status(400)
+      return res.send(returnObj)
+    }
+  }
+
+  if (update.parent_id && topic.parent_id != update.parent_id) {
+    // 如果有父类，检查父类是否存在
+    if (update.parent_id) {
+      result = await Topic.findOne({ query: { _id: update.parent_id } })
+      if (!result) {
+        returnObj.error = 15004
+        // res.status(400)
+        return res.send(returnObj)
+      }
+    }
+  }
+
+  if (Reflect.has(update, 'parent_id')) {
+    if (update.parent_id) {
+    } else {
+      update.parent_id = null
+    }
+  }
+
+  try {
+    await Topic.update({ query, update })
+    res.send({ success: true })
+  } catch (e) {
+    console.log(res);
+    res.send({ success: false })
+  }
+
+}
+
+/*
 exports.update = function(req, res, next) {
 
   var user = req.user,
@@ -174,22 +245,11 @@ exports.update = function(req, res, next) {
   })
 
 }
+*/
 
 exports.find = async (req, res) => {
 
   const user = req.user
-  // let json = req.query[0] || ''
-
-  // if (!isJSON(json)) return res.send({ error: 11000, success: false })
-
-  // 检查参数是否合法
-  // json = checkParams(JSON.parse(json))
-
-  // 如果有非法参数，返回错误
-  // if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
-  //   return res.send(json)
-  // }
-
   let { query, select, options } = req.arguments
 
   // 如果查询某个用户关注的话题
@@ -199,7 +259,7 @@ exports.find = async (req, res) => {
       query: { _id: people_id },
       select: { 'follow_topic': 1 }
     })
-    
+
     if (!people || !people.length) {
       return res.send({ success: false, error: 13000 })
     }
