@@ -19,10 +19,15 @@ const queryWhiteList = {
   people_id: data => ({ name: 'people_id', value: data })
 }
 
+// 展示字段白名单
 const selectWhiteList = [
-  "__v", "_id", "user_id", "parent_id", "name", "description", "avatar",
+  // "__v",
+  "_id", "user_id", "parent_id", "name", "description", "avatar",
   "background", "follow_count", "posts_count", "comment_count", "sort",
-  "create_at", "language", "recommend", "brief"
+  "create_at", "language", "recommend", "brief",
+
+  // 额外属性
+  "follow"
 ]
 
 const optionsWhiteList = {
@@ -49,8 +54,7 @@ const updateWhiteList = {
   background:  data => typeCheck('background', data, 'string'),
   recommend:   data => typeCheck('recommend', data, 'boolean'),
   sort:        data => typeCheck('sort', data, 'number'),
-  language:    data => typeCheck('language', data, 'number'),
-  recommend:   data => typeCheck('recommend', data, 'boolean')
+  language:    data => typeCheck('language', data, 'number')
 }
 
 // 储存字段白名单
@@ -60,7 +64,8 @@ const saveWhiteList = {
   avatar:      data => typeCheck('avatar', data, 'string'),
   description: data => typeCheck('description', data, 'string'),
   user_id:     data => typeCheck('user_id', data, 'string'),
-  parent_id:   data => typeCheck('parent_id', data, 'string')
+  parent_id:   data => typeCheck('parent_id', data, 'string'),
+  recommend:   data => typeCheck('recommend', data, 'boolean')
 }
 
 

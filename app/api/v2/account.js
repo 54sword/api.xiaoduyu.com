@@ -57,6 +57,8 @@ exports.signin = function(req, res, next) {
   var captchaId = req.body['captcha_id'] || '';
   // var ip = Tools.getIP(req);
 
+  // console.log(req.body);
+
   async.waterfall([
 
     function(callback) {

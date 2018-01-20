@@ -501,21 +501,6 @@ exports.fetch = async (req, res) => {
 
   let { query, select, options } = req.arguments
 
-  /*
-  let json = req.query[0] || ''
-
-  if (!isJSON(json)) return res.send({ error: 11000, success: false })
-
-  // 检查参数是否合法
-  json = checkParams(JSON.parse(json))
-
-  // 如果有非法参数，返回错误
-  if (Reflect.has(json, 'success') && Reflect.has(json, 'error')) {
-    return res.send(json)
-  }
-
-  let { query, select, options } = json
-  */
   options.populate = [
     { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 } },
     { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } },

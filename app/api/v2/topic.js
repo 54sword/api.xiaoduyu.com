@@ -66,12 +66,10 @@ exports.update = async (req, res, next) => {
   let returnObj = { success: false, error: 10005 }
 
   if (!query._id) {
-    // res.status(400)
     return res.send(returnObj)
   }
 
-  if (!update.name || !update.description || !update.brief) {
-    // res.status(400)
+  if (!update.avatar || !update.name || !update.description || !update.brief) {
     return res.send(returnObj)
   }
 
@@ -79,26 +77,38 @@ exports.update = async (req, res, next) => {
 
   if (!topic) {
     returnObj.error = 15000
-    // res.status(400)
     return res.send(returnObj)
   }
 
   let result
 
+  // 判断是否存在这个话题
   if (topic.name != update.name) {
-
-    // 判断是否存在这个话题
     result = await Topic.findOne({ query: { name: update.name } })
 
     if (result) {
       returnObj.error = 15003
-      // res.status(400)
       return res.send(returnObj)
     }
   }
 
+  // 如果存在父类，必须选择一个父类
+  if (topic && topic.parent_id && !update.parent_id) {
+    returnObj.error = 90002
+    returnObj.error_data = {
+      argument: 'update.parent_id'
+    }
+    return res.send(returnObj)
+  } else if (topic && !topic.parent_id && update.parent_id) {
+    returnObj.error = 90001
+    returnObj.error_data = {
+      argument: 'update.parent_id'
+    }
+    return res.send(returnObj)
+  }
+
+  // 如果有父类，检查父类是否存在
   if (update.parent_id && topic.parent_id != update.parent_id) {
-    // 如果有父类，检查父类是否存在
     if (update.parent_id) {
       result = await Topic.findOne({ query: { _id: update.parent_id } })
       if (!result) {
@@ -126,127 +136,6 @@ exports.update = async (req, res, next) => {
 
 }
 
-/*
-exports.update = function(req, res, next) {
-
-  var user = req.user,
-      id = req.body.id,
-      parentId = req.body.parent_id,
-      name = req.body.name,
-      brief = req.body.brief,
-      avatar = req.body.avatar,
-      description = req.body.description
-
-  async.waterfall([
-
-    function(callback) {
-      //  || !avatar
-      if (!name || !description || !brief) {
-        callback(10005)
-      } else {
-        callback(null)
-      }
-    },
-
-    // 判断节点是否存在
-    function(callback) {
-      Topic.fetch({ _id: id }, { _id: 1 }, {}, function(err, nodes){
-        if (err) console.log(err)
-        if (!nodes || nodes.length == 0) {
-          callback(15000)
-        } else {
-          callback(null, nodes[0])
-        }
-      });
-    },
-
-    // 判断名字是否已经存在
-    function(node, callback) {
-
-      if (node.name != name) {
-        Topic.fetch({ name: name }, {}, {}, function(err, node){
-          if (err) console.log(err)
-          if (node && node.length > 1) {
-            callback(15003)
-          } else {
-            callback(null)
-          }
-        })
-      } else {
-        callback(null)
-      }
-
-    },
-
-
-    function(callback) {
-
-      if (!parentId) {
-        callback(null)
-        return
-      }
-
-      // 如果有父节点，判断节点是否存在
-      Topic.fetch({ _id: parentId }, { _id: 1 }, {}, function(err, nodes){
-        if (err) console.log(err)
-        if (!nodes || nodes.length == 0) {
-          callback(15001)
-        } else {
-          callback(null)
-        }
-      });
-    },
-
-    function(callback) {
-
-      var contents = {
-        name: name,
-        brief: brief,
-        avatar: avatar,
-        description: description
-      }
-
-      if (parentId) {
-        contents.parent_id = parentId;
-      }
-
-      Topic.update(
-        { _id: id },
-        contents,
-        function(err){
-          if (err) console.log(err)
-
-          // if (parentId) {
-          //   Node.updateChildren(parentId, function(){
-          //     callback(null)
-          //   })
-          // } else {
-            callback(null)
-          // }
-
-        }
-      );
-
-    }
-  ], function(err, result){
-
-    if (err) {
-      res.status(400);
-      res.send({
-        success: false,
-        error: err
-      });
-    } else {
-      res.send({
-        success: true
-      });
-    }
-
-  })
-
-}
-*/
-
 exports.find = async (req, res) => {
 
   const user = req.user
@@ -268,16 +157,27 @@ exports.find = async (req, res) => {
     query._id = { '$in': people[0].follow_topic }
   }
 
-  let nodes = await Topic.find({ query, select, options })
+  // 如果需要返回 parent_id，则获取 parent_id 的详细信息
+  if (Reflect.has(select, 'parent_id')) {
+    options.populate = [{
+      path: 'parent_id',
+      select: {
+        '_id': 1, 'avatar': 1, 'name': 1
+      }
+    }]
+  }
 
-  if (!nodes) return res.send({ success: false, error: 10004 })
+  let topicList = await Topic.find({ query, select, options })
 
-  if (user && nodes) {
-    nodes = JSON.parse(JSON.stringify(nodes))
-    nodes.map(node => {
+  if (!topicList) return res.send({ success: false, error: 10004 })
+
+  // 如果是登陆用户，显示是否关注了该话题
+  if (user && topicList && Reflect.has(select, 'follow')) {
+    topicList = JSON.parse(JSON.stringify(topicList))
+    topicList.map(node => {
       node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
     })
   }
 
-  res.send({ success: true, data: nodes })
+  res.send({ success: true, data: topicList, sql: { query, select, options } })
 }

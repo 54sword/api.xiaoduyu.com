@@ -72,6 +72,11 @@ export default (dataJSON, name) => {
     }
   }
 
+  // limit默认值
+  if (!options.limit) options.limit = 30
+  // limit 最大值
+  else if (options.limit > 300) options.limit = 300
+
   for (let i in updateJSON) {
     if (updateWhiteList[i]) {
       let result = updateWhiteList[i](updateJSON[i])

@@ -52,12 +52,6 @@ exports.updateEmail = function(id, email, callback) {
   Account.update({ _id: id }, { email: email }).exec(callback);
 };
 
-/*
-// 更新邮箱验证状态
-exports.updateEmailVerify = function(id, bl, callback) {
-  Account.update({ _id: id }, { email_verify: bl }).exec(callback);
-};
-*/
 
 // 重置密码
 exports.resetPassword = function(id, newPassword, callback) {
@@ -80,41 +74,3 @@ exports.resetPassword = function(id, newPassword, callback) {
   });
 
 };
-
-/*
-// 更新更改密码口令
-exports.setPasswordCaptcha = function(id, captcha, callback) {
-
-  var conditions = { _id: id };
-  var update = { $set: {
-    reset_password_captcha: captcha,
-    // 有效时间一个小时
-    reset_password_expire: Date.now() + 3600000
-  }};
-
-  Account.update(conditions, update).exec(callback);
-
-};
-
-exports.updateEmailVerifyCaptcha = function(id, captcha, callback) {
-  var conditions = { _id: id };
-  var update = { $set: {
-    // replace_email: email,
-    verify_email_captcha: captcha,
-    // 有效时间一个小时
-    verify_email_captcha_expire: Date.now() + 3600000
-  }};
-
-  Account.update(conditions, update).exec(callback);
-};
-
-
-// 设置替换邮箱
-exports.setRepaceEmail = function(id, email, callback) {
-  var conditions = { _id: id };
-  var update = { $set: {
-    replace_email: email
-  }};
-  Account.update(conditions, update).exec(callback);
-};
-*/
