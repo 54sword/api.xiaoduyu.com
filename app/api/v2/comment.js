@@ -501,65 +501,93 @@ exports.fetch = async (req, res) => {
 
   let { query, select, options } = req.arguments
 
-  options.populate = [
-    { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 } },
-    { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } },
-    { path: 'posts_id', select: { _id:1, title:1, content_html:1 } }
-  ]
+  options.populate = []
 
-  // reply 添加屏蔽条件
-  if (user && !query._id) {
-    options.populate.push({
-      path: 'reply',
-      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-      options: { limit: 10 },
-      match: { user_id: { '$nin': user.block_people }, deleted: false }
-    })
-  } else {
-    options.populate.push({
-      path: 'reply',
-      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-      options: { limit: 10 },
-      match: { deleted: false }
-    })
+  if (Reflect.has(select, 'user_id') && select.user_id) {
+    options.populate.push([
+      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 } }
+    ])
   }
 
+  if (Reflect.has(select, 'reply_id') && select.reply_id) {
+    options.populate.push([
+      { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } }
+    ])
+  }
+
+  if (Reflect.has(select, 'reply_id') && select.reply_id) {
+    options.populate.push([
+      { path: 'posts_id', select: { _id:1, title:1, content_html:1 } }
+    ])
+  }
+
+  if (Reflect.has(select, 'reply') && select.reply) {
+
+    // reply 添加屏蔽条件
+    if (user && !query._id) {
+      options.populate.push({
+        path: 'reply',
+        select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 10 },
+        match: { user_id: { '$nin': user.block_people }, deleted: false }
+      })
+    } else {
+      options.populate.push({
+        path: 'reply',
+        select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 10 },
+        match: { deleted: false }
+      })
+    }
+
+  }
 
   let comments = []
 
   try {
+
     comments = await Comment.find({ query, select, options })
 
-    options = [
-      {
+    options = []
+
+    if (Reflect.has(select, 'reply') && select.reply) {
+      options.push({
         path: 'reply.user_id',
         model: 'User',
         select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
-      },
-      {
+      })
+      options.push({
         path: 'reply.reply_id',
         model: 'Comment',
         select:{ '_id': 1, 'user_id': 1 }
-      },
-      {
+      })
+    }
+
+    if (Reflect.has(select, 'reply_id') && select.reply_id) {
+      options.push({
         path: 'reply_id.user_id',
         model: 'User',
         select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
-      }
-    ]
+      })
+    }
 
-    comments = await Comment.populate({ collections: comments, options })
+    if (options.length > 0) {
+      comments = await Comment.populate({ collections: comments, options })
+    }
 
-    options = [
-      {
+    options = []
+
+    if (Reflect.has(select, 'reply') && select.reply) {
+      options.push({
         path: 'reply.reply_id.user_id',
         model: 'User',
         select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
-      }
-    ]
+      })
+    }
 
-    comments = await Comment.populate({ collections: comments, options })
-    // res.send({ success: true, data: comments })
+    if (options.length > 0) {
+      comments = await Comment.populate({ collections: comments, options })
+    }
 
   } catch (err) {
     console.log(err);
@@ -568,9 +596,8 @@ exports.fetch = async (req, res) => {
   }
 
   // 如果未登录，那么直接返回结果
-  if (!user) return res.send({ success: true, data: comments })
-
-
+  if (!user || !select.like || Reflect.has(select, 'like') && !select.like) return res.send({ success: true, data: comments })
+  
   // 查询是否点赞了评论或回复
 
   comments = JSON.stringify(comments);
@@ -582,6 +609,11 @@ exports.fetch = async (req, res) => {
     ids.push(item._id)
     if (item.reply) item.reply.map(item => ids.push(item._id))
   })
+
+  if (!select.like || Reflect.has(select, 'like') && !select.like) {
+    res.send({ success: true, data: comments, sql: req.arguments })
+    return
+  }
 
   Like.find({
     $or: [

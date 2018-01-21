@@ -24,9 +24,13 @@ const queryWhiteList = {
 }
 
 const selectWhiteList = [
-  "__v", "_id", "user_id", "posts_id", "parent_id", "reply_id", "content", "content_html",
+  // "__v",
+  "_id", "user_id", "posts_id", "parent_id", "reply_id", "content", "content_html",
   "create_at", "update_at", "last_reply_at", "reply_count", "reply", "like_count", "device",
-  "ip", "blocked", "deleted", "verify", "weaken"
+  "ip", "blocked", "deleted", "verify", "weaken",
+
+  // 额外属性
+  "like"
 ]
 
 const optionsWhiteList = {
