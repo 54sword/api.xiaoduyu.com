@@ -373,6 +373,26 @@ exports.add = function(req, res) {
 }
 
 
+exports.update = async (req, res) => {
+
+  const user = req.user
+  let { query, update, options } = req.arguments
+
+  if (!query._id) {
+    return res.send({ success: false, error: 90002, error_data: { argument: 'query._id' } })
+  }
+
+  try {
+    await Comment.update({ query, update, options })
+    res.send({ success: true })
+  } catch (err) {
+    console.log(err);
+    res.send({ success: false, error: 10003 })
+  }
+
+}
+
+/*
 exports.update = function(req, res, next) {
 
   var user              = req.user;
@@ -494,6 +514,7 @@ exports.update = function(req, res, next) {
   });
 
 };
+*/
 
 exports.fetch = async (req, res) => {
 
@@ -597,7 +618,7 @@ exports.fetch = async (req, res) => {
 
   // 如果未登录，那么直接返回结果
   if (!user || !select.like || Reflect.has(select, 'like') && !select.like) return res.send({ success: true, data: comments })
-  
+
   // 查询是否点赞了评论或回复
 
   comments = JSON.stringify(comments);
@@ -658,263 +679,9 @@ exports.fetch = async (req, res) => {
 
     })
 
-    // callback(null, comments)
-
     res.send({ success: true, data: comments })
 
   })
-
-
-  /*
-  let result = await Comment.find({ query, select, options, callback:function(err, comments) {
-    if (err) console.log(err)
-
-    res.send({
-      success: true,
-      data: comments
-    })
-
-  }})
-
-  console.log(result);
-
-  res.send({
-    success: true,
-    data: comments
-  })
-  */
-
-  /*
-  return
-
-  var user = req.user
-  var page = parseInt(req.query.page) || 0,
-  perPage = parseInt(req.query.per_page) || 20,
-  gt_create_at = req.query.gt_create_at, // 小于该日期
-  answerId = req.query.answer_id,
-  comment_id = req.query.comment_id,
-  posts_id = req.query.posts_id,
-  parent_id = req.query.parent_id,
-  user_id = req.query.user_id,
-  draft = req.query.draft || 0,
-  parent_exists = req.query.parent_exists,
-  sortBy = req.query.sort_by || 'create_at',
-  sort = req.query.sort || 1,
-  includeReply = parseInt(req.query.include_reply) || 1,
-  query = {
-    deleted: false
-  },
-  options = {}
-
-  // 添加屏蔽条件
-  if (user && !comment_id) {
-    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
-  }
-
-  // 是否查询有父节点的数据
-  // query.parent_id = { $exists : parent_exists ? true : false }
-
-  if (typeof(parent_exists) != 'undefined') {
-    query.parent_id = { $exists: parseInt(parent_exists) > 0 ? true : false }
-  }
-
-  if (posts_id) query.posts_id = posts_id
-  if (user_id) query.user_id = user_id
-  if (parent_id) query.parent_id = parent_id
-  if (comment_id) query._id = comment_id
-  if (answerId) query.answer_id = answerId
-  if (gt_create_at) query.create_at = { '$gt': gt_create_at }
-  if (page > 0) options.skip = page * perPage
-  if (perPage) options.limit = parseInt(perPage)
-
-  options.sort = {}
-  options.sort[sortBy] = sort > 0 ? 1 : -1
-
-  // options.sort = { 'create_at': 1 }
-  options.populate = [
-    {
-      path: 'user_id',
-      select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
-    },
-    {
-      path: 'reply_id',
-      select:{ 'user_id': 1, '_id': 0 }
-    },
-    {
-      path: 'posts_id',
-      select: { _id:1, title:1, content_html:1 }
-    }
-    // {
-    //   path: 'reply',
-    //   select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-    //   options: { limit: 10 }
-    // }
-  ]
-
-  // reply 添加屏蔽条件
-  if (user && !comment_id) {
-    options.populate.push({
-      path: 'reply',
-      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-      options: { limit: 10 },
-      match: { user_id: { '$nin': user.block_people }, deleted: false }
-    })
-  } else {
-    options.populate.push({
-      path: 'reply',
-      select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-      options: { limit: 10 },
-      match: { deleted: false }
-    })
-  }
-
-  var select = {
-    __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0
-  }
-
-  if (includeReply <= 0) {
-    select.reply = 0
-  }
-
-  if (draft) {
-    delete select.content
-  }
-
-  async.waterfall([
-    function(callback) {
-
-      Comment.fetch(query, select, options, function(err, comments) {
-        if (err) console.log(err)
-
-        if (!comments || comments.length == 0) {
-          callback(null, [])
-          return
-        }
-
-        if (includeReply <= 0) {
-          callback(null, comments)
-          return
-        }
-
-        var opts = [
-          {
-            path: 'reply.user_id',
-            model: 'User',
-            select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
-          },
-          {
-            path: 'reply.reply_id',
-            model: 'Comment',
-            select:{ '_id': 1, 'user_id': 1 }
-          },
-          {
-            path: 'reply_id.user_id',
-            model: 'User',
-            select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
-          }
-        ];
-
-        Comment.populate(comments, opts, function(err, comments){
-          if (err) console.log(err)
-
-          var opts = [
-            {
-              path: 'reply.reply_id.user_id',
-              model: 'User',
-              select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
-            }
-          ];
-
-          Comment.populate(comments, opts, function(err, comments){
-            if (err) console.log(err)
-            callback(null, comments)
-          })
-
-        })
-
-      })
-    },
-    function(comments, callback) {
-
-      if (!user) {
-        callback(null, comments)
-        return
-      }
-
-      comments = JSON.stringify(comments);
-      comments = JSON.parse(comments);
-
-      var ids = []
-
-      comments.map(function(item){
-        ids.push(item._id)
-        if (item.reply) {
-          item.reply.map(function(item){
-            ids.push(item._id)
-          })
-        }
-      })
-
-      Like.find({
-        $or: [
-          {
-            type: 'comment',
-            deleted: false,
-            target_id: { '$in': ids },
-            user_id: user._id
-          },
-          {
-            type: 'reply',
-            deleted: false,
-            target_id: { '$in': ids },
-            user_id: user._id
-          }
-        ]
-      }, { target_id: 1, _id: 0 }, {}, function(err, likes){
-        if (err) console.log(err)
-
-        var ids = {}
-
-        likes.map(function(item){
-          ids[item.target_id] = 1
-        })
-
-        comments.map(function(item){
-          if (ids[item._id]) {
-            item.like = true
-          }
-
-          if (item.reply) {
-            item.reply.map(function(item){
-              if (ids[item._id]) {
-                item.like = true
-              }
-            })
-          }
-
-        })
-
-        callback(null, comments)
-
-      })
-
-    }
-  ],
-  function(err, result){
-    if (err) {
-      res.status(400);
-      res.send({
-        success: false,
-        error: err
-      });
-    } else {
-      res.send({
-        success: true,
-        data: result
-      });
-    }
-  })
-  */
 
 }
 

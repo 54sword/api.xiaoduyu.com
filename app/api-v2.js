@@ -132,14 +132,15 @@ var APIRequire = function() {
   // router.post('/posts', auth.adminRequired, Posts.findPosts)
 
   router.post('/write-comment', auth.userRequired, commment.add);
-  router.post('/update-comment', auth.userRequired, commment.update);
+  // router.post('/update-comment', auth.userRequired, commment.update);
   router.get('/comments', auth.openType, auth.verifyArguments('comment'), commment.fetch);
+  router.post('/commment/update', auth.userRequired, auth.verifyArguments('comment'), commment.update)
 
   router.get('/topic', auth.openType, auth.verifyArguments('topic'), Topic.find)
   router.post('/topic/update', auth.adminRequired, auth.verifyArguments('topic'), Topic.update)
   // router.get('/topic/get/:json', auth.openType, Topic.fetch)
   // router.post('/topic/get', auth.openType, Topic.fetch)
-
+  
   router.post('/add-topic', auth.adminRequired, auth.verifyArguments('topic'), Topic.add);
   router.post('/update-topic', auth.adminRequired, Topic.update);
 
