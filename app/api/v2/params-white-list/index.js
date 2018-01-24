@@ -43,7 +43,7 @@ export default (dataJSON, name) => {
         query[result.name] = result.value
       }
     } else {
-      return { success: false, error: 90001, error_data: { params:i } }
+      return { success: false, error: 90001, error_data: { argument:i } }
     }
   }
 
@@ -52,7 +52,7 @@ export default (dataJSON, name) => {
       if (selectWhiteList.indexOf(i) != -1) {
         select[i] = parseInt(selectJSON[i])
       } else {
-        return { success: false, error: 90001, error_data: { params:i } }
+        return { success: false, error: 90001, error_data: { argument:i } }
       }
     }
   } else {

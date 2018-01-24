@@ -93,7 +93,8 @@ var APIRequire = function() {
 
   router.post('/user', auth.userRequired, user.fetch);
   router.get('/people', auth.openType, auth.verifyArguments('user'), user.fetchList);
-
+  router.post('/people/update', auth.openType, auth.verifyArguments('user'), user.update);
+  
   router.get('/people/:id', auth.openType, user.fetchById);
 
   router.get('/countries', Countries.fetch);
@@ -140,7 +141,7 @@ var APIRequire = function() {
   router.post('/topic/update', auth.adminRequired, auth.verifyArguments('topic'), Topic.update)
   // router.get('/topic/get/:json', auth.openType, Topic.fetch)
   // router.post('/topic/get', auth.openType, Topic.fetch)
-  
+
   router.post('/add-topic', auth.adminRequired, auth.verifyArguments('topic'), Topic.add);
   router.post('/update-topic', auth.adminRequired, Topic.update);
 

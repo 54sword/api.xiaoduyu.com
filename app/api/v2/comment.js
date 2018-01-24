@@ -381,7 +381,7 @@ exports.update = async (req, res) => {
   if (!query._id) {
     return res.send({ success: false, error: 90002, error_data: { argument: 'query._id' } })
   }
-
+  
   try {
     await Comment.update({ query, update, options })
     res.send({ success: true })

@@ -74,6 +74,29 @@ exports.fetchList = async (req, res) => {
 
 }
 
+
+exports.update = async (req, res) => {
+
+  const user = req.user
+  let { query, update, options } = req.arguments
+
+
+  if (!query._id) {
+    return res.send({ success: false, error: 90002, error_data: { argument: 'query._id' } })
+  }
+  
+  console.log(update);
+
+  try {
+    await User.update({ query, update, options })
+    res.send({ success: true })
+  } catch (err) {
+    console.log(err);
+    res.send({ success: false, error: 10003 })
+  }
+
+}
+
 exports.fetch = function(req, res, next) {
 
   var user = req.user
@@ -156,8 +179,6 @@ exports.fetch = function(req, res, next) {
 exports.add = function(req, res, next) {
 };
 
-exports.update = function(req, res, next) {
-};
 
 exports.delete = function(req, res, next) {
 };

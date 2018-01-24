@@ -11,7 +11,8 @@ const queryWhiteList = {
 }
 
 const selectWhiteList = [
-  "__v", "_id", "nickname", "nickname_reset_at", "create_at", "last_sign_at", "blocked",
+  // "__v",
+  "_id", "nickname", "nickname_reset_at", "create_at", "last_sign_at", "blocked",
   "banned_to_post", "avatar", "gender", "brief", "source", "posts_count", "comment_count",
   "comment_count", "fans_count", "like_count", "follow_people_count",
   "follow_topic_count", "follow_posts_count"
@@ -34,7 +35,7 @@ const typeCheck = (name, value, type) => {
 // [白名单]允许修改的字段
 const updateWhiteList = {
   nickname: data => typeCheck('nickname', data, 'boolean'),
-  blocked: data => typeCheck('blocked', data, 'string'),
+  blocked: data => typeCheck('blocked', data, 'boolean'),
   banned_to_post: data => typeCheck('banned_to_post', data, 'number'),
   avatar: data => typeCheck('avatar', data, 'string'),
   gender: data => typeCheck('gender', data, 'number'),

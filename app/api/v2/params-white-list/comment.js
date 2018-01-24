@@ -2,6 +2,7 @@
 const queryWhiteList = {
   _id: data => ({ name: '_id', value: data }),
   posts_id: data => ({ name: 'posts_id', value: data }),
+  user_id: data => ({ name: 'user_id', value: data }),
   parent_id: data => ({ name: 'parent_id', value: data }),
   reply_id: data => ({ name: 'reply_id', value: data }),
   content: data => ({ name: 'content', value: data }),
@@ -18,6 +19,7 @@ const queryWhiteList = {
   deleted: data => ({ name: 'deleted', value: data }),
   verify: data => ({ name: 'verify', value: data }),
   weaken: data => ({ name: 'weaken', value: data }),
+  recommend: data => ({ name: 'recommend', value: data }),
 
   // 表外字段
   people_id: data => ({ name: 'people_id', value: data })
@@ -27,7 +29,7 @@ const selectWhiteList = [
   // "__v",
   "_id", "user_id", "posts_id", "parent_id", "reply_id", "content", "content_html",
   "create_at", "update_at", "last_reply_at", "reply_count", "reply", "like_count", "device",
-  "ip", "blocked", "deleted", "verify", "weaken",
+  "ip", "blocked", "deleted", "verify", "weaken", "recommend",
 
   // 额外属性
   "like"
@@ -57,6 +59,7 @@ const updateWhiteList = {
   deleted:      data => typeCheck('deleted', data, 'boolean'),
   verify:       data => typeCheck('verify', data, 'boolean'),
   weaken:       data => typeCheck('weaken', data, 'boolean'),
+  recommend:       data => typeCheck('recommend', data, 'boolean'),
 }
 
 
