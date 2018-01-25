@@ -1,4 +1,4 @@
-var UserNotification = require('../../models').UserNotification;
+var UserNotification = require('../../modelsa').UserNotification;
 var Notification = require('../../models').Notification;
 var Answer = require('../../models').Answer;
 var Question = require('../../models').Question;
@@ -6,6 +6,13 @@ var Posts = require('../../models').Posts;
 var User = require('../../models').User;
 
 var async = require('async');
+
+exports.find = (req, res, next) => {
+  const user = req.user
+  let { query, update } = req.arguments
+  
+  res.send({ success: true, data: [] })
+}
 
 exports.fetch = function(req, res, next) {
 

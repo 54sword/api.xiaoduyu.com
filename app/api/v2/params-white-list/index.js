@@ -3,12 +3,14 @@ import comment from './comment'
 import topic from './topic'
 import posts from './posts'
 import user from './user'
+import userNotification from './user-notifcation'
 
 let list = {
   comment,
   topic,
   posts,
-  user
+  user,
+  'user-notification': userNotification
 }
 
 export default (dataJSON, name) => {

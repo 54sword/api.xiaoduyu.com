@@ -1,3 +1,10 @@
+
+import { UserNotification } from '../schemas'
+import baseMethod from './base-method'
+
+export default baseMethod(UserNotification)
+
+/*
 var UserNotification = require('../schemas').UserNotification;
 
 exports.save = function(data, callback) {
@@ -29,3 +36,4 @@ exports.update = function(condition, contents, callback) {
 exports.count = function(query, callback) {
   UserNotification.count(query, callback);
 }
+*/

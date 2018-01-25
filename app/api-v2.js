@@ -94,7 +94,7 @@ var APIRequire = function() {
   router.post('/user', auth.userRequired, user.fetch);
   router.get('/people', auth.openType, auth.verifyArguments('user'), user.fetchList);
   router.post('/people/update', auth.openType, auth.verifyArguments('user'), user.update);
-  
+
   router.get('/people/:id', auth.openType, user.fetchById);
 
   router.get('/countries', Countries.fetch);
@@ -152,7 +152,8 @@ var APIRequire = function() {
   router.post('/add-follow', auth.userRequired, Follow.add);
   router.post('/remove-follow', auth.userRequired, Follow.remove);
 
-  router.post('/notifications', auth.userRequired, UserNotification.fetch);
+  // router.post('/notifications', auth.userRequired, UserNotification.fetch);
+  router.post('/notifications', auth.userRequired, auth.verifyArguments('user-notification'), UserNotification.find);
   router.get('/unread-notifications', auth.userRequired, UserNotification.fetchUnreadCount);
 
   router.post('/get-qiniu-token', auth.userRequired, QiNiu.getToken);
