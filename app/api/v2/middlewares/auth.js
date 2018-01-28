@@ -8,7 +8,9 @@ var JWT = require('../../../common/jwt');
 // 验证token
 var verifyToken = function(req, callback) {
 
-  var token = String(req.headers.accesstoken || req.body.access_token || '');
+  var token = String(req.headers.accesstoken || '');
+
+  var role = String(req.headers.role || '')
 
   if (!token || token == 'undefined') {
     callback(false);
@@ -46,6 +48,11 @@ var verifyToken = function(req, callback) {
       // console.log(user);
 
       req.user = user;
+
+      // 如果是管理员，并且是admin
+      if (user.role == 100 && role == 'admin') {
+        req.role = 'admin'
+      }
 
       // console.log(user);
 
@@ -138,6 +145,13 @@ exports.userRequired = function(req, res, next) {
 };
 
 exports.adminRequired = function(req, res, next) {
+
+  // if (!req.headers.Authorization || req.headers.Authorization != 'admin') {
+  //   return res.status(403).send({
+  //     success: false,
+  //     error: 10007
+  //   })
+  // }
 
   verifyToken(req, function(result){
 

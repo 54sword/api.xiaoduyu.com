@@ -15,6 +15,9 @@ var Phone = require('./api/v2/phone');
 import Countries from './api/v2/countries'
 import Report from './api/v2/report'
 import Block from './api/v2/block'
+import Notification from './api/v2/notification'
+
+import Analysis from './api/v2/analysis'
 
 var token = require('./api/v2/token')
 
@@ -153,7 +156,13 @@ var APIRequire = function() {
   router.post('/remove-follow', auth.userRequired, Follow.remove);
 
   // router.post('/notifications', auth.userRequired, UserNotification.fetch);
-  router.post('/notifications', auth.userRequired, auth.verifyArguments('user-notification'), UserNotification.find);
+  router.post('/user-notifications', auth.userRequired, auth.verifyArguments('user-notification'), UserNotification.find);
+  router.post('/user-notification/update', auth.userRequired, auth.verifyArguments('user-notification'), UserNotification.update);
+
+  // 广播通知
+  router.post('/notifications', auth.adminRequired, auth.verifyArguments('notification'), Notification.find)
+  router.post('/notification/update', auth.adminRequired, auth.verifyArguments('notification'), Notification.update);
+
   router.get('/unread-notifications', auth.userRequired, UserNotification.fetchUnreadCount);
 
   router.post('/get-qiniu-token', auth.userRequired, QiNiu.getToken);
@@ -177,6 +186,9 @@ var APIRequire = function() {
   router.get('/block', auth.userRequired, Block.fetch)
   router.post('/add-block', auth.userRequired, Block.add)
   router.post('/remove-block', auth.userRequired, Block.remove)
+
+  // 网站概要
+  router.post('/analysis/summary', auth.adminRequired, auth.verifyArguments('analysis'), Analysis.find)
 
   return router;
 };

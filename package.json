@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",
+    "apollo-errors": "^1.5.1",
     "apollo-server-express": "^1.3.2",
     "async": "^1.4.2",
     "babel-polyfill": "^6.26.0",

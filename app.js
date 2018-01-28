@@ -18,8 +18,9 @@ var API_V2 = require('./app/api-v2');
 // console.log(graphql);
 
 
-// var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
-// var schema = require('./app/graphql');
+var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
+import { formatError } from 'apollo-errors';
+var schema = require('./app/graphql');
 
 // var OauthRouter = require('./app/oauth');
 import OauthRouter from './app/oauth'
@@ -73,7 +74,8 @@ app.all('*',function (req, res, next) {
 	req.jwtTokenSecret = app.get('jwtTokenSecret')
 
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
+	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role');
+	// res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 
   if (req.method == 'OPTIONS') {
@@ -146,11 +148,51 @@ io.on('connection', function(socket){
 global.io = io
 
 
+// app.use('/graphql', bodyParser.json(), ((req, res, next)=>{
+// 	next()
+// }), graphqlExpress({schema}))
 
 
-// app.use('/graphql', bodyParser.json(), graphqlExpress({schema}))
+app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
+    return {
+			debug: true,
+      schema,
+			rootValue: {
+				test:'test'
+			},
+      context: {
+        // req
+      },
+			/*
+			formatParams: params =>{
+				// console.log(params)
+				return params
+			},
+			formatResponse: e => {
+				console.log(e);
+				console.log('123');
+				return e
+			},
+			*/
+			formatError
+			/*
+			formatError: error => {
+				// console.log('1111111');
+				// console.log(err);
+			  // return err;
+				return {
+			    name: error.name,
+			    mensaje: error.message
+			  }
+			}
+			*/
+      // other options here
+    };
+  }))
+
+
 // IDE
-// app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
+app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
 
 // app.use('/graphql', graphql);
 app.use('/oauth', OauthRouter());

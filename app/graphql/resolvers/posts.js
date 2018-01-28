@@ -6,6 +6,10 @@ import User from '../../modelsa/user'
 import _posts from '../../api/v2/params-white-list/posts'
 import _checkParams from '../../api/v2/params-white-list'
 
+import { FooError } from './errors';
+
+console.log(FooError);
+
 const checkParams = (dataJSON) => {
   return _checkParams(dataJSON, _posts)
 }
@@ -43,15 +47,30 @@ let resolvers = {
 }
 
 
-query.posts = async (root, args) => {
+query.posts = async (root, args, context) => {
+
+  // console.log(root);
+  // console.log('1111');
+  // console.log(args);
+
+  // 判断是否需要登陆权限
+  // console.log(context);
+
+  // return null
+
+  throw new FooError({
+    data: {
+      something: 'important'
+    }
+  });
 
   let { _id, topic_id, user_id, lte_create_at, gte_create_at, weaken, recommend, deleted, sort, skip = 0, limit = 300 } = args
 
   let query = {},
     options = { skip, limit }
 
-    console.log(args);
-
+    // console.log(args);
+    
   if (_id) query._id = _id
   if (topic_id) query.topic_id = topic_id
   if (user_id) query.user_id = user_id
