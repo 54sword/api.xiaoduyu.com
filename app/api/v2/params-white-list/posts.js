@@ -24,7 +24,7 @@ const queryWhiteList = {
     return obj
   },
   sort_by_date: data => ({ name: 'sort_by_date', value: data }),
-  
+
   create_at: data => {
     let obj = {}
 

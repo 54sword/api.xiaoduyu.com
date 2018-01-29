@@ -22,6 +22,7 @@ var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
 import { formatError } from 'apollo-errors';
 var schema = require('./app/graphql');
 
+
 // var OauthRouter = require('./app/oauth');
 import OauthRouter from './app/oauth'
 import outputError from './config/error'
@@ -154,7 +155,12 @@ global.io = io
 
 
 app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
+
+	// console.log(req.headers);
+	// console.log(req.body.query);
+
     return {
+			tracing: true,
 			debug: true,
       schema,
 			rootValue: {
@@ -163,17 +169,12 @@ app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
       context: {
         // req
       },
-			/*
+
 			formatParams: params =>{
 				// console.log(params)
 				return params
 			},
-			formatResponse: e => {
-				console.log(e);
-				console.log('123');
-				return e
-			},
-			*/
+			// formatResponse: e => e,
 			formatError
 			/*
 			formatError: error => {

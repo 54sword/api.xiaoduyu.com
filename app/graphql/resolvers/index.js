@@ -57,7 +57,7 @@ var resolvers = {
   }
 };
 
-// Object.assign(resolvers, posts.resolvers);
+Object.assign(resolvers, posts.resolvers);
 
 // console.log(resolvers);
 
