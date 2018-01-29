@@ -1,44 +1,41 @@
 
 import posts from './posts'
 
-// console.log(posts);
-
 let list = {
   posts
 }
 
 export default (args, name) => {
 
-  // console.log(dataJSON);
-
   let { queryList, optionList } = list[name]
-
-  // console.log(querys);
 
   let query = {},
       options = {}
 
   for (let i in args) {
-    if (args[i]) {
+    if (queryList[i]) {
       let result = queryList[i](args[i])
       query[result.name] = result.value
     }
   }
 
   for (let i in args) {
-    if (args[i]) {
+    if (optionList[i]) {
       let result = optionList[i](args[i])
-      query[result.name] = result.value
+      options[result.name] = result.value
     }
   }
 
-  // console.log(query);
-
-  /*
   // limit默认值
   if (!options.limit) options.limit = 30
   // limit 最大值
   else if (options.limit > 300) options.limit = 300
+
+  if (!options.skip) options.skip = 0
+
+
+  /*
+
 
   for (let i in updateJSON) {
     if (updateWhiteList[i]) {
@@ -52,6 +49,9 @@ export default (args, name) => {
     }
   }
   */
+
+  console.log(query);
+  console.log(options);
 
   return { query, options }
 

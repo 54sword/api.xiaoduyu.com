@@ -6,11 +6,23 @@ type User {
   nickname: String
   brief: String
   avatar: String
+  avatar_url: String
 }
 
 type Topic {
   _id: String
   name: String
+}
+
+type Comment {
+  _id: String
+  user_id: User
+  posts_id: String
+  like_count: Int
+  reply_count: Int
+  create_at: String
+  content_html: String
+  like: Boolean
 }
 
 type Posts {
@@ -35,8 +47,7 @@ type Posts {
   recommend: Boolean
   weaken: Boolean
   sort_by_date: String
-
-  comment: String
+  comment: [Comment]
 }
 
 type addPosts {

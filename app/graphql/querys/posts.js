@@ -2,36 +2,20 @@
 const queryList = {
   _id: data => ({ name: '_id', value: data }),
   user_id: data => ({ name: 'user_id', value: data }),
+  topic_id: data => ({ name: 'topic_id', value: data }),
+  title: data => ({ name: 'title', value: data }),
+
   deleted: data => ({ name: 'deleted', value: data }),
   weaken: data => ({ name: 'weaken', value: data }),
-  topic_id: data => ({ name: 'topic_id', value: data }),
-  type: data => ({ name: 'type', value: data }),
-  title: data => ({ name: 'title', value: data }),
-  content: data => ({ name: 'content', value: data }),
-  content_html: data => ({ name: 'content_html', value: data }),
-  verify: data => ({ name: 'verify', value: data }),
   recommend: data => ({ name: 'recommend', value: data }),
-  sort_by_date: data => ({ name: 'sort_by_date', value: data }),
-  create_at: data => {
-    let obj = {}
 
-    if (typeof data != 'object') return { error: 90000 }
-
-    // 小于
-    if (data['$lt']) obj['$lt'] = data['$lt']
-    // 小于等于
-    if (data['$lte']) obj['$lte'] = data['$lte']
-    // 大于
-    if (data['$gt']) obj['$gt'] = data['$gt']
-    // 大于等于
-    if (data['$gte']) obj['$gte'] = data['$gte']
-
-    if (Reflect.ownKeys(obj).length == 0) return { error: 90000 }
-
-    return { name: 'create_at', value: obj }
-  }
+  start_create_at: data => ({ name: 'create_at', value: { '$gte': data } }),
+  end_create_at: data => ({ name: 'create_at', value: { '$lte': data } }),
 }
 
-const optionList = {}
+const optionList = {
+  skip: data => ({ name: 'skip', value: data }),
+  limit: data => ({ name: 'limit', value: data })
+}
 
 export default { queryList, optionList }

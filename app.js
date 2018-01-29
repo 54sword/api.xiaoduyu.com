@@ -157,10 +157,10 @@ global.io = io
 app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
 
 	// console.log(req.headers);
-	// console.log(req.body.query);
+	// console.log(req.body);xx
 
     return {
-			tracing: true,
+			// tracing: true,
 			debug: true,
       schema,
 			rootValue: {
