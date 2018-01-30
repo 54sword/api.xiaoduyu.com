@@ -156,7 +156,7 @@ global.io = io
 
 app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
 
-	console.log(req.headers);
+	// console.log(req.headers);
 	// console.log(req.body);xx
 
     return {

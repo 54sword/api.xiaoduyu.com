@@ -56,7 +56,7 @@ query.posts = async (root, args, context, s) => {
   let { query, options } = Querys(args, 'posts')
 
   console.log(query);
-  console.log(options);
+  // console.log(options);
 
   options.populate = [
     {

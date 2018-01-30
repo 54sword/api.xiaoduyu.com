@@ -33,9 +33,9 @@ type Query {
     # 用户id
     user_id: ID,
     # 小于等于创建日期
-    lte_create_at: Int,
+    end_create_at: String,
     # 大于等于创建日期
-    gte_create_at: Int,
+    start_create_at: String,
     # 弱化
     weaken: Boolean,
     # 推荐
