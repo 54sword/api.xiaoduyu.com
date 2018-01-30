@@ -55,6 +55,9 @@ query.posts = async (root, args, context, s) => {
 
   let { query, options } = Querys(args, 'posts')
 
+  console.log(query);
+  console.log(options);
+
   options.populate = [
     {
       path: 'user_id',

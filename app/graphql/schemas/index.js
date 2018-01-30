@@ -45,9 +45,11 @@ type Query {
     # 排序
     sort: String,
     # 跳过多少个
-    skip: Int,
+    page_number: Int,
     # 每个显示数量
-    limit: Int
+    page_size: Int
+    # 排序
+    sort_by: String
   ): [Posts]
   #user(id: String): User
 }

@@ -14,8 +14,15 @@ const queryList = {
 }
 
 const optionList = {
-  skip: data => ({ name: 'skip', value: data }),
-  limit: data => ({ name: 'limit', value: data })
+  page_number: data => ({ name: 'skip', value: data }),
+  page_size: data => ({ name: 'limit', value: data }),
+  sort_by: data => {
+
+    let value = {}
+    value[data] = -1
+
+    return ({ name: 'sort', value })
+  }
 }
 
 export default { queryList, optionList }

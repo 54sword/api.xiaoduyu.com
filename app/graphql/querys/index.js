@@ -31,8 +31,11 @@ export default (args, name) => {
   // limit 最大值
   else if (options.limit > 300) options.limit = 300
 
-  if (!options.skip) options.skip = 0
-
+  if (!options.skip) {
+    options.skip = 0
+  } else {
+    options.skip = options.skip * options.limit
+  }
 
   /*
 
@@ -50,8 +53,8 @@ export default (args, name) => {
   }
   */
 
-  console.log(query);
-  console.log(options);
+  // console.log(query);
+  // console.log(options);
 
   return { query, options }
 
