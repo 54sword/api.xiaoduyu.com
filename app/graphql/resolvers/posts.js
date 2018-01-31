@@ -46,24 +46,33 @@ let resolvers = {
 }
 
 
-query.posts = async (root, args, context, s) => {
+query.posts = async (root, args, context, schema) => {
+
+  const { user, role } = context
 
   let select = {}
-  s.fieldNodes[0].selectionSet.selections.map(item=>{
+  schema.fieldNodes[0].selectionSet.selections.map(item=>{
     select[item.name.value] = 1
   })
 
   let { query, options } = Querys(args, 'posts')
 
-  console.log(query);
+  // console.log(query);
   // console.log(options);
 
-  options.populate = [
-    {
+  // console.log(select);
+
+  if (!options.populate) options.populate = []
+
+  if (select.user_id) {
+    options.populate.push({
       path: 'user_id',
       select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
-    },
-    {
+    })
+  }
+
+  if (select.comment) {
+    options.populate.push({
       path: 'comment',
       match: {
         $or: [
@@ -75,13 +84,17 @@ query.posts = async (root, args, context, s) => {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
       options: { limit: 1 }
-    },
-    {
+    })
+  }
+
+  if (select.topic_id) {
+    options.populate.push({
       path: 'topic_id',
       select: { '_id': 1, 'name': 1 }
-    }
-  ]
+    })
+  }
 
+  // console.log(options);
 
   let postList = await Posts.find({ query, select, options })
 
@@ -97,6 +110,11 @@ mutation.addPosts = (root) => {
 
   return 'ok'
 }
+mutation.editPosts = (root, args, context, schema) => {
+
+  return { success: true }
+}
+
 
 exports.query = query
 exports.mutation = mutation

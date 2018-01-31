@@ -10,8 +10,13 @@ export default (Schemas) => ({
   findOne: ({
     query = {},
     select = {},
+    options = {},
     callback = ()=>{}
-  }) => Schemas.findOne(query, select).exec(callback),
+  }) => {
+    let find = Schemas.findOne(query, select)
+    for (let i in options) find[i](options[i])
+    return find.exec(callback)
+  },
 
   // 查询多个
   find: ({

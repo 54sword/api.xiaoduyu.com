@@ -1,4 +1,11 @@
 
+
+import { Token } from '../schemas'
+import baseMethod from './base-method'
+
+export default baseMethod(Token)
+
+/*
 var Token = require('../schemas').Token;
 
 exports.fetch = function(query, select, options, callback) {
@@ -20,11 +27,7 @@ exports.find = function(query, select, options, callback) {
   }
   find.exec(callback)
 };
-/*
-exports.findOne = function(query, select, callback) {
-  Token.findOne(query, select).exec(callback)
-}
-*/
+
 exports.findOne = function(query, select, options, callback) {
   var find = Token.findOne(query, select)
   for (var i in options) {
@@ -40,3 +43,5 @@ exports.update = function(condition, contents, callback) {
 exports.remove = function(conditions, callback) {
   Token.remove(conditions, callback);
 }
+
+*/

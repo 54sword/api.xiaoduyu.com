@@ -18,9 +18,11 @@ var API_V2 = require('./app/api-v2');
 // console.log(graphql);
 
 
-var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
-import { formatError } from 'apollo-errors';
-var schema = require('./app/graphql');
+// var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
+// import { formatError } from 'apollo-errors';
+// var schema = require('./app/graphql');
+
+var graphql = require('./app/graphql');
 
 
 // var OauthRouter = require('./app/oauth');
@@ -149,11 +151,13 @@ io.on('connection', function(socket){
 global.io = io
 
 
+graphql(app, bodyParser)
+
 // app.use('/graphql', bodyParser.json(), ((req, res, next)=>{
 // 	next()
 // }), graphqlExpress({schema}))
 
-
+/*
 app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
 
 	// console.log(req.headers);
@@ -176,7 +180,6 @@ app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
 			},
 			// formatResponse: e => e,
 			formatError
-			/*
 			formatError: error => {
 				// console.log('1111111');
 				// console.log(err);
@@ -186,7 +189,6 @@ app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
 			    mensaje: error.message
 			  }
 			}
-			*/
       // other options here
     };
   }))
@@ -194,6 +196,7 @@ app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
 
 // IDE
 app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
+*/
 
 // app.use('/graphql', graphql);
 app.use('/oauth', OauthRouter());
