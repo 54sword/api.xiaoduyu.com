@@ -1,10 +1,11 @@
 import Posts from '../../modelsa/posts'
 import User from '../../modelsa/user'
 
-import { FooError } from './errors'
-
+import CreateError from './errors'
+import To from '../../common/to'
 
 import Querys from '../querys'
+import Updates from '../updates'
 
 let query = {}
 let mutation = {}
@@ -110,7 +111,22 @@ mutation.addPosts = (root) => {
 
   return 'ok'
 }
-mutation.editPosts = (root, args, context, schema) => {
+mutation.editPosts = async (root, args, context, schema) => {
+
+  if (!context.user) {
+    throw CreateError({ message: '请求被拒绝' })
+  }
+
+  let { query, update } = Updates(args, 'posts')
+
+  let [ err, result ] = await To(Posts.update({ query, update }))
+
+  if (err) {
+    throw CreateError({
+      message: '更新失败',
+      data: { errorInfo: err.message }
+    })
+  }
 
   return { success: true }
 }

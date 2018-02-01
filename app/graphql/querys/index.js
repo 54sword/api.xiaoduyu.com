@@ -7,10 +7,11 @@ let list = {
 
 export default (args, name) => {
 
-  let { queryList, optionList } = list[name]
+  let { queryList, optionList, updateList } = list[name]
 
   let query = {},
-      options = {}
+      options = {},
+      update = {}
 
   for (let i in args) {
     if (queryList[i]) {
@@ -37,25 +38,14 @@ export default (args, name) => {
     options.skip = options.skip * options.limit
   }
 
-  /*
-
-
-  for (let i in updateJSON) {
-    if (updateWhiteList[i]) {
-      let result = updateWhiteList[i](updateJSON[i])
-      if (result && result.error) {
-        result.success = false
-        return result
-      } else {
-        update[result.name] = result.value
-      }
+  // 更新字段查询
+  for (let i in args) {
+    if (updateList[i]) {
+      let result = updateList[i](args[i])
+      update[result.name] = result.value
     }
   }
-  */
 
-  // console.log(query);
-  // console.log(options);
-
-  return { query, options }
+  return { query, options, update }
 
 }

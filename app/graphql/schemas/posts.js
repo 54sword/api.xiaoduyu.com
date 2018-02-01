@@ -96,6 +96,7 @@ exports.Mutation = `
 
 addPosts(message: String): addPosts
 
+# 编辑Posts
 editPosts(
   _id: String!,
   # 删除 (管理员)
