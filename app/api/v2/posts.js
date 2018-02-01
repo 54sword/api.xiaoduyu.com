@@ -843,7 +843,7 @@ exports.find = async (req, res) => {
 
   const user = req.user
   let { query, select, options } = req.arguments
-  
+
   options.populate = [
     {
       path: 'user_id',

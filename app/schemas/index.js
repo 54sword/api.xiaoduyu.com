@@ -3,9 +3,9 @@ var mongoose = require('mongoose');
 var config = require('../../config');
 
 
-if (config.debug) {
-	mongoose.set('debug', true);
-}
+// if (config.debug) {
+// 	mongoose.set('debug', true);
+// }
 
 /*
 mongoose.Promise = global.Promise;
@@ -17,15 +17,15 @@ mongoose.connect(config.db_url, {}, function (error) {
 });
 */
 
-mongoose.Promise = global.Promise;
+// mongoose.Promise = global.Promise;
 
-const promise = mongoose.connect(config.db_url, {
-  useMongoClient: true,
+mongoose.connect(config.db_url, {
+  // useMongoClient: true,
 })
 
-promise.then(function(db) {
+// promise.then(function(db) {
 	// console.log('123123');
-})
+// })
 
 // mongoose.createConnection(config.db_url, { useMongoClient: false }, function (error) {
 // 	if (error) {

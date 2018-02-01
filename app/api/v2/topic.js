@@ -15,6 +15,8 @@ const checkParams = (dataJSON) => {
 }
 
 
+import To from '../../common/to'
+
 exports.add = async (req, res, next) => {
 
   const user = req.user
@@ -167,9 +169,9 @@ exports.find = async (req, res) => {
     }]
   }
 
-  let topicList = await Topic.find({ query, select, options })
+  let [ err, topicList ] = await To(Topic.find({ query, select, options }))
 
-  if (!topicList) return res.send({ success: false, error: 10004 })
+  if (err) return res.send({ success: false, error: 10004 })
 
   // 如果是登陆用户，显示是否关注了该话题
   if (user && topicList && Reflect.has(select, 'follow')) {

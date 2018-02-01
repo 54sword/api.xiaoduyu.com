@@ -1,3 +1,9 @@
+import { Like } from '../schemas'
+import baseMethod from './base-method'
+
+export default baseMethod(Like)
+
+/*
 var Like = require('../schemas').Like;
 
 exports.add = function(info, callback){
@@ -81,3 +87,4 @@ exports.fetchUserIdAndCommentIds = function(userId, ids, callback) {
   .select({ target_id: 1, _id: 0 })
   .exec(callback);
 };
+*/

@@ -1,3 +1,10 @@
+
+import { Follow } from '../schemas'
+import baseMethod from './base-method'
+
+export default baseMethod(Follow)
+
+/*
 var Follow = require('../schemas').Follow;
 
 // 添加收藏记录
@@ -67,3 +74,4 @@ exports.fetchByUserId = function(userId, page, perPage, callback) {
   .populate('node_id')
   .exec(callback);
 };
+*/

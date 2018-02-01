@@ -7,11 +7,10 @@ let list = {
 
 export default (args, name) => {
 
-  let { queryList, optionList, updateList } = list[name]
+  let { queryList, optionList } = list[name]
 
   let query = {},
-      options = {},
-      update = {}
+      options = {}
 
   for (let i in args) {
     if (queryList[i]) {
@@ -32,20 +31,8 @@ export default (args, name) => {
   // limit 最大值
   else if (options.limit > 300) options.limit = 300
 
-  if (!options.skip) {
-    options.skip = 0
-  } else {
-    options.skip = options.skip * options.limit
-  }
+  options.skip = !options.skip ? 0 : options.skip * options.limit
 
-  // 更新字段查询
-  for (let i in args) {
-    if (updateList[i]) {
-      let result = updateList[i](args[i])
-      update[result.name] = result.value
-    }
-  }
-
-  return { query, options, update }
+  return { query, options }
 
 }

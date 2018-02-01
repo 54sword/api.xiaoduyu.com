@@ -24,29 +24,55 @@ type Comment {
   like: Boolean
 }
 
+# 帖子的返回字段
 type Posts {
   _id: ID!
+  # 作者
   user_id: User
+  # 话题
   topic_id: Topic
+  # 类型
   type: String
+  # 标题
   title: String
+  # 内容Draft JSON
   content: String,
+  # 内容HTML
   content_html: String
+  # 创建日期
   create_at: String
+  # 最近一次更新日期
   update_at: String
+  # 最近一次评论日期
   last_comment_at: String
+  # 评论的累计数
   comment_count: Int
+  # 浏览的累计数
   view_count: Int
+  # 关注的累计数
   follow_count: Int
+  # 赞的累计数
   like_count: Int
+  # 发帖的设备
   device: Int
+  # IP
   ip: String
+  # 删除
   deleted: Boolean
+  # 验证
   verify: Boolean
+  # 推荐
   recommend: Boolean
+  # 削弱
   weaken: Boolean
+  # 排序
   sort_by_date: String
-  comment: [Comment]
+  # 评论
+  comment: [Comment],
+  # 关注（登陆用户）
+  follow: Boolean,
+  # 赞（登陆用户）
+  like: Boolean
 }
 
 type addPosts {
@@ -88,6 +114,8 @@ posts(
   page_size: Int
   # 排序
   sort_by: String
+  # 模式(user_follow)
+  method: String
 ): [Posts]
 
 `
