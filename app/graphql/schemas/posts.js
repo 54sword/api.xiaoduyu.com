@@ -1,6 +1,6 @@
 exports.Schema = `
 
-type User {
+type _User {
   _id: String
   nickname: String
   brief: String
@@ -8,14 +8,14 @@ type User {
   avatar_url: String
 }
 
-type Topic {
+type _Topic {
   _id: String
   name: String
 }
 
-type Comment {
+type _Comment {
   _id: String
-  user_id: User
+  user_id: _User
   posts_id: String
   like_count: Int
   reply_count: Int
@@ -28,9 +28,9 @@ type Comment {
 type Posts {
   _id: ID!
   # 作者
-  user_id: User
+  user_id: _User
   # 话题
-  topic_id: Topic
+  topic_id: _Topic
   # 类型
   type: String
   # 标题
@@ -68,7 +68,7 @@ type Posts {
   # 排序
   sort_by_date: String
   # 评论
-  comment: [Comment],
+  comment: [_Comment],
   # 关注（登陆用户）
   follow: Boolean,
   # 赞（登陆用户）

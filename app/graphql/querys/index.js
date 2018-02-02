@@ -1,8 +1,9 @@
 
 import posts from './posts'
+import topic from './topic'
 
 let list = {
-  posts
+  posts, topic
 }
 
 export default (args, name) => {

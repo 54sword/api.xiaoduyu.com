@@ -9,55 +9,22 @@ import To from '../../common/to'
 import Querys from '../querys'
 import Updates from '../updates'
 
-import merge from 'lodash/merge'
-
-
 let query = {}
 let mutation = {}
-let resolvers = {
-  Posts: {
-    async user_id(posts, e, s, r) {
-
-      // console.log(e);
-      // console.log(r);
-
-      // if (typeof posts.user_id == 'string') {
-      //
-      // }
-
-      // console.log(typeof posts);
-
-      // var options = [
-      //   {
-      //     model: 'User',
-      //     path: 'user_id',
-      //     select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
-      //   }
-      // ]
-      //
-      // let t = await User.populate({
-      //   collections: posts,
-      //   options,
-      // })
-      //
-      // posts = t
-
-      // console.log(t);
-
-      // console.log(posts);
-      // console.log('----');
-      // return { _id: 1, name: 'Hello',brief: '2' };
-    }
-  }
-}
-
+let resolvers = {}
 
 query.posts = async (root, args, context, schema) => {
 
-  const { user, role, method } = context
+  const { user, role } = context
+  const { method } = args
 
   let select = {}, err, postList, followList, likeList, ids
   let { query, options } = Querys(args, 'posts')
+
+  // 未登陆用户，不能使用method方式查询
+  if (!user && method) {
+    throw CreateError({ message: '请求被拒绝' })
+  }
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -87,7 +54,7 @@ query.posts = async (root, args, context, schema) => {
 
     // 用户
     if (user.follow_people.length > 0) {
-      newQuery['$or'].push(merge(query, {
+      newQuery['$or'].push(Object.assign(query, {
         user_id: {
           '$in': user.follow_people,
           // 过滤屏蔽用户
@@ -99,7 +66,7 @@ query.posts = async (root, args, context, schema) => {
 
     // 话题
     if (user.follow_topic.length > 0) {
-      newQuery['$or'].push(merge(query, {
+      newQuery['$or'].push(Object.assign(query, {
         topic_id: {'$in': user.follow_topic },
         deleted: false
       }, {}))
@@ -107,7 +74,7 @@ query.posts = async (root, args, context, schema) => {
 
     // 帖子
     if (user.follow_posts.length > 0) {
-      newQuery['$or'].push(merge(query, {
+      newQuery['$or'].push(Object.assign(query, {
         posts_id: {
           '$in': user.follow_posts,
           // 过滤屏蔽的帖子
@@ -210,7 +177,7 @@ query.posts = async (root, args, context, schema) => {
   }));
 
   ids = {};
-  
+
   likeList.map(item=>ids[item.posts_id] = 1);
   postList.map(item => item.like = ids[item._id] ? true : false);
 
@@ -239,7 +206,9 @@ mutation.editPosts = async (root, args, context, schema) => {
     throw CreateError({ message: '请求被拒绝' })
   }
 
-  let { query, update } = Updates(args, 'posts')
+  const { role } = context
+
+  let { query, update } = Updates(args, 'posts', role)
 
   let [ err, result ] = await To(Posts.update({ query, update }))
 
@@ -256,4 +225,4 @@ mutation.editPosts = async (root, args, context, schema) => {
 
 exports.query = query
 exports.mutation = mutation
-// exports.resolvers = resolvers
+exports.resolvers = resolvers
