@@ -57,13 +57,12 @@ query.posts = async (root, args, context, schema) => {
   const { user, role, method } = context
 
   let select = {}, err, postList, followList, likeList, ids
-
-  schema.fieldNodes[0].selectionSet.selections.map(item=>{
-    select[item.name.value] = 1
-  })
-
   let { query, options } = Querys(args, 'posts')
 
+  // select
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
+
+  if (!options.populate) options.populate = []
 
   /**
    * 增加屏蔽条件
@@ -120,8 +119,6 @@ query.posts = async (root, args, context, schema) => {
 
   }
 
-  if (!options.populate) options.populate = []
-
   if (select.user_id) {
     options.populate.push({
       path: 'user_id',
@@ -139,7 +136,8 @@ query.posts = async (root, args, context, schema) => {
         ]
       },
       select: {
-        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
+        '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1,
+        'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
       options: { limit: 1 }
     })
@@ -212,10 +210,9 @@ query.posts = async (root, args, context, schema) => {
   }));
 
   ids = {};
-
+  
   likeList.map(item=>ids[item.posts_id] = 1);
   postList.map(item => item.like = ids[item._id] ? true : false);
-
 
   // 更新最近查询关注的帖子
 
