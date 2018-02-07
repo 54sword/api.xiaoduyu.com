@@ -194,10 +194,7 @@ query.posts = async (root, args, context, schema) => {
 }
 
 mutation.addPosts = (root) => {
-
   return { success: true, error: 10000 }
-
-  return 'ok'
 }
 
 mutation.editPosts = async (root, args, context, schema) => {

@@ -16,7 +16,7 @@ query.topics = async (root, args, context, schema) => {
   const { method } = args
   let select = {}
   let { query, options } = Querys(args, 'topic')
-  
+
   //===
 
   // 如果需要返回 parent_id，则获取 parent_id 的详细信息
@@ -45,6 +45,16 @@ query.topics = async (root, args, context, schema) => {
   }
 
   return topicList
+}
+
+mutation.addTopic = async (root, args, context, schema) => {
+
+  const { user, role } = context
+  const { method } = args
+  let select = {}
+  // let { query, options } = Updates(args, 'topic')
+
+  return { success: true }
 }
 
 exports.query = query

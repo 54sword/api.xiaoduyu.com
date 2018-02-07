@@ -1,8 +1,9 @@
 
 import posts from './posts'
+import user from './user'
 
 let list = {
-  posts
+  posts, user
 }
 
 export default (args, name, role) => {
@@ -18,10 +19,10 @@ export default (args, name, role) => {
     if (role && result.role && role != result.role) continue
     query[result.name] = result.value
   }
-  
+
   // 更新字段查询
   for (let i in args) {
-    if (updateList[i]) continue
+    if (!updateList[i]) continue
     let result = updateList[i](args[i])
     if (role && result.role && role != result.role) continue
     update[result.name] = result.value

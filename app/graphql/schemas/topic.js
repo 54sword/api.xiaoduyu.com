@@ -1,5 +1,6 @@
 exports.Schema = `
 
+
 # 话题
 type Topic {
   _id: String
@@ -17,6 +18,11 @@ type Topic {
   recommend: Boolean
   user_id: String
   follow: Boolean
+  parent_id: String
+}
+
+type addTopic {
+  success: Boolean
 }
 
 `
@@ -38,10 +44,24 @@ topics(
   # 每个显示数量
   page_size: Int
   # 排序
-  sort_by: String
+  sort_by: String,
+  # 是否是父类
+  type: String
 ): [Topic]
 
 `
 
 exports.Mutation = `
+
+addTopic(
+  name: String
+  brief: String
+  description: String
+  avatar: String
+  background: String
+  sort: Int
+  recommend: Boolean
+  parent_id: String
+): addTopic
+
 `

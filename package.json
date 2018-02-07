@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node --max-old-space-size=1700 ./bin/www",
-    "dev": "supervisor node server.js"
+    "dev": "supervisor node server.js",
+    "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db"
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",
@@ -35,7 +36,7 @@
     "jpush-sdk": "^3.4.2",
     "jsonwebtoken": "^8.0.1",
     "log4js": "^0.6.33",
-    "mongoose": "^5.0.2",
+    "mongoose": "^5.0.3",
     "morgan": "^1.5.3",
     "node-uuid": "^1.4.7",
     "nodemailer": "^0.7.1",
