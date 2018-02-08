@@ -1,9 +1,10 @@
 
 import posts from './posts'
 import user from './user'
+import comment from './comment'
 
 let list = {
-  posts, user
+  posts, user, comment
 }
 
 export default (args, name, role) => {

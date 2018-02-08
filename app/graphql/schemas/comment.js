@@ -26,7 +26,7 @@ type _Posts {
   content_html: String
 }
 
-# 话题
+# 评论
 type Comment {
   content_html: String
   create_at: String
@@ -45,6 +45,11 @@ type Comment {
   parent_id: String
   reply_id: _ReplyUser
   reply: [_Reply]
+}
+
+# 更新评论
+type updateComment {
+  success: Boolean
 }
 
 `
@@ -79,5 +84,28 @@ comments(
 `
 
 exports.Mutation = `
+
+# 更新评论
+updateComment(
+  _id: String!,
+  # 删除 (管理员)
+  deleted: Boolean
+  # 削弱 (管理员)
+  weaken: Boolean
+  # 推荐 (管理员)
+  recommend: Boolean
+  # 话题
+  topic_id: String
+  # 类型
+  type: Int
+  # 标题
+  title: String
+  # 正文JSON
+  content: String
+  # 正文HTML
+  content_html: String
+  # 根据时间排序（越大越排前）(管理员)
+  sort_by_date: String
+): updateComment
 
 `

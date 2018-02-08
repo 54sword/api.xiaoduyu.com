@@ -99,7 +99,7 @@ query.comments = async (root, args, context, schema) => {
       select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }
     })
   }
-  
+
   if (options.length > 0) {
     [ err, commentList ] = await To(Comment.populate({ collections: commentList, options }))
   }
@@ -197,57 +197,30 @@ query.comments = async (root, args, context, schema) => {
 
   })
 
-  /*
-  Like.find({
-    $or: [
-      {
-        type: 'comment',
-        deleted: false,
-        target_id: { '$in': ids },
-        user_id: user._id
-      },
-      {
-        type: 'reply',
-        deleted: false,
-        target_id: { '$in': ids },
-        user_id: user._id
-      }
-    ]
-  }, { target_id: 1, _id: 0 }, {}, function(err, likes){
-    if (err) console.log(err)
-
-    var ids = {}
-
-    likes.map(function(item){
-      ids[item.target_id] = 1
-    })
-
-    comments.map(function(item){
-      if (ids[item._id]) {
-        item.like = true
-      } else {
-        item.like = false
-      }
-
-      if (item.reply) {
-        item.reply.map(function(item){
-          if (ids[item._id]) {
-            item.like = true
-          } else {
-            item.like = false
-          }
-        })
-      }
-
-    })
-
-    res.send({ success: true, data: comments })
-
-  })
-  */
-
-
   return commentList
+}
+
+
+mutation.updateComment = async (root, args, context, schema) => {
+
+  if (!context.user) {
+    throw CreateError({ message: '请求被拒绝' })
+  }
+
+  const { role } = context
+
+  let { query, update } = Updates(args, 'posts', role)
+
+  let [ err, result ] = await To(Comment.update({ query, update }))
+
+  if (err) {
+    throw CreateError({
+      message: '更新失败',
+      data: { errorInfo: err.message }
+    })
+  }
+
+  return { success: true }
 }
 
 exports.query = query

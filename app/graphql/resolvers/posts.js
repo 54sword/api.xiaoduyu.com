@@ -189,7 +189,7 @@ query.posts = async (root, args, context, schema) => {
       update: { last_find_posts_at: new Date() }
     });
   }
-
+  
   return postList
 }
 
