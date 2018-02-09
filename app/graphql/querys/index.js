@@ -4,14 +4,16 @@ import topic from './topic'
 import user from './user'
 import comment from './comment'
 import userNotification from './user-notification'
+import notification from './notification'
 
 let list = {
   posts, topic, user, comment,
-  'user-notification': userNotification
+  'user-notification': userNotification,
+  notification
 }
 
 export default (args, name) => {
-  
+
   let { queryList, optionList } = list[name]
 
   let query = {},

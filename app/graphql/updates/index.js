@@ -2,9 +2,13 @@
 import posts from './posts'
 import user from './user'
 import comment from './comment'
+import userNotification from './user-notification'
+import notification from './notification'
 
 let list = {
-  posts, user, comment
+  posts, user, comment,
+  'user-notification': userNotification,
+  notification
 }
 
 export default (args, name, role) => {

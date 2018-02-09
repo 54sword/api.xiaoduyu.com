@@ -50,6 +50,11 @@ type userNotifications {
   posts_id: posts_id
 }
 
+# 更新用户的通知
+type updateUserNotifaction {
+  success: Boolean
+}
+
 `
 
 exports.Query = `
@@ -86,5 +91,12 @@ userNotifications(
 `
 
 exports.Mutation = `
+
+# 更新用户的通知
+updateUserNotifaction(
+  _id: ID!
+  # 删除 (管理员)
+  deleted: Boolean
+): updateUserNotifaction
 
 `

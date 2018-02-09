@@ -158,31 +158,17 @@ query.userNotifications = async (root, args, context, schema) => {
   return _notices
 }
 
-/*
-mutation.updateUser = async (root, args, context, schema) => {
+
+mutation.updateUserNotifaction = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
   let options = {}
-  // let { query, options } = Querys(args, 'user')
-  let { query, update } = Updates(args, 'user', role)
-
-  // console.log('123123');
-
-  // select
-  // schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
+  let { query, update } = Updates(args, 'user-notification', role)
 
   //===
 
-
-  // if (!query._id) {
-  //   return res.send({ success: false, error: 90002, error_data: { argument: 'query._id' } })
-  // }
-
-  let [ err, result ] = await To(User.update({ query, update, options }))
-
-  // console.log(err);
-  // console.log(result);
+  let [ err, result ] = await To(UserNotification.update({ query, update, options }))
 
   if (err) {
     throw CreateError({
@@ -193,7 +179,6 @@ mutation.updateUser = async (root, args, context, schema) => {
 
   return { success: true }
 }
-*/
 
 exports.query = query
 exports.mutation = mutation

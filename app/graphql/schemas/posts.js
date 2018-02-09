@@ -91,25 +91,25 @@ exports.Query = `
 # 查询帖子
 posts(
   # 帖子id
-  _id: ID,
+  _id: ID
   # 话题id
-  topic_id: ID,
+  topic_id: ID
   # 用户id
-  user_id: ID,
+  user_id: ID
   # 小于等于创建日期
-  end_create_at: String,
+  end_create_at: String
   # 大于等于创建日期
-  start_create_at: String,
+  start_create_at: String
   # 弱化
-  weaken: Boolean,
+  weaken: Boolean
   # 推荐
-  recommend: Boolean,
+  recommend: Boolean
   # 删除
-  deleted: Boolean,
+  deleted: Boolean
   # 排序
-  sort: String,
+  sort: String
   # 跳过多少个
-  page_number: Int,
+  page_number: Int
   # 每个显示数量
   page_size: Int
   # 排序
@@ -126,7 +126,7 @@ addPosts(message: String): addPosts
 
 # 编辑Posts
 editPosts(
-  _id: String!,
+  _id: ID!
   # 删除 (管理员)
   deleted: Boolean
   # 削弱 (管理员)
