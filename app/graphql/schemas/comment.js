@@ -79,6 +79,8 @@ comments(
   user_id: String
   # 帖子ID
   posts_id: String
+  # 是否只查询没有
+  parent_id: Boolean
 ): [Comment]
 
 `

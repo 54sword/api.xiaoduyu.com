@@ -39,7 +39,8 @@ module.exports = (app, bodyParser) => {
 			},
       context: {
         user: req.user || null,
-        role: req.role || ''
+        role: req.role || '',
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
         // req
       },
 

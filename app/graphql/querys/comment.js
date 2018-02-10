@@ -7,7 +7,8 @@ const queryList = {
   end_create_at: data => ({ name: 'create_at', value: { '$lte': data } }),
   start_create_at: data => ({ name: 'create_at', value: { '$gte': data } }),
   user_id: data => ({ name: 'user_id', value: data }),
-  posts_id: data => ({ name: 'posts_id', value: data })
+  posts_id: data => ({ name: 'posts_id', value: data }),
+  parent_id: data => ({ name: 'parent_id', value: { '$exists': data } })
 }
 
 const optionList = {
@@ -17,7 +18,7 @@ const optionList = {
 
     let value = {}
     value[data] = -1
-    
+
     return ({ name: 'sort', value })
   }
 }

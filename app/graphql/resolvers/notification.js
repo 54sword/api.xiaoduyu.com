@@ -17,7 +17,7 @@ query.notifications = async (root, args, context, schema) => {
   const { method } = args
   let select = {}
   let { query, options } = Querys(args, 'notification')
-  
+
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
 
