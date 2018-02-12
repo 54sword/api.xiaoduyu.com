@@ -6,6 +6,7 @@ import comment from './comment'
 import userNotification from './user-notification'
 import notification from './notification'
 import captcha from './captcha'
+import account from './account'
 
 let Query = {}
 let Mutation = {}
@@ -24,6 +25,8 @@ Object.assign(Query, notification.query)
 Object.assign(Mutation, notification.mutation)
 Object.assign(Query, captcha.query)
 Object.assign(Mutation, captcha.mutation)
+Object.assign(Query, account.query)
+Object.assign(Mutation, account.mutation)
 
 var resolvers = {
   Query,
@@ -37,5 +40,6 @@ Object.assign(resolvers, comment.resolvers)
 Object.assign(resolvers, userNotification.resolvers)
 Object.assign(resolvers, notification.resolvers)
 Object.assign(resolvers, captcha.resolvers)
+Object.assign(resolvers, account.resolvers)
 
 export default resolvers

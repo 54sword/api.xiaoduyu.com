@@ -40,7 +40,8 @@ module.exports = (app, bodyParser) => {
       context: {
         user: req.user || null,
         role: req.role || '',
-        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        jwtTokenSecret: app.get('jwtTokenSecret')
         // req
       },
 

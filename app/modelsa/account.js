@@ -1,3 +1,24 @@
+
+import bcrypt from 'bcryptjs'
+
+import { Account } from '../schemas'
+import baseMethod from './base-method'
+
+let Schemas = baseMethod(Account)
+
+// 验证码密码是否正确
+Schemas.verifyPassword = ({ password, currentPassword }) => {
+  return new Promise((resolve, reject) => {
+    bcrypt.compare(password, currentPassword, (err, res)=>{
+      err ? reject(err) : resolve(res)
+    });
+  });
+};
+
+module.exports = Schemas;
+
+
+/*
 var Account = require('../schemas').Account;
 var bcrypt = require('bcryptjs');
 
@@ -74,3 +95,4 @@ exports.resetPassword = function(id, newPassword, callback) {
   });
 
 };
+*/
