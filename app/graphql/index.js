@@ -1,15 +1,13 @@
-var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
+
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { formatError } from 'apollo-errors';
-// var schema = require('./app/graphql');
+import { makeExecutableSchema } from 'graphql-tools';
+
+import typeDefs from './schemas';
+import resolvers from './resolvers';
+
+import router from './router';
 import checkToken from './auto';
-
-import { makeExecutableSchema } from 'graphql-tools'
-
-import typeDefs from './schemas'
-import resolvers from './resolvers'
-
-// module.exports = makeExecutableSchema({ typeDefs, resolvers })
-
 
 let schema = makeExecutableSchema({ typeDefs, resolvers })
 
@@ -32,10 +30,10 @@ module.exports = (app, bodyParser) => {
   }, graphqlExpress(req => {
     return {
 			// tracing: true,
-			debug: true,
+			debug: false,
       schema,
 			rootValue: {
-				test:'test'
+				// test:'test'
 			},
       context: {
         user: req.user || null,
@@ -68,6 +66,7 @@ module.exports = (app, bodyParser) => {
 
 
   // IDE
-  app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
+  app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
+  app.use('/', router());
 }

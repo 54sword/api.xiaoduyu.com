@@ -3,7 +3,8 @@
 // var Token = require('../../modelsa').Token;
 // var Account = require('../../../models').Account;
 // var jwt = require('jwt-simple');
-var JWT = require('../../common/jwt');
+// var JWT = require('../../common/jwt');
+import JWT from '../../common/jwt'
 
 import Token from '../../modelsa/token'
 import User from '../../modelsa/user'

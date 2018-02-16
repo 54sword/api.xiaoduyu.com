@@ -6,11 +6,12 @@ import comment from './comment'
 import userNotification from './user-notification'
 import notification from './notification'
 import account from './account'
+import analysis from './analysis'
 
 let list = {
   posts, topic, user, comment,
   'user-notification': userNotification,
-  notification, account
+  notification, account, analysis
 }
 
 export default (args, name) => {

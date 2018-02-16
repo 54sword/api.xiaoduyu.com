@@ -12,20 +12,9 @@ var compress = require('compression');
 var config = require('./config');
 
 var API_V1 = require('./app/api-v1');
-var API_V2 = require('./app/api-v2');
-// var graphql = require('./app/graphql');
-//
-// console.log(graphql);
-
-
-// var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
-// import { formatError } from 'apollo-errors';
-// var schema = require('./app/graphql');
-
 var graphql = require('./app/graphql');
 
 
-// var OauthRouter = require('./app/oauth');
 import OauthRouter from './app/oauth'
 import outputError from './config/error'
 
@@ -77,7 +66,7 @@ app.all('*',function (req, res, next) {
 	req.jwtTokenSecret = app.get('jwtTokenSecret')
 
   res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role');
+	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role, Test');
 	// res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 
@@ -114,16 +103,6 @@ if (config.oauth.wechatToken) {
 	});
 
 }
-
-// function* f(){
-//   console.log('执行了');
-// }
-//
-// var generator = f();
-//
-// setTimeout(function(){
-// 	generator.next()
-// }, 2000)
 
 var onlineUserCount = 0
 
@@ -236,11 +215,11 @@ app.use(function (req, res, next) {
   res.send = function () {
 
 		// 如果返回结果中，包含错误代码，则装换成普通语言提示
-		if (arguments[0] && typeof arguments[0].success != 'undefined' && !arguments[0].success && arguments[0].error) {
-			// arguments[0].error = '错误提醒测试'
-			console.log(arguments[0]);
-			arguments[0] = outputError(arguments[0])
-		}
+		// if (arguments[0] && typeof arguments[0].success != 'undefined' && !arguments[0].success && arguments[0].error) {
+		// 	// arguments[0].error = '错误提醒测试'
+		// 	console.log(arguments[0]);
+		// 	arguments[0] = outputError(arguments[0])
+		// }
 
     // 发送Header
     // res.set('X-Execution-Time', String(Date.now() - exec_start_at) + ' ms');
@@ -250,7 +229,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use('/api/v2', API_V2());
+// app.use('/api/v2', API_V2());
 
 
 

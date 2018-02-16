@@ -623,14 +623,14 @@ exports.fetch = function(req, res, next) {
 
   /* 如果是管理员则显示一些额外的属性 */
 
-  if (user.role == 100) {
-    if (typeof query.deleted != 'undefined') {
-      delete query.deleted
-    }
-    delete select.deleted
-    delete select.weaken
-    delete select.recommend
-  }
+  // if (user.role == 100) {
+  //   if (typeof query.deleted != 'undefined') {
+  //     delete query.deleted
+  //   }
+  //   delete select.deleted
+  //   delete select.weaken
+  //   delete select.recommend
+  // }
 
   /* 管理员 end */
 

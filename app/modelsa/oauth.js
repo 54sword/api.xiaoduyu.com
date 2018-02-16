@@ -1,5 +1,8 @@
 
-var Oauth = require('../schemas').Oauth;
+import { Oauth } from '../schemas'
+import baseMethod from './base-method'
+
+let Schemas = baseMethod(Oauth)
 
 var sources = {
   'qq': 0,
@@ -8,15 +11,22 @@ var sources = {
   'wechat': 3
 };
 
+Schemas.fetchByUserIdAndSource = (userId, _source) => {
+  return Oauth.findOne({ user_id: userId, source: sources[_source] })
+};
+
+module.exports = Schemas;
+
+
 /*
-exports.fetchByOpenId = function(id, callback) {
+var Oauth = require('../schemas').Oauth;
 
-  Oauth.find({ openid: id })
-
-  .exec(callback)
-
-}
-*/
+var sources = {
+  'qq': 0,
+  'weibo': 1,
+  'github': 2,
+  'wechat': 3
+};
 
 // 通过用户的id获取
 exports.fetchByUserId = function(userId, callback) {
@@ -91,3 +101,4 @@ exports.updateDeleteStatus = function(id, bl, callback) {
   Oauth.update({ _id: id },{ $set: { 'deleted': bl }}).exec(callback);
   // Oauth.remove({ _id: id }).exec(callback);
 };
+*/

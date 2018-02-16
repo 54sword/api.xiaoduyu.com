@@ -12,7 +12,7 @@ import Querys from '../querys'
 import Updates from '../updates'
 
 query.captcha = async (root, args, context, schema) => {
-
+  
   const { ip } = context;
 
   let err, result;
@@ -29,7 +29,7 @@ query.captcha = async (root, args, context, schema) => {
     data: { captcha: Math.round(900000*Math.random()+100000), ip }
   }));
 
-  return { _id: result._id, url: domain + '/api/v2/captcha-image/' + result._id }
+  return { _id: result._id, url: domain + '/captcha/' + result._id }
 }
 
 exports.query = query;

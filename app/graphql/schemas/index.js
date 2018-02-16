@@ -6,6 +6,7 @@ import UserNotification from './user-notification'
 import Notification from './notification'
 import Captcha from './captcha'
 import Account from './account'
+import Analysis from './analysis'
 
 var typeDefs = [ `
 
@@ -17,6 +18,7 @@ ${UserNotification.Schema}
 ${Notification.Schema}
 ${Captcha.Schema}
 ${Account.Schema}
+${Analysis.Schema}
 
 # 查询API
 type Query {
@@ -28,6 +30,7 @@ type Query {
   ${Notification.Query}
   ${Captcha.Query}
   ${Account.Query}
+  ${Analysis.Query}
 }
 
 # 增、删、改API
@@ -40,6 +43,7 @@ type Mutation {
   ${Notification.Mutation}
   ${Captcha.Mutation}
   ${Account.Mutation}
+  ${Analysis.Mutation}
 }
 
 schema {
