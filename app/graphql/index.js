@@ -29,6 +29,8 @@ module.exports = (app, bodyParser) => {
       token, role, jwtTokenSecret: jwt_secret
     });
 
+    console.log(result);
+
     if (!result.user) {
       res.status(403);
       res.send({

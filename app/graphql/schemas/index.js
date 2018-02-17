@@ -7,6 +7,7 @@ import Notification from './notification'
 import Captcha from './captcha'
 import Account from './account'
 import Analysis from './analysis'
+import Qiniu from './qiniu'
 
 var typeDefs = [ `
 
@@ -19,6 +20,7 @@ ${Notification.Schema}
 ${Captcha.Schema}
 ${Account.Schema}
 ${Analysis.Schema}
+${Qiniu.Schema}
 
 # 查询API
 type Query {
@@ -31,6 +33,7 @@ type Query {
   ${Captcha.Query}
   ${Account.Query}
   ${Analysis.Query}
+  ${Qiniu.Query}
 }
 
 # 增、删、改API
@@ -44,6 +47,7 @@ type Mutation {
   ${Captcha.Mutation}
   ${Account.Mutation}
   ${Analysis.Mutation}
+  ${Qiniu.Mutation}
 }
 
 schema {

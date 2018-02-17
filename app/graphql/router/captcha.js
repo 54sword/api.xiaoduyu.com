@@ -16,7 +16,7 @@ exports.showImage = async (req, res, next) => {
   let [ err, result ] = await To(Captcha.findOne({
     query: { _id: id }
   }))
-
+  
   if (err || !result) {
 
     throw CreateError({
@@ -24,7 +24,7 @@ exports.showImage = async (req, res, next) => {
       data: { errorInfo: err ? err.message : '' }
     })
   }
-  
+
   var p = new captchapng(80,30,result.captcha); // width,height,numeric captcha
       p.color(0, 0, 0, 0);  // First color: background (red, green, blue, alpha)
       p.color(80, 80, 80, 255); // Second color: paint (red, green, blue, alpha)
@@ -50,7 +50,5 @@ exports.showImage = async (req, res, next) => {
   res.type('svg'); // 使用ejs等模板时如果报错 res.type('html')
 	res.status(200).send(captcha.data);
   */
-
-
 
 };

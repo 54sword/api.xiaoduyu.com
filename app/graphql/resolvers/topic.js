@@ -9,6 +9,7 @@ import To from '../../common/to'
 import CreateError from './errors'
 import Querys from '../querys'
 import Updates from '../updates'
+import Saves from '../saves'
 
 query.topics = async (root, args, context, schema) => {
 
@@ -49,10 +50,86 @@ query.topics = async (root, args, context, schema) => {
 
 mutation.addTopic = async (root, args, context, schema) => {
 
-  const { user, role } = context
-  const { method } = args
-  let select = {}
-  // let { query, options } = Updates(args, 'topic')
+  // console.log(context);
+
+  const { user, role } = context;
+  let { save } = Saves({ args, model: 'topic', role });
+  let err, result;
+
+  if (!user || role != 'admin') {
+    throw CreateError({
+      message: '无权限',
+      data: {}
+    });
+  }
+
+  if (!save.name || !save.description || !save.brief) {
+
+    let message = '名字不能为空'
+
+    if (!save.name) {
+      message = '名字不能为空'
+    } else if (!save.description) {
+      message = '描述不能为空'
+    } else if (!save.brief) {
+      message = '简介不能为空'
+    }
+
+    throw CreateError({
+      message,
+      data: {}
+    });
+  };
+
+  [ err, result ] = await To(Topic.findOne({ query: { name: save.name } }))
+
+  if (err) {
+    throw CreateError({
+      message: '查询异常',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  if (result) {
+    throw CreateError({
+      message: save.name+' 名称已存在',
+      data: {}
+    });
+  }
+
+  // 如果有父类，检查父类是否存在
+  if (save.parent_id) {
+    [ err, result ] = await To(Topic.findOne({ query: { _id: save.parent_id } }))
+
+    if (err) {
+      throw CreateError({
+        message: '查询异常',
+        data: { errorInfo: err.message }
+      });
+    }
+
+    if (!result) {
+      throw CreateError({
+        message: save.parent_id+' 父类不存在',
+        data: {}
+      });
+    }
+  }
+
+  save.user_id = user._id + '';
+  // if (!save.avatar) delete save.avatar
+  // if (!save.parent_id) delete save.parent_id;
+
+  [ err, result ] = await To(Topic.save({ data: save }))
+
+  if (err) {
+    throw CreateError({
+      message: '储存失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  console.log(result);
 
   return { success: true }
 }

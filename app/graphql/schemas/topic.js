@@ -1,6 +1,8 @@
 
 import Query from '../querys'
+import Saves from '../saves'
 const { querySchema } = Query({ model: 'topic' })
+const { saveSchema } = Saves({ model: 'topic' })
 
 exports.Schema = `
 
@@ -39,15 +41,6 @@ topics(${querySchema}): [Topic]
 
 exports.Mutation = `
 
-addTopic(
-  name: String
-  brief: String
-  description: String
-  avatar: String
-  background: String
-  sort: Int
-  recommend: Boolean
-  parent_id: String
-): addTopic
+addTopic(${saveSchema}): addTopic
 
 `
