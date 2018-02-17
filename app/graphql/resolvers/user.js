@@ -87,7 +87,7 @@ query.users = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let select = {}
-  let { query, options } = Querys(args, 'user')
+  let { query, options } = Querys({ args, model: 'user', role })
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -95,7 +95,7 @@ query.users = async (root, args, context, schema) => {
   //===
 
   let [ err, userList ] = await To(User.find({ query, select, options }))
-
+  
   return userList
 }
 
@@ -104,7 +104,7 @@ mutation.updateUser = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let options = {}
-  let { query, update } = Updates(args, 'user', role)
+  let { query, update } = Updates({ args, model: 'user', role })
 
   let [ err, result ] = await To(User.update({ query, update, options }))
 

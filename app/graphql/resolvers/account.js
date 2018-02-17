@@ -1,6 +1,4 @@
 
-// import Captcha from '../../modelsa/captcha'
-// import { domain } from '../../../config'
 
 const Account = require('../../modelsa').Account;
 const User = require('../../modelsa').User;
@@ -8,7 +6,6 @@ const Captcha = require('../../modelsa').Captcha;
 const Phone = require('../../modelsa').Phone;
 
 import bcrypt from 'bcryptjs';
-
 
 let query = {}
 let mutation = {}
@@ -26,7 +23,7 @@ query.signIn = async (root, args, context, schema) => {
   const { method } = args
 
   let select = {};
-  let { query, options } = Querys(args, 'account')
+  let { query, options } = Querys({ args, model: 'account', role })
 
   // -----
 

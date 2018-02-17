@@ -1,3 +1,7 @@
+
+import Query from '../querys'
+const { querySchema } = Query({ model: 'user' })
+
 exports.Schema = `
 
 # 用户
@@ -69,23 +73,7 @@ type updateUser {
 exports.Query = `
 
 # 查询用户
-users(
-  _id: ID
-  # 推荐
-  blocked: Boolean
-  # 跳过多少个
-  page_number: Int
-  # 每个显示数量
-  page_size: Int
-  # 排序
-  sort_by: String
-  # 开始日期
-  start_create_at: String
-  # 结束日期
-  end_create_at: String
-  # 查询还在禁言的用户
-  banned_to_post: String
-): [User]
+users(${querySchema}): [User]
 
 # 查询用户
 selfInfo(

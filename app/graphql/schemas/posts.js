@@ -1,3 +1,7 @@
+
+import Query from '../querys'
+const { querySchema } = Query({ model: 'posts' })
+
 exports.Schema = `
 
 type _User {
@@ -89,34 +93,7 @@ type editPosts {
 exports.Query = `
 
 # 查询帖子
-posts(
-  # 帖子id
-  _id: ID
-  # 话题id
-  topic_id: ID
-  # 用户id
-  user_id: ID
-  # 小于等于创建日期
-  end_create_at: String
-  # 大于等于创建日期
-  start_create_at: String
-  # 弱化
-  weaken: Boolean
-  # 推荐
-  recommend: Boolean
-  # 删除
-  deleted: Boolean
-  # 排序
-  sort: String
-  # 跳过多少个
-  page_number: Int
-  # 每个显示数量
-  page_size: Int
-  # 排序
-  sort_by: String
-  # 模式(user_follow)
-  method: String
-): [Posts]
+posts(${querySchema}): [Posts]
 
 `
 

@@ -16,7 +16,7 @@ query.comments = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let select = {}
-  let { query, options } = Querys(args, 'comment')
+  let { query, options } = Querys({ args, model: 'comment', role })
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -208,8 +208,8 @@ mutation.updateComment = async (root, args, context, schema) => {
   }
 
   const { role } = context
-
-  let { query, update } = Updates(args, 'posts', role)
+  
+  let { query, update } = Updates({ args, model: 'posts', role })
 
   let [ err, result ] = await To(Comment.update({ query, update }))
 

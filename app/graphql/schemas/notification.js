@@ -1,3 +1,7 @@
+
+import Query from '../querys'
+const { querySchema } = Query({ model: 'notification' })
+
 exports.Schema = `
 
 # 话题
@@ -21,27 +25,7 @@ type updateNotifaction {
 exports.Query = `
 
 # 查询用户通知
-notifications(
-  _id: ID
-  # 发件人用户ID
-  sender_id: ID
-  # 收件人用户ID
-  addressee_id: ID
-  # 删除状态
-  deleted: Boolean
-  # 类型
-  type: String
-  # 排序
-  sort_by: String
-  # 跳过多少个
-  page_number: Int
-  # 每个显示数量
-  page_size: Int
-  # 开始日期
-  start_create_at: String
-  # 结束日期
-  end_create_at: String
-): [notification]
+notifications(${querySchema}): [notification]
 
 `
 

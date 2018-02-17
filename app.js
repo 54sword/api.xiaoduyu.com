@@ -35,7 +35,7 @@ app.use(helmet());
 // var csrfProtection = csrf({ cookie: true });
 // var parseForm = bodyParser.urlencoded({ extended: false });
 
-app.set('jwtTokenSecret', config.jwt_secret);
+// app.set('jwtTokenSecret', config.jwt_secret);
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
@@ -63,10 +63,10 @@ if (config.sslPath) {
 
 app.all('*',function (req, res, next) {
 
-	req.jwtTokenSecret = app.get('jwtTokenSecret')
+	// req.jwtTokenSecret = app.get('jwtTokenSecret')
 
   res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role, Test');
+	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role');
 	// res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 
@@ -129,85 +129,12 @@ io.on('connection', function(socket){
 });
 global.io = io
 
-
 graphql(app, bodyParser)
 
-// app.use('/graphql', bodyParser.json(), ((req, res, next)=>{
-// 	next()
-// }), graphqlExpress({schema}))
-
-/*
-app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
-
-	// console.log(req.headers);
-	// console.log(req.body);xx
-
-    return {
-			// tracing: true,
-			debug: true,
-      schema,
-			rootValue: {
-				test:'test'
-			},
-      context: {
-        // req
-      },
-
-			formatParams: params =>{
-				// console.log(params)
-				return params
-			},
-			// formatResponse: e => e,
-			formatError
-			formatError: error => {
-				// console.log('1111111');
-				// console.log(err);
-			  // return err;
-				return {
-			    name: error.name,
-			    mensaje: error.message
-			  }
-			}
-      // other options here
-    };
-  }))
-
-
-// IDE
-app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }))
-*/
-
-// app.use('/graphql', graphql);
 app.use('/oauth', OauthRouter());
 app.use('/api/v1', API_V1());
 
 /*
-app.all('*', (req, res, next)=>{
-
-	// console.log(req);
-
-	if (req.method === 'GET') {
-		let json = req.query[0] || ''
-		if (!isJSON(json)) return res.send({ error: 11000, success: false })
-		req.arguments = JSON.parse(json)
-	} else if (req.method === 'POST') {
-		req.arguments = req.body
-	}
-
-	// 只接收json的参数
-	// if (req.query[0]) {
-	// 	let json = req.query[0] || ''
-	// 	if (!isJSON(json)) return res.send({ error: 11000, success: false })
-	// 	req.json = JSON.parse(json)
-	// } else {
-	// 	req.json = {}
-	// }
-
-	next()
-})
-*/
-
-
 app.use(function (req, res, next) {
   // 计算页面加载完成花费的时间
   // var exec_start_at = Date.now();
@@ -228,14 +155,11 @@ app.use(function (req, res, next) {
   };
   next();
 });
+*/
 
-// app.use('/api/v2', API_V2());
-
-
-
-app.use('/', function(req, res){
-	res.send('运行中');
-});
+// app.use('/', function(req, res){
+// 	res.send('运行中');
+// });
 
 app.use(function(req, res, next) {
 	res.status(404);

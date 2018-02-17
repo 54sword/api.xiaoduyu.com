@@ -1,3 +1,7 @@
+
+import Query from '../querys'
+const { querySchema } = Query({ model: 'comment' })
+
 exports.Schema = `
 
 type _ReplyUser {
@@ -57,31 +61,7 @@ type updateComment {
 exports.Query = `
 
 # 查询用户
-comments(
-  _id: ID
-  # 削弱
-  weaken: Boolean
-  # 删除
-  deleted: Boolean
-  # 推荐
-  recommend: Boolean
-  # 跳过多少个
-  page_number: Int
-  # 每个显示数量
-  page_size: Int
-  # 排序
-  sort_by: String
-  # 开始日期
-  start_create_at: String
-  # 结束日期
-  end_create_at: String
-  # 用户ID
-  user_id: String
-  # 帖子ID
-  posts_id: String
-  # 是否只查询没有
-  parent_id: Boolean
-): [Comment]
+comments(${querySchema}): [Comment]
 
 `
 

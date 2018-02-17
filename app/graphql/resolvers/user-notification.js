@@ -19,7 +19,7 @@ query.userNotifications = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let select = {}
-  let { query, options } = Querys(args, 'user-notification')
+  let { query, options } = Querys({ args, model:'user-notification', role })
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -164,7 +164,7 @@ mutation.updateUserNotifaction = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let options = {}
-  let { query, update } = Updates(args, 'user-notification', role)
+  let { query, update } = Updates({ args, model: 'user-notification', role })
 
   //===
 

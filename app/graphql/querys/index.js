@@ -14,24 +14,25 @@ let list = {
   notification, account, analysis
 }
 
-export default (args, name) => {
+export default ({ args = {}, model, role = '' }) => {
 
-  let { queryList, optionList } = list[name]
+  let { queryList, optionList } = list[model]
 
-  let query = {},
-      options = {}
+  let query = {}, options = {}, querySchema = ``;
 
   for (let i in args) {
     if (queryList[i]) {
       let result = queryList[i](args[i])
-      query[result.name] = result.value
+      if (role && result.role && role != result.role) continue
+      if (result.name) query[result.name] = result.value
     }
   }
 
   for (let i in args) {
     if (optionList[i]) {
       let result = optionList[i](args[i])
-      options[result.name] = result.value
+      if (role && result.role && role != result.role) continue
+      if (result.name) options[result.name] = result.value
     }
   }
 
@@ -41,7 +42,24 @@ export default (args, name) => {
   else if (options.limit > 300) options.limit = 300
 
   options.skip = !options.skip ? 0 : options.skip * options.limit
+  
 
-  return { query, options }
+  // 生成 query schema
+
+  for (let i in queryList) {
+    querySchema += `
+      #${queryList[i]().desc}${queryList[i]().role == 'admin' ? ' (管理员)' : ''}
+      ${i}:${queryList[i]().type}
+    `
+  }
+
+  for (let i in optionList) {
+    querySchema += `
+      #${optionList[i]().desc}
+      ${i}:${optionList[i]().type}
+    `
+  }
+
+  return { query, options, querySchema }
 
 }

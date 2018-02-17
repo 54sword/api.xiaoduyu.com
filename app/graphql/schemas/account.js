@@ -1,3 +1,7 @@
+
+import Query from '../querys'
+const { querySchema } = Query({ model: 'account' })
+
 exports.Schema = `
 
 # 登录
@@ -10,14 +14,8 @@ type signIn {
 
 exports.Query = `
 
-# 登录
-signIn(
-  email: String
-  phone: String
-  password: String!
-  captcha: String
-  captcha_id: String
-): signIn
+# 登录前先通过，captcha API，获取验证码，如果有返回验证码图片，则将其显示给用户
+signIn(${querySchema}): signIn
 
 `
 

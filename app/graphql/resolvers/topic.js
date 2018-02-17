@@ -15,7 +15,7 @@ query.topics = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let select = {}
-  let { query, options } = Querys(args, 'topic')
+  let { query, options } = Querys({ args, model: 'topic', role })
 
   //===
 

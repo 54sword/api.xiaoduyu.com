@@ -3,30 +3,45 @@ import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { formatError } from 'apollo-errors';
 import { makeExecutableSchema } from 'graphql-tools';
 
+import { debug, jwt_secret } from '../../config'
+
 import typeDefs from './schemas';
 import resolvers from './resolvers';
 
 import router from './router';
 import checkToken from './auto';
 
-let schema = makeExecutableSchema({ typeDefs, resolvers })
+let schema = makeExecutableSchema({ typeDefs, resolvers });
 
 module.exports = (app, bodyParser) => {
 
-  app.use('/graphql', bodyParser.json(), async (req, res, next)=>{
+  app.use('/graphql', bodyParser.json(), async (req, res, next) => {
 
-    // 如果header在token，判断token是否有效，无效则拒绝请求
-    let invalidToken = await checkToken(req)
-    if (!invalidToken) {
-      res.status(403)
+    /**
+     * 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
+     */
+    let token = req.headers.accesstoken || '';
+    let role = req.headers.role || '';
+
+    if (!token) return next();
+
+    let result = await checkToken({
+      token, role, jwtTokenSecret: jwt_secret
+    });
+
+    if (!result.user) {
+      res.status(403);
       res.send({
         errors: [{
           "message": "invalid token"
         }]
-      })
-      return
+      });
+    } else {
+      req.user = result.user;
+      req.role = result.role;
+      next();
     }
-    next()
+
   }, graphqlExpress(req => {
     return {
 			// tracing: true,
@@ -39,12 +54,9 @@ module.exports = (app, bodyParser) => {
         user: req.user || null,
         role: req.role || '',
         ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-        jwtTokenSecret: app.get('jwtTokenSecret')
-        // req
+        jwtTokenSecret: jwt_secret
       },
-
 			formatParams: params =>{
-				// console.log(params)
 				return params
 			},
 			// formatResponse: e => e,
@@ -60,13 +72,11 @@ module.exports = (app, bodyParser) => {
 			  }
 			}
 			*/
-      // other options here
     };
   }))
 
-
   // IDE
-  app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+  if (debug) app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
   app.use('/', router());
 }

@@ -11,9 +11,9 @@ let list = {
   notification
 }
 
-export default (args, name, role) => {
+export default ({ args, model, role }) => {
 
-  let { queryList, updateList } = list[name]
+  let { queryList, updateList } = list[model]
 
   let query = {},
       update = {}

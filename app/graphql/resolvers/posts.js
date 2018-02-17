@@ -19,7 +19,7 @@ query.posts = async (root, args, context, schema) => {
   const { method } = args
 
   let select = {}, err, postList, followList, likeList, ids
-  let { query, options } = Querys(args, 'posts')
+  let { query, options } = Querys({ args, model:'posts', role })
 
   // 未登陆用户，不能使用method方式查询
   if (!user && method) {
@@ -189,7 +189,7 @@ query.posts = async (root, args, context, schema) => {
       update: { last_find_posts_at: new Date() }
     });
   }
-  
+
   return postList
 }
 
@@ -205,7 +205,7 @@ mutation.editPosts = async (root, args, context, schema) => {
 
   const { role } = context
 
-  let { query, update } = Updates(args, 'posts', role)
+  let { query, update } = Updates({ args, model: 'posts', role })
 
   let [ err, result ] = await To(Posts.update({ query, update }))
 

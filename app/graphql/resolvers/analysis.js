@@ -19,7 +19,7 @@ query.analysis = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let select = {}
-  let { query, options } = Querys(args, 'analysis')
+  let { query, options } = Querys({ args, model:'analysis', role })
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
