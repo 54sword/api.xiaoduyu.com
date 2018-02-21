@@ -1,6 +1,8 @@
 
 import Query from '../querys'
+import Updates from '../updates'
 const { querySchema } = Query({ model: 'user' })
+const { updateSchema } = Updates({ model: 'user' })
 
 exports.Schema = `
 
@@ -14,7 +16,7 @@ type User {
   role: Int
   avatar: String
   brief: String
-  source: Boolean
+  source: Int
   posts_count: Int
   comment_count: Int
   fans_count: Int
@@ -68,6 +70,11 @@ type updateUser {
   success: Boolean
 }
 
+# 用户计数
+type usersCount {
+  count: Int
+}
+
 `
 
 exports.Query = `
@@ -81,25 +88,14 @@ selfInfo(
   randomString: String
 ): SelfInfo
 
+# 用户计数
+usersCount(${querySchema}): usersCount
+
 `
 
 exports.Mutation = `
 
 # 更新用户
-updateUser(
-  _id: String!
-  # 屏蔽用户
-  blocked: Boolean
-  # 头像
-  avatar: String
-  # 一句话自我介绍
-  brief: String
-  # 性别
-  gender: Int
-  # 昵称
-  nickname: String
-  # 禁言时间
-  banned_to_post: String
-): updateUser
+updateUser(${updateSchema}): updateUser
 
 `

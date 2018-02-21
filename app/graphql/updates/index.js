@@ -4,35 +4,51 @@ import user from './user'
 import comment from './comment'
 import userNotification from './user-notification'
 import notification from './notification'
+import topic from './topic'
 
 let list = {
   posts, user, comment,
   'user-notification': userNotification,
-  notification
+  notification, topic
 }
 
-export default ({ args, model, role }) => {
+export default ({ args = {}, model, role = '' }) => {
 
   let { queryList, updateList } = list[model]
 
-  let query = {},
-      update = {}
+  let query = {}, update = {}, schema = ``;
 
   for (let i in args) {
     if (!queryList[i]) continue
     let result = queryList[i](args[i])
-    if (role && result.role && role != result.role) continue
-    query[result.name] = result.value
+    if (result.role && role != result.role) continue
+    if (result.name) query[result.name] = result.value
   }
 
   // 更新字段查询
   for (let i in args) {
     if (!updateList[i]) continue
     let result = updateList[i](args[i])
-    if (role && result.role && role != result.role) continue
-    update[result.name] = result.value
+    if (result.role && role != result.role) continue
+    if (result.name) update[result.name] = result.value
   }
 
-  return { query, update }
+  // 生成 schema
+
+  for (let i in queryList) {
+    schema += `
+      #${queryList[i]().desc}${queryList[i]().role == 'admin' ? ' (管理员)' : ''}
+      ${i}:${queryList[i]().type}
+    `
+  }
+
+  for (let i in updateList) {
+    schema += `
+      #${updateList[i]().desc}${updateList[i]().role == 'admin' ? ' (管理员)' : ''}
+      ${i}:${updateList[i]().type}
+    `
+  }
+
+  return { query, update, updateSchema: schema }
 
 }

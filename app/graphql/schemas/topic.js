@@ -1,8 +1,11 @@
 
 import Query from '../querys'
 import Saves from '../saves'
+import Updates from '../updates'
+
 const { querySchema } = Query({ model: 'topic' })
 const { saveSchema } = Saves({ model: 'topic' })
+const { updateSchema } = Updates({ model: 'topic' })
 
 exports.Schema = `
 
@@ -26,6 +29,17 @@ type Topic {
   parent_id: String
 }
 
+# 更新话题
+type updateTopic {
+  success: Boolean
+}
+
+# 话题计数
+type topicsCount {
+  count: Int
+}
+
+# 添加话题
 type addTopic {
   success: Boolean
 }
@@ -37,10 +51,14 @@ exports.Query = `
 # 查询帖子
 topics(${querySchema}): [Topic]
 
+# 话题计数
+topicsCount(${querySchema}): topicsCount
+
 `
 
 exports.Mutation = `
 
 addTopic(${saveSchema}): addTopic
+updateTopic(${updateSchema}): updateTopic
 
 `

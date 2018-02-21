@@ -37,6 +37,18 @@ query.notifications = async (root, args, context, schema) => {
   return list
 }
 
+query.notificationsCount = async (root, args, context, schema) => {
+
+  const { user, role } = context
+  let { query } = Querys({ args, model: 'notification', role })
+
+  let [ err, count ] = await To(Notification.count({ query }))
+
+  return {
+    count
+  }
+}
+
 mutation.updateNotifaction = async (root, args, context, schema) => {
 
   const { user, role } = context

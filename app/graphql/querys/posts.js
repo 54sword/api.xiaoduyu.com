@@ -39,7 +39,7 @@ const queryList = {
   method: data => ({
     name: '', value: '',
     type: 'String', desc:'模式(user_follow)'
-  }),
+  })
 }
 
 const optionList = {

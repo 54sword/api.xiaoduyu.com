@@ -48,9 +48,28 @@ query.topics = async (root, args, context, schema) => {
   return topicList
 }
 
-mutation.addTopic = async (root, args, context, schema) => {
 
-  // console.log(context);
+query.topicsCount = async (root, args, context, schema) => {
+
+  const { user, role } = context
+  let select = {}
+  let { query, options } = Querys({ args, model: 'topic', role })
+
+  //===
+
+  let [ err, count ] = await To(Topic.count({ query }))
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  return { count }
+}
+
+mutation.addTopic = async (root, args, context, schema) => {
 
   const { user, role } = context;
   let { save } = Saves({ args, model: 'topic', role });
@@ -120,6 +139,8 @@ mutation.addTopic = async (root, args, context, schema) => {
   // if (!save.avatar) delete save.avatar
   // if (!save.parent_id) delete save.parent_id;
 
+  // console.log(save);
+
   [ err, result ] = await To(Topic.save({ data: save }))
 
   if (err) {
@@ -129,7 +150,111 @@ mutation.addTopic = async (root, args, context, schema) => {
     });
   }
 
-  console.log(result);
+  return { success: true }
+}
+
+mutation.updateTopic = async (root, args, context, schema) => {
+
+  const { user, role } = context
+  let { query, update } = Updates({ args, model: 'topic', role })
+
+  if (!user || role != 'admin') {
+    throw CreateError({
+      message: '无权限',
+      data: {}
+    });
+  }
+
+  // --------------------------------------
+
+  let err, result, topic;
+
+  [ err, topic ] = await To(Topic.findOne({ query: { _id: query._id } }))
+
+  if (err) {
+    throw CreateError({
+      message: '_id 查询失败',
+      data: { errorInfo: err.message || '' }
+    });
+  }
+
+  if (!topic) {
+    throw CreateError({
+      message: '_id 不存在',
+      data: {}
+    });
+  }
+
+  // 判断是否存在这个话题
+  if (topic.name != update.name) {
+
+    [ err, result ] = await To(Topic.findOne({ query: { name: update.name } }))
+
+    if (err) {
+      throw CreateError({
+        message: 'name 查询失败',
+        data: { errorInfo: err.message || '' }
+      });
+    }
+
+    if (result) {
+      throw CreateError({
+        message: '_id 已存在',
+        data: {}
+      });
+    }
+
+  }
+
+  // 如果存在父类，必须选择一个父类
+  if (topic && topic.parent_id && !update.parent_id) {
+    throw CreateError({
+      message: '必须提交 parent_id',
+      data: {}
+    });
+  } else if (topic && !topic.parent_id && update.parent_id) {
+    throw CreateError({
+      message: '必须提交 parent_id',
+      data: {}
+    });
+  }
+
+  // 如果有父类，检查父类是否存在
+  if (update.parent_id && topic.parent_id != update.parent_id) {
+    if (update.parent_id) {
+      [ err, result ] = await To(Topic.findOne({ query: { _id: update.parent_id } }))
+
+      if (err) {
+        throw CreateError({
+          message: 'name 查询失败',
+          data: { errorInfo: err.message || '' }
+        });
+      }
+
+      if (!result) {
+        throw CreateError({
+          message: 'parent_id 不存在',
+          data: {}
+        });
+      }
+    }
+  }
+
+  if (Reflect.has(update, 'parent_id')) {
+    if (update.parent_id) {
+    } else {
+      update.parent_id = null
+    }
+  }
+
+  [ err ] = await To(Topic.update({ query, update }))
+
+  if (err) {
+    throw CreateError({
+      message: '更新失败',
+      data: { errorInfo: err.message || '' }
+    });
+  }
 
   return { success: true }
 }

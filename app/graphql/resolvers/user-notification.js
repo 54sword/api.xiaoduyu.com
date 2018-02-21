@@ -158,6 +158,28 @@ query.userNotifications = async (root, args, context, schema) => {
   return _notices
 }
 
+query.userNotificationsCount = async (root, args, context, schema) => {
+
+  if (!context.user) {
+    throw CreateError({ message: '请求被拒绝' })
+  }
+
+  const { user, role } = context
+  let { query } = Querys({ args, model:'user-notification', role })
+
+  //===
+  
+  // 请求用户的角色
+  let admin = role == 'admin' ? true : false
+
+  if (user.block_people_count > 0 && !admin) {
+    query.sender_id = { '$nin': user.block_people }
+  }
+
+  let [ err, count ] = await To(UserNotification.count({ query }))
+
+  return { count }
+}
 
 mutation.updateUserNotifaction = async (root, args, context, schema) => {
 

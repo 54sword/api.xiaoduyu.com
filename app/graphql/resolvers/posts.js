@@ -193,11 +193,99 @@ query.posts = async (root, args, context, schema) => {
   return postList
 }
 
-mutation.addPosts = (root) => {
-  return { success: true, error: 10000 }
+query.postsCount = async (root, args, context, schema) => {
+
+  console.log('111');
+
+  const { user, role } = context
+  const { method } = args
+
+  let select = {}, err, count;
+  let { query, options } = Querys({ args, model:'posts', role })
+
+  // 未登陆用户，不能使用method方式查询
+  if (!user && method) {
+    throw CreateError({ message: '请求被拒绝' })
+  }
+
+  // select
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
+
+  /**
+   * 增加屏蔽条件
+   *
+   * 如果是登陆状态，那么增加屏蔽条件
+   * 如果通过posts查询，那么不增加屏蔽条件
+   */
+  if (user && !query._id) {
+    if (user.block_posts_count > 0) query._id = { '$nin': user.block_posts }
+    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+  }
+
+  // 用户关注
+  if (user && method == 'user_follow') {
+
+    let newQuery = { '$or': [] }
+
+    if (query.user_id) delete query.user_id
+    if (query.topic_id) delete query.topic_id
+    if (query.posts_id) delete query.posts_id
+    if (query._id) delete query._id
+
+    // 用户
+    if (user.follow_people.length > 0) {
+      newQuery['$or'].push(Object.assign(query, {
+        user_id: {
+          '$in': user.follow_people,
+          // 过滤屏蔽用户
+          '$nin': user.block_people
+        },
+        deleted: false
+      }, {}))
+    }
+
+    // 话题
+    if (user.follow_topic.length > 0) {
+      newQuery['$or'].push(Object.assign(query, {
+        topic_id: {'$in': user.follow_topic },
+        deleted: false
+      }, {}))
+    }
+
+    // 帖子
+    if (user.follow_posts.length > 0) {
+      newQuery['$or'].push(Object.assign(query, {
+        posts_id: {
+          '$in': user.follow_posts,
+          // 过滤屏蔽的帖子
+          '$nin': user.block_posts
+        },
+        deleted: false
+      }, {}))
+    }
+
+  }
+
+  [ err, count ] = await To(Posts.count({ query }))
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    })
+  }
+
+  return {
+    count
+  }
 }
 
-mutation.editPosts = async (root, args, context, schema) => {
+
+// mutation.addPosts = (root) => {
+//   return { success: true, error: 10000 }
+// }
+
+mutation.updatePosts = async (root, args, context, schema) => {
 
   if (!context.user) {
     throw CreateError({ message: '请求被拒绝' })

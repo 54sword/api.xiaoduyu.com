@@ -14,7 +14,6 @@ import Updates from '../updates'
 query.comments = async (root, args, context, schema) => {
 
   const { user, role } = context
-  const { method } = args
   let select = {}
   let { query, options } = Querys({ args, model: 'comment', role })
 
@@ -200,6 +199,22 @@ query.comments = async (root, args, context, schema) => {
   return commentList
 }
 
+query.commentsCount = async (root, args, context, schema) => {
+
+  const { role } = context
+  let { query } = Querys({ args, model: 'comment', role })
+
+  let [ err, count ] = await To(Comment.count({ query }))
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  return { count }
+}
 
 mutation.updateComment = async (root, args, context, schema) => {
 
@@ -208,8 +223,8 @@ mutation.updateComment = async (root, args, context, schema) => {
   }
 
   const { role } = context
-  
-  let { query, update } = Updates({ args, model: 'posts', role })
+
+  let { query, update } = Updates({ args, model: 'comment', role })
 
   let [ err, result ] = await To(Comment.update({ query, update }))
 

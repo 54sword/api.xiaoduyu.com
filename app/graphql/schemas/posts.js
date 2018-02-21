@@ -1,6 +1,8 @@
 
 import Query from '../querys'
+import Updates from '../updates'
 const { querySchema } = Query({ model: 'posts' })
+const { updateSchema } = Updates({ model: 'posts' })
 
 exports.Schema = `
 
@@ -79,14 +81,18 @@ type Posts {
   like: Boolean
 }
 
-type addPosts {
+
+
+# 更新帖子
+type updatePosts {
   success: Boolean
-  error: Int
 }
 
-type editPosts {
-  success: Boolean
+# 帖子计数
+type postsCount {
+  count: Int
 }
+
 
 `
 
@@ -95,33 +101,26 @@ exports.Query = `
 # 查询帖子
 posts(${querySchema}): [Posts]
 
+# 帖子计数
+postsCount(${querySchema}): postsCount
+
 `
 
 exports.Mutation = `
 
-addPosts(message: String): addPosts
-
-# 编辑Posts
-editPosts(
-  _id: ID!
-  # 删除 (管理员)
-  deleted: Boolean
-  # 削弱 (管理员)
-  weaken: Boolean
-  # 推荐 (管理员)
-  recommend: Boolean
-  # 话题
-  topic_id: String
-  # 类型
-  type: Int
-  # 标题
-  title: String
-  # 正文JSON
-  content: String
-  # 正文HTML
-  content_html: String
-  # 根据时间排序（越大越排前）(管理员)
-  sort_by_date: String
-): editPosts
+# 更新帖子
+updatePosts(${updateSchema}): updatePosts
 
 `
+
+/**
+
+# 添加帖子
+type addPosts {
+  success: Boolean
+  error: Int
+}
+
+addPosts(message: String): addPosts
+
+ */

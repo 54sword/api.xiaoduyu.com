@@ -1,6 +1,8 @@
 
 import Query from '../querys'
+import Updates from '../updates'
 const { querySchema } = Query({ model: 'comment' })
+const { updateSchema } = Updates({ model: 'comment' })
 
 exports.Schema = `
 
@@ -56,6 +58,11 @@ type updateComment {
   success: Boolean
 }
 
+# 评论计数
+type commentsCount {
+  count: Int
+}
+
 `
 
 exports.Query = `
@@ -63,31 +70,14 @@ exports.Query = `
 # 查询用户
 comments(${querySchema}): [Comment]
 
+# 评论计数
+commentsCount(${querySchema}): commentsCount
+
 `
 
 exports.Mutation = `
 
 # 更新评论
-updateComment(
-  _id: String!,
-  # 删除 (管理员)
-  deleted: Boolean
-  # 削弱 (管理员)
-  weaken: Boolean
-  # 推荐 (管理员)
-  recommend: Boolean
-  # 话题
-  topic_id: String
-  # 类型
-  type: Int
-  # 标题
-  title: String
-  # 正文JSON
-  content: String
-  # 正文HTML
-  content_html: String
-  # 根据时间排序（越大越排前）(管理员)
-  sort_by_date: String
-): updateComment
+updateComment(${updateSchema}): updateComment
 
 `

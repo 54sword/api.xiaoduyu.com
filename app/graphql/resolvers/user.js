@@ -95,14 +95,25 @@ query.users = async (root, args, context, schema) => {
   //===
 
   let [ err, userList ] = await To(User.find({ query, select, options }))
-  
+
   return userList
+}
+
+query.usersCount = async (root, args, context, schema) => {
+
+  const { user, role } = context
+  let { query } = Querys({ args, model: 'user', role })
+
+  //===
+
+  let [ err, count ] = await To(User.count({ query }))
+
+  return { count }
 }
 
 mutation.updateUser = async (root, args, context, schema) => {
 
   const { user, role } = context
-  const { method } = args
   let options = {}
   let { query, update } = Updates({ args, model: 'user', role })
 

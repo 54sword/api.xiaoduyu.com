@@ -1,6 +1,8 @@
 
 import Query from '../querys'
+import Updates from '../updates'
 const { querySchema } = Query({ model: 'notification' })
+const { updateSchema } = Updates({ model: 'notification' })
 
 exports.Schema = `
 
@@ -20,6 +22,11 @@ type updateNotifaction {
   success: Boolean
 }
 
+# 评论计数
+type notificationsCount {
+  count: Int
+}
+
 `
 
 exports.Query = `
@@ -27,15 +34,14 @@ exports.Query = `
 # 查询用户通知
 notifications(${querySchema}): [notification]
 
+# 评论计数
+notificationsCount(${querySchema}): notificationsCount
+
 `
 
 exports.Mutation = `
 
 # 更新用户的通知
-updateNotifaction(
-  _id: ID!
-  # 删除 (管理员)
-  deleted: Boolean
-): updateNotifaction
+updateNotifaction(${updateSchema}): updateNotifaction
 
 `

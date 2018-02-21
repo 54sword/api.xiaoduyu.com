@@ -18,7 +18,7 @@ const saveList = {
   }),
   background: data => ({
     name: 'background', value: data, role: 'admin',
-    type: 'String!', desc:'背景图片'
+    type: 'String', desc:'背景图片'
   }),
   sort: data => ({
     name: 'sort', value: data, role: 'admin',

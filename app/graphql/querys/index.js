@@ -23,7 +23,7 @@ export default ({ args = {}, model, role = '' }) => {
   for (let i in args) {
     if (queryList[i]) {
       let result = queryList[i](args[i])
-      if (role && result.role && role != result.role) continue
+      if (result.role && role != result.role) continue
       if (result.name) query[result.name] = result.value
     }
   }
@@ -31,7 +31,7 @@ export default ({ args = {}, model, role = '' }) => {
   for (let i in args) {
     if (optionList[i]) {
       let result = optionList[i](args[i])
-      if (role && result.role && role != result.role) continue
+      if (result.role && role != result.role) continue
       if (result.name) options[result.name] = result.value
     }
   }
@@ -42,7 +42,7 @@ export default ({ args = {}, model, role = '' }) => {
   else if (options.limit > 300) options.limit = 300
 
   options.skip = !options.skip ? 0 : options.skip * options.limit
-  
+
 
   // 生成 query schema
 
