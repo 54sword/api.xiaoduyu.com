@@ -21,7 +21,7 @@ const queryList = {
     type: 'Boolean', desc:'推荐'
   }),
   type: data => ({
-    name: 'parent_id', value: { '$exists': data == 'parent' },
+    name: 'parent_id', value: { '$exists': data == 'parent' ? false : true },
     type: 'String', desc:'参数 parent，只查询父类'
   })
 }

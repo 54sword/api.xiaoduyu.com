@@ -30,11 +30,11 @@ export default async function({ token = '', role = '', jwtTokenSecret = '' }) {
 
   let user = result.user_id;
 
-  // req.user = user;
-
   // 如果是管理员，并且是admin
   if (user.role == 100 && role == 'admin') {
     role = 'admin'
+  } else {
+    role = ''
   }
 
   // 最近登录时间，根据请求时间，每5分钟更新一次

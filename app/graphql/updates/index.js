@@ -16,12 +16,15 @@ export default ({ args = {}, model, role = '' }) => {
 
   let { queryList, updateList } = list[model]
 
-  let query = {}, update = {}, schema = ``;
+  let query = {}, update = {}, schema = ``, error;
 
   for (let i in args) {
     if (!queryList[i]) continue
     let result = queryList[i](args[i])
-    if (result.role && role != result.role) continue
+    if (result.role && role != result.role) {
+      error = '无权限修改'
+      continue
+    }
     if (result.name) query[result.name] = result.value
   }
 
@@ -29,7 +32,10 @@ export default ({ args = {}, model, role = '' }) => {
   for (let i in args) {
     if (!updateList[i]) continue
     let result = updateList[i](args[i])
-    if (result.role && role != result.role) continue
+    if (result.role && role != result.role) {
+      error = '无权限修改'
+      continue
+    }
     if (result.name) update[result.name] = result.value
   }
 
@@ -49,6 +55,6 @@ export default ({ args = {}, model, role = '' }) => {
     `
   }
 
-  return { query, update, updateSchema: schema }
+  return { error, query, update, updateSchema: schema }
 
 }

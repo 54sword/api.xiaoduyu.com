@@ -55,24 +55,16 @@ mutation.updateNotifaction = async (root, args, context, schema) => {
   const { method } = args
   let options = {}
   // let { query, options } = Querys(args, 'user')
-  let { query, update } = Updates({ args, model: 'notification', role })
+  let { error, query, update } = Updates({ args, model: 'notification', role })
 
-  // console.log('123123');
-
-  // select
-  // schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
-
-  //===
-
-
-  // if (!query._id) {
-  //   return res.send({ success: false, error: 90002, error_data: { argument: 'query._id' } })
-  // }
+  if (error) {
+    throw CreateError({
+      message: error,
+      data: {}
+    })
+  }
 
   let [ err, result ] = await To(Notification.update({ query, update, options }))
-
-  // console.log(err);
-  // console.log(result);
 
   if (err) {
     throw CreateError({

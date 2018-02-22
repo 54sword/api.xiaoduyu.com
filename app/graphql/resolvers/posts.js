@@ -195,8 +195,6 @@ query.posts = async (root, args, context, schema) => {
 
 query.postsCount = async (root, args, context, schema) => {
 
-  console.log('111');
-
   const { user, role } = context
   const { method } = args
 
@@ -293,7 +291,14 @@ mutation.updatePosts = async (root, args, context, schema) => {
 
   const { role } = context
 
-  let { query, update } = Updates({ args, model: 'posts', role })
+  let { error, query, update } = Updates({ args, model: 'posts', role })
+
+  if (error) {
+    throw CreateError({
+      message: error,
+      data: {}
+    })
+  }
 
   let [ err, result ] = await To(Posts.update({ query, update }))
 

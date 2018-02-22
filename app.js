@@ -35,7 +35,7 @@ app.use(helmet());
 // var csrfProtection = csrf({ cookie: true });
 // var parseForm = bodyParser.urlencoded({ extended: false });
 
-// app.set('jwtTokenSecret', config.jwt_secret);
+app.set('jwtTokenSecret', config.jwt_secret);
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
@@ -63,7 +63,7 @@ if (config.sslPath) {
 
 app.all('*',function (req, res, next) {
 
-	// req.jwtTokenSecret = app.get('jwtTokenSecret')
+	req.jwtTokenSecret = app.get('jwtTokenSecret');
 
   res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role');

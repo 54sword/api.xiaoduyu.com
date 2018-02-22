@@ -224,7 +224,14 @@ mutation.updateComment = async (root, args, context, schema) => {
 
   const { role } = context
 
-  let { query, update } = Updates({ args, model: 'comment', role })
+  let { error, query, update } = Updates({ args, model: 'comment', role })
+
+  if (error) {
+    throw CreateError({
+      message: error,
+      data: {}
+    })
+  }
 
   let [ err, result ] = await To(Comment.update({ query, update }))
 

@@ -115,7 +115,14 @@ mutation.updateUser = async (root, args, context, schema) => {
 
   const { user, role } = context
   let options = {}
-  let { query, update } = Updates({ args, model: 'user', role })
+  let { error, query, update } = Updates({ args, model: 'user', role })
+
+  if (error) {
+    throw CreateError({
+      message: error,
+      data: {}
+    })
+  }
 
   let [ err, result ] = await To(User.update({ query, update, options }))
 

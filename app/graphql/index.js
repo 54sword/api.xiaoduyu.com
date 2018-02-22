@@ -30,7 +30,7 @@ module.exports = (app, bodyParser) => {
     });
 
     if (!result.user) {
-      res.status(403);
+      // res.status(403);
       res.send({
         errors: [{
           "message": "invalid token"

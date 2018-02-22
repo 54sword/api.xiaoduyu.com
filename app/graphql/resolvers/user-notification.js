@@ -168,7 +168,7 @@ query.userNotificationsCount = async (root, args, context, schema) => {
   let { query } = Querys({ args, model:'user-notification', role })
 
   //===
-  
+
   // 请求用户的角色
   let admin = role == 'admin' ? true : false
 
@@ -186,7 +186,14 @@ mutation.updateUserNotifaction = async (root, args, context, schema) => {
   const { user, role } = context
   const { method } = args
   let options = {}
-  let { query, update } = Updates({ args, model: 'user-notification', role })
+  let { error, query, update } = Updates({ args, model: 'user-notification', role })
+
+  if (error) {
+    throw CreateError({
+      message: error,
+      data: {}
+    })
+  }
 
   //===
 
