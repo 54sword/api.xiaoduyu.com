@@ -11,8 +11,10 @@ var Tools = require('../../common/tools');
 var async = require('async');
 var xss = require('xss');
 
+import Promise from 'promise'
+
 exports.add = function(req, res, next) {
-  
+
   // 用户的信息
   var user        = req.user;
   var title       = req.body.title;
@@ -187,159 +189,112 @@ exports.add = function(req, res, next) {
 exports.update = function(req, res, next) {
 
   // 用户的信息
-  var user        = req.user || null;
-  var type        = req.body.type;
-  var topicId    = req.body.topic_id;
-  var id          = req.body.id;
-  var title       = req.body.title;
-  var content     = req.body.content;
-  var contentHTML = req.body.content_html;
-  var ip          = Tools.getIP(req);
+  var user        = req.user || null
+  var type        = req.body.type
+  var topicId     = req.body.topic_id
+  var id          = req.body.id
+  var title       = req.body.title
+  var content     = req.body.content
+  var contentHTML = req.body.content_html
+  var ip          = Tools.getIP(req)
 
   type = parseInt(type)
 
   async.waterfall([
 
     // 判断ip是否存在
-    function(callback) {
-      if (!id) {
-        callback(11000);
-      } else {
-        callback(null);
-      }
-    },
-
-    // 判断ip是否存在
-    function(callback) {
-      if (!ip) {
-        callback(10000);
-      } else {
-        callback(null);
-      }
-    },
-
-    function(callback) {
-      if (!type || type > 3) {
-        callback(11001)
-      } else {
-        callback(null);
-      }
-    },
-
-    function(callback) {
-      if (!type || type > 3) {
-        callback(11001)
-      } else {
-        callback(null);
-      }
-    },
-
-    function(callback) {
-
-      if (!topicId) {
-        // 回复没有节点
-        callback(15000);
-        return;
-      }
+    (callback) => !ip ? callback(10000) : callback(null),
+    // 帖子类型
+    (callback) => !type || type > 3 ? callback(11001) : callback(null),
+    (callback) => !id ? callback(11000) : callback(null),
+    // 话题是否存在
+    (callback) => {
+      // 回复没有话题
+      if (!topicId) return callback(15000)
 
       Topic.fetch({ _id: topicId }, {}, {}, function(err, data){
         if (err) console.log(err);
-
         if (!data || data.length == 0) {
           callback(15000)
-        } else if (user._id + '' != data[0].user_id + '') {
-          callback(10007)
         } else {
           callback(null);
         }
       })
-
     },
 
-    function(callback) {
+    // 标题
+    (callback) => {
       if (!title) {
-        callback(11002);
+        callback(11002)
       } else if (title.length > 120) {
-        callback(11003);
+        callback(11003)
       } else {
-        callback(null);
-      }
-    },
 
-    function(callback) {
-      if (contentHTML.length > 20000) {
-        callback(11004);
-      } else {
-        callback(null);
-      }
-    },
-
-    // 添加feed
-    function(callback) {
-
-      content = xss(content, {
-        whiteList: {},
-        stripIgnoreTag: true,
-        onTagAttr: function (tag, name, value, isWhiteAttr) {
-          return '';
-        }
-      });
-
-      // if (!content) {
-      //   callback('content is blank');
-      //   return;
-      // }
-
-      contentHTML = xss(contentHTML, {
-        whiteList: {
-          a: ['href', 'title', 'target', 'rel'],
-          img: ['src', 'alt'],
-          p: [],
-          div: [],
-          br: [],
-          blockquote: [],
-          li: [],
-          ol: [],
-          ul: [],
-          strong: [],
-          em: [],
-          u: [],
-          pre: [],
-          b: [],
-          h1: [],
-          h2: [],
-          h3: [],
-          h4: [],
-          h5: [],
-          h6: [],
-          h7: []
-        },
-        stripIgnoreTag: true,
-        onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
-          if (tag == 'div' && name.substr(0, 5) === 'data-') {
-            // 通过内置的escapeAttrValue函数来对属性值进行转义
-            return name + '="' + xss.escapeAttrValue(value) + '"';
+        title = xss(title, {
+          whiteList: {},
+          stripIgnoreTag: true,
+          onTagAttr: function (tag, name, value, isWhiteAttr) {
+            return ''
           }
-        }
-      });
+        })
 
-      // if (!contentHTML) {
-      //   callback('content is blank');
-      //   return;
-      // }
-
-      title = xss(title, {
-        whiteList: {},
-        stripIgnoreTag: true,
-        onTagAttr: function (tag, name, value, isWhiteAttr) {
-          return '';
-        }
-      });
-
-      if (!title) {
-        callback(11002);
-        return;
+        if (!title) return callback(11002)
+        callback(null)
       }
+    },
+
+    // 内容长度
+    (callback) => {
+      if (contentHTML.length > 20000) {
+        callback(11004)
+      } else {
+
+        content = xss(content, {
+          whiteList: {},
+          stripIgnoreTag: true,
+          onTagAttr: function (tag, name, value, isWhiteAttr) {
+            return '';
+          }
+        })
+
+        contentHTML = xss(contentHTML, {
+          whiteList: {
+            a: ['href', 'title', 'target', 'rel'],
+            img: ['src', 'alt'],
+            p: [],
+            div: [],
+            br: [],
+            blockquote: [],
+            li: [],
+            ol: [],
+            ul: [],
+            strong: [],
+            em: [],
+            u: [],
+            pre: [],
+            b: [],
+            h1: [],
+            h2: [],
+            h3: [],
+            h4: [],
+            h5: [],
+            h6: [],
+            h7: []
+          },
+          stripIgnoreTag: true,
+          onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
+            if (tag == 'div' && name.substr(0, 5) === 'data-') {
+              // 通过内置的escapeAttrValue函数来对属性值进行转义
+              return name + '="' + xss.escapeAttrValue(value) + '"';
+            }
+          }
+        })
+
+        callback(null)
+      }
+    },
+
+    (callback) => {
 
       Posts.update(
       { _id: id },
@@ -358,9 +313,9 @@ exports.update = function(req, res, next) {
         } else {
           callback(null)
         }
-      });
+      })
 
-    },
+    }
 
   ], function(err, result){
 
@@ -472,7 +427,6 @@ exports.fetch = function(req, res, next) {
 
       // console.log(req.query.include_comments);
 
-
   /**
    * 增加屏蔽条件
    *
@@ -506,8 +460,6 @@ exports.fetch = function(req, res, next) {
   if (or) {
     query['$or'] = []
   }
-
-  // console.log(user);
 
   // 根据用户的关注偏好获取帖子
   if (user && method == 'user_custom') {
@@ -652,7 +604,12 @@ exports.fetch = function(req, res, next) {
     },
     {
       path: 'comment',
-      match: { 'deleted': false, weaken: false },
+      match: {
+        $or: [
+          { deleted: false, weaken: false, like_count: { $gte: 2 } },
+          { deleted: false, weaken: false, reply_count: { $gte: 1 } }
+        ]
+      },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1, 'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
@@ -663,6 +620,22 @@ exports.fetch = function(req, res, next) {
       select: { '_id': 1, 'name': 1 }
     }
   ]
+
+  /* 如果是管理员则显示一些额外的属性 */
+
+  // if (user.role == 100) {
+  //   if (typeof query.deleted != 'undefined') {
+  //     delete query.deleted
+  //   }
+  //   delete select.deleted
+  //   delete select.weaken
+  //   delete select.recommend
+  // }
+
+  /* 管理员 end */
+
+  // console.log(query);
+
 
   // ------- options end -------
 
@@ -853,32 +826,94 @@ exports.view = function(req, res, next) {
   })
 }
 
-/*
-exports.delete = function(req, res){
-  var user = req.user
-  var answerId = req.body.answer_id
+exports.findPosts = async (req, res) => {
+  const user = req.user
+  let queryJSON = req.body.query_json || '{}'
+  let selectJSON = req.body.select_json || '{}'
+  let optionJSON = req.body.option_json || '{}'
 
-  Answer.fetchById(answerId, function(err, answer){
-    if (err) console.log(err)
-    if (answer) {
-      Notification.fetch({ sender_id: answer.user_id._id, answer_id: answer._id }, {}, {}, function(err, notice){
-        if (err) console.log(err)
-        if (notice) {
-          Notification.updateDeleteById(notice._id, function(err){
-            if (err) console.log(err)
+  try {
+    queryJSON = JSON.parse(queryJSON)
+  } catch(err) {
+    res.send({ error: 11000, success: false })
+    return
+  }
 
-            res.send({
-              success: true,
-              data: questions
-            })
+  try {
+    selectJSON = JSON.parse(selectJSON)
+  } catch(err) {
+    res.send({ error: 11000, success: false })
+    return
+  }
 
-          })
-        }
-      })
+  try {
+    optionJSON = JSON.parse(optionJSON)
+  } catch(err) {
+    res.send({ error: 11000, success: false })
+    return
+  }
+
+}
+
+
+exports.adminUpdatePosts = async (req, res) => {
+  const user = req.user
+  const id = req.body.id || ''
+  let dataJson = req.body.data_json || {}
+
+  try {
+    dataJson = JSON.parse(dataJson)
+  } catch(err) {
+    res.send({ error: 11000, success: false })
+    return
+  }
+
+  // [白名单]允许修改的字段
+  const whiteList = {
+    deleted: data => new Promise((resolve) => {
+      if (typeof data != 'boolean') {
+        resolve({ err: 90000 })
+      } else {
+        resolve({ err: false, data })
+      }
+    }),
+    weaken: data => new Promise((resolve) => {
+      if (typeof data != 'boolean') {
+        resolve({ err: 90000 })
+      } else {
+        resolve({ err: false, data })
+      }
+    }),
+    topic_id: data => new Promise((resolve) => resolve({ err: false, data })),
+    type: data => new Promise((resolve) => resolve({ err: false, data })),
+    title: data => new Promise((resolve) => resolve({ err: false, data })),
+    content: data => new Promise((resolve) => resolve({ err: false, data })),
+    content_html: data => new Promise((resolve) => resolve({ err: false, data })),
+    verify: data => new Promise((resolve) => resolve({ err: false, data })),
+    recommend: data => new Promise((resolve) => resolve({ err: false, data })),
+    sort_by_date: data => new Promise((resolve) => resolve({ err: false, data }))
+  }
+
+  let updateData = {}
+
+  for (let i in dataJson) {
+    if (whiteList[i]) {
+      let result = await whiteList[i](dataJson[i])
+      if (result && result.err) {
+        res.send({ success: false, error: result.err })
+        return
+      } else {
+        updateData[i] = result.data
+      }
     }
+  }
+
+  Posts.update({ _id: id }, updateData, err=>{
+    if (err) console.log(res);
+    res.send({ success: true })
   })
 }
-*/
+
 
 function Countdown(nowDate, endDate) {
 

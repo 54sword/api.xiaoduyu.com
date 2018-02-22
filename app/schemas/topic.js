@@ -7,7 +7,7 @@ var TopicSchema = new Schema({
   // 创建人
   user_id: { type: ObjectId, ref: 'User' },
   // 父级
-  parent_id: { type: ObjectId, ref: 'Topics' },
+  parent_id: { type: ObjectId, ref: 'Topic' },
   // 名称
   name: { type: String, default: '', unique: true },
   // 简要

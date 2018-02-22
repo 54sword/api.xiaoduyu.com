@@ -12,11 +12,17 @@ var compress = require('compression');
 var config = require('./config');
 
 var API_V1 = require('./app/api-v1');
-// var OauthRouter = require('./app/oauth');
+var graphql = require('./app/graphql');
+
+
 import OauthRouter from './app/oauth'
+import outputError from './config/error'
+
 
 var app = express();
 var server = http.createServer(app);
+
+// var graphqlHTTP = require('express-graphql');
 
 require('./app/common/log4js')(app);
 
@@ -57,10 +63,11 @@ if (config.sslPath) {
 
 app.all('*',function (req, res, next) {
 
-	req.jwtTokenSecret = app.get('jwtTokenSecret')
+	req.jwtTokenSecret = app.get('jwtTokenSecret');
 
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
+	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role');
+	// res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 
   if (req.method == 'OPTIONS') {
@@ -97,16 +104,6 @@ if (config.oauth.wechatToken) {
 
 }
 
-// function* f(){
-//   console.log('执行了');
-// }
-//
-// var generator = f();
-//
-// setTimeout(function(){
-// 	generator.next()
-// }, 2000)
-
 var onlineUserCount = 0
 
 var io = require("socket.io").listen(server)
@@ -122,7 +119,7 @@ io.on('connection', function(socket){
 		onlineUserCount -= 1
 		io.sockets.emit("online-user-count", onlineUserCount);
 	});
-	
+
 	// socket.on('heartbeat', function(){
 		// console.log('心跳...');
 		// onlineUserCount -= 1
@@ -132,12 +129,37 @@ io.on('connection', function(socket){
 });
 global.io = io
 
+graphql(app, bodyParser)
 
 app.use('/oauth', OauthRouter());
 app.use('/api/v1', API_V1());
-app.use('/', function(req, res){
-	res.send('运行中');
+
+/*
+app.use(function (req, res, next) {
+  // 计算页面加载完成花费的时间
+  // var exec_start_at = Date.now();
+  var _send = res.send;
+  res.send = function () {
+
+		// 如果返回结果中，包含错误代码，则装换成普通语言提示
+		// if (arguments[0] && typeof arguments[0].success != 'undefined' && !arguments[0].success && arguments[0].error) {
+		// 	// arguments[0].error = '错误提醒测试'
+		// 	console.log(arguments[0]);
+		// 	arguments[0] = outputError(arguments[0])
+		// }
+
+    // 发送Header
+    // res.set('X-Execution-Time', String(Date.now() - exec_start_at) + ' ms');
+    // 调用原始处理函数
+    return _send.apply(res, arguments);
+  };
+  next();
 });
+*/
+
+// app.use('/', function(req, res){
+// 	res.send('运行中');
+// });
 
 app.use(function(req, res, next) {
 	res.status(404);

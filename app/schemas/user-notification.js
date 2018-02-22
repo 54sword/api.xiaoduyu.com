@@ -12,6 +12,7 @@ var ObjectId = Schema.Types.ObjectId;
  * like-comment: xx 赞了你的评论
  * like-reply: xx 赞了你的回复
  * new-comment: xx 评论了 xx 帖子
+ * like-posts: xx 赞了你的 xx 帖子
  */
 
 var UserNotificationSchema = new Schema({

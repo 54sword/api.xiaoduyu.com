@@ -35,7 +35,7 @@ exports.find = function(query, select, options, callback) {
   for (var i in options) {
     find[i](options[i])
   }
-  find.exec(callback)
+  return find.exec(callback)
 }
 
 

@@ -13,21 +13,32 @@ exports.fetch = function(req, res, next) {
       ltCreateAt = req.body.lt_create_at,
       gtCreateAt = req.body.gt_create_at,
       perPage = req.body.per_page || 20,
+      // 管理员查询
+      admin = req.body.admin || req.query.admin || 0,
       query = {},
       select = { __v: 0, addressee_id: 0, deleted: 0 },
       options = {}
 
   async.waterfall([
 
-    function(callback) {
-
-      query.addressee_id = user._id
-      query.deleted = false
-
-      // 增加屏蔽条件
-      if (user) {
+    (callback) => {
+      if (admin) {
+        select = { __v: 0 }
+      } else {
+        query.addressee_id = user._id
+        query.deleted = false
+        // 增加屏蔽条件
         if (user.block_people_count > 0) query.sender_id = { '$nin': user.block_people }
       }
+      callback(null)
+    },
+
+    function(callback) {
+
+      // 增加屏蔽条件
+      // if (user && !admin) {
+      //   if (user.block_people_count > 0) query.sender_id = { '$nin': user.block_people }
+      // }
 
       if (ltCreateAt) query.create_at = { '$lt': ltCreateAt }
       if (gtCreateAt) query.create_at = { '$gt': gtCreateAt }
@@ -37,6 +48,7 @@ exports.fetch = function(req, res, next) {
       options.sort = { create_at: -1 }
 
       options.populate = [
+        { path: 'addressee_id', select: { _id: 1, nickname: 1, avatar: 1, create_at: 1  } },
         { path: 'sender_id', select: { _id: 1, nickname: 1, avatar: 1, create_at: 1  } },
         { path: 'posts_id', match: { 'deleted': false }, select: { _id: 1, title: 1, content_html: 1, type: 1 } },
         { path: 'comment_id', match: { 'deleted': false }, select: { _id: 1, content_html: 1,  posts_id: 1, reply_id: 1, parent_id: 1 }  }
@@ -99,7 +111,9 @@ exports.fetch = function(req, res, next) {
         })
       }
 
-      if (notices && notices.length) {
+      // console.log(notices);
+
+      if (notices && notices.length && !admin) {
         // 未读的通知设置成已读
         for (var i = 0, max = notices.length; i < max; i++) {
           if (notices[i].has_read == false) {
@@ -183,8 +197,6 @@ exports.fetch = function(req, res, next) {
         _notices[key].comment_id.answer_id.content_html = text
       }
     })
-
-
 
     res.send({ success: true, data: _notices })
 

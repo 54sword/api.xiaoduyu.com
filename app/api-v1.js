@@ -92,6 +92,7 @@ var APIRequire = function() {
   var router = express.Router();
 
   router.post('/user', auth.userRequired, user.fetch);
+  router.get('/people', auth.openType, user.fetchList);
 
   router.get('/people/:id', auth.openType, user.fetchById);
 
@@ -121,11 +122,12 @@ var APIRequire = function() {
   router.post('/reset-phone', auth.userRequired, Phone.reset);
   router.post('/binding-phone', auth.userRequired, Phone.binding);
 
+  // 帖子
   router.post('/add-posts', auth.userRequired, Posts.add);
   router.post('/update-posts', auth.userRequired, Posts.update);
   router.get('/posts', auth.openType, Posts.fetch);
   router.get('/view-posts', Posts.view);
-
+  router.post('/posts/update', auth.adminRequired, Posts.adminUpdatePosts)
 
   router.post('/write-comment', auth.userRequired, commment.add);
   router.post('/update-comment', auth.userRequired, commment.update);

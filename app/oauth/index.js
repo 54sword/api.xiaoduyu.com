@@ -1,10 +1,12 @@
 
 import express from 'express'
-import qq from './qq'
+
 import weibo from './weibo'
+import qq from './qq'
 import github from './github'
 import wechat from './wechat'
 import wechatPC from './wechat-pc'
+
 import { oauth } from '../../config'
 
 const OauthRouter = (csrfProtection) => {
@@ -15,7 +17,7 @@ const OauthRouter = (csrfProtection) => {
     router.get('/weibo', weibo.show);
     router.get('/weibo-signin', weibo.signin);
   }
-
+  
   if (oauth.qq) {
     router.get('/qq', qq.show);
     router.get('/qq-signin', qq.signin);
@@ -35,9 +37,6 @@ const OauthRouter = (csrfProtection) => {
     router.get('/wechat-pc', wechatPC.show);
     router.get('/wechat-pc-signin', wechatPC.signin);
   }
-
-
-
 
   return router;
 }

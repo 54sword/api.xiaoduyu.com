@@ -41,7 +41,9 @@ var CommentSchema = new Schema({
   // 是否是审核
   verify: { type: Boolean, default: true },
   // 削弱
-  weaken: { type: Boolean, default: false }
+  weaken: { type: Boolean, default: false },
+  // 推荐
+  recommend: { type: Boolean, default: false }
 });
 
 // CommentSchema.index({ feed_id: 1, last_reply_at: -1 });
