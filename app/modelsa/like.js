@@ -1,7 +1,7 @@
 import { Like } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(Like)
+export default new baseMethod(Like)
 
 /*
 var Like = require('../schemas').Like;

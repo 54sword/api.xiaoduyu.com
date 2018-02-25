@@ -59,7 +59,7 @@ type updateComment {
 }
 
 # 评论计数
-type commentsCount {
+type countComments {
   count: Int
 }
 
@@ -71,7 +71,7 @@ exports.Query = `
 comments(${querySchema}): [Comment]
 
 # 评论计数
-commentsCount(${querySchema}): commentsCount
+countComments(${querySchema}): countComments
 
 `
 

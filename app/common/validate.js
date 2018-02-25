@@ -9,7 +9,7 @@
 
   var validate = {
 
-    /**
+    /*
      * 昵称格式检测
      * @param  {string} string 昵称
      * @return {string}        结果信息
@@ -42,7 +42,7 @@
     	return result;
     },
 
-    /**
+    /*
      * 邮箱地址格式检测
      * @param  {string} string 邮箱地址
      * @return {string}        结果信息
@@ -66,7 +66,7 @@
     	return result;
     },
 
-    /**
+    /*
      * 密码格式检测
      * @param  {string} string 密码
      * @return {string}        结果信息
@@ -89,7 +89,7 @@
     	return result;
     },
 
-    /**
+    /*
      * 日期检测
      * @param  {string} date 日期格式2014-11-29
      * @return {string}      结果信息
@@ -114,7 +114,7 @@
       return result;
     },
 
-    /**
+    /*
      * 日期格式检测
      * @param  {number} year 年
      * @param  {number} month 月
@@ -136,7 +136,7 @@
       return result;
     },
 
-    /**
+    /*
      * 身高范围检测
      * @param  {number} height 身高
      * @return {string}        结果信息
@@ -153,7 +153,7 @@
     },
     */
 
-    /**
+    /*
      * 体重范围检测
      * @param  {number} weight 体重
      * @return {string}        结果信息
@@ -170,7 +170,7 @@
     },
     */
 
-    /**
+    /*
      * 血型
      * @param  {string} blood 体重
      * @return {string}        结果信息
@@ -184,7 +184,7 @@
       return result;
     },
 
-    /**
+    /*
      * 性别
      * @param  {string or number} gender 性别, 1男／0女
      * @return {string}        结果信息

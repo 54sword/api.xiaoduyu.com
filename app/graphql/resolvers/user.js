@@ -1,8 +1,4 @@
-
-import User from '../../modelsa/user';
-import Account from '../../modelsa/account';
-import Oauth from '../../modelsa/oauth';
-import Phone from '../../modelsa/phone';
+import { User, Account, Oauth, Phone } from '../../modelsa'
 
 let query = {}
 let mutation = {}
@@ -99,7 +95,7 @@ query.users = async (root, args, context, schema) => {
   return userList
 }
 
-query.usersCount = async (root, args, context, schema) => {
+query.countUsers = async (root, args, context, schema) => {
 
   const { user, role } = context
   let { query } = Querys({ args, model: 'user', role })

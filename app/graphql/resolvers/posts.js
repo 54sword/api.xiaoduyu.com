@@ -1,25 +1,23 @@
-import Posts from '../../modelsa/posts'
-import User from '../../modelsa/user'
-import Follow from '../../modelsa/follow'
-import Like from '../../modelsa/like'
+import { Posts, User, Follow, Like } from '../../modelsa'
 
 import CreateError from './errors'
 import To from '../../common/to'
 
-import Querys from '../querys'
-import Updates from '../updates'
+import { getQuery, getOption, getUpdateQuery, getUpdateContent } from '../config'
 
-let query = {}
-let mutation = {}
-let resolvers = {}
+let [ query, mutation, resolvers ] = [{},{},{}];
 
+
+// 查询
 query.posts = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
 
-  let select = {}, err, postList, followList, likeList, ids
-  let { query, options } = Querys({ args, model:'posts', role })
+  let select = {}, err, postList, followList, likeList, ids, query, options;
+  // let { query, options } = Querys({ args, model:'posts', role })
+  [ err, query ] = getQuery({ args, model:'posts', role });
+  [ err, options ] = getOption({ args, model:'posts', role });
 
   // 未登陆用户，不能使用method方式查询
   if (!user && method) {
@@ -31,12 +29,9 @@ query.posts = async (root, args, context, schema) => {
 
   if (!options.populate) options.populate = []
 
-  /**
-   * 增加屏蔽条件
-   *
-   * 如果是登陆状态，那么增加屏蔽条件
-   * 如果通过posts查询，那么不增加屏蔽条件
-   */
+  // 增加屏蔽条件
+  // 1、如果是登陆状态，那么增加屏蔽条件
+  // 2、如果通过posts id查询，那么不增加屏蔽条件
   if (user && !query._id) {
     if (user.block_posts_count > 0) query._id = { '$nin': user.block_posts }
     if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
@@ -193,13 +188,26 @@ query.posts = async (root, args, context, schema) => {
   return postList
 }
 
-query.postsCount = async (root, args, context, schema) => {
+
+// 获取累计数
+query.countPosts = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
 
-  let select = {}, err, count;
-  let { query, options } = Querys({ args, model:'posts', role })
+  // let select = {}, err, count, query;
+
+  let [select, err, count, query] = [{}, null, null, null];
+
+  // let { query } = Querys({ args, model:'posts', role });
+
+  // console.log(args);
+
+  [ err, query ] = getQuery({ args, model:'posts', role });
+
+  if (err) {
+    throw CreateError({ message: err })
+  }
 
   // 未登陆用户，不能使用method方式查询
   if (!user && method) {
@@ -283,30 +291,28 @@ query.postsCount = async (root, args, context, schema) => {
 //   return { success: true, error: 10000 }
 // }
 
+
+// 更新
 mutation.updatePosts = async (root, args, context, schema) => {
 
-  if (!context.user) {
-    throw CreateError({ message: '请求被拒绝' })
-  }
+  const { user, role } = context;
 
-  const { role } = context
+  if (!user) throw CreateError({ message: '请求被拒绝' });
 
-  let { error, query, update } = Updates({ args, model: 'posts', role })
+  let [err, query, content, result] = [];
 
-  if (error) {
-    throw CreateError({
-      message: error,
-      data: {}
-    })
-  }
+  [ err, query ] = getUpdateQuery({ args, model:'posts', role });
+  if (err) throw CreateError({ message: err });
 
-  let [ err, result ] = await To(Posts.update({ query, update }))
+  [ err, content ] = getUpdateContent({ args, model:'posts', role });
+  if (err) throw CreateError({ message: err });
 
+  [ err, result ] = await To(Posts.update({ query, update: content }));
   if (err) {
     throw CreateError({
       message: '更新失败',
       data: { errorInfo: err.message }
-    })
+    });
   }
 
   return { success: true }

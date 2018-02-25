@@ -1,8 +1,13 @@
 
 import Query from '../querys'
+
+// console.log(getQuerySchema('posts'));
+
 import Updates from '../updates'
 const { querySchema } = Query({ model: 'posts' })
 const { updateSchema } = Updates({ model: 'posts' })
+
+import { getQuerySchema, getUpdateSchema } from '../config'
 
 exports.Schema = `
 
@@ -89,7 +94,7 @@ type updatePosts {
 }
 
 # 帖子计数
-type postsCount {
+type countPosts {
   count: Int
 }
 
@@ -99,17 +104,17 @@ type postsCount {
 exports.Query = `
 
 # 查询帖子
-posts(${querySchema}): [Posts]
+posts(${getQuerySchema('posts')}): [Posts]
 
 # 帖子计数
-postsCount(${querySchema}): postsCount
+countPosts(${getQuerySchema('posts')}): countPosts
 
 `
 
 exports.Mutation = `
 
 # 更新帖子
-updatePosts(${updateSchema}): updatePosts
+updatePosts(${getUpdateSchema('posts')}): updatePosts
 
 `
 

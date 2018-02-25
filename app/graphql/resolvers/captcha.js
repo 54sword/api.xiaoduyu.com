@@ -1,5 +1,6 @@
 
-import Captcha from '../../modelsa/captcha'
+import { Captcha } from '../../modelsa'
+
 import { domain } from '../../../config'
 
 let query = {}
@@ -12,7 +13,7 @@ import Querys from '../querys'
 import Updates from '../updates'
 
 query.captcha = async (root, args, context, schema) => {
-  
+
   const { ip } = context;
 
   let err, result;

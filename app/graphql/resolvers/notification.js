@@ -1,6 +1,5 @@
+import { Notification } from '../../modelsa'
 
-// import User from '../../modelsa/user'
-import Notification from '../../modelsa/notification'
 
 let query = {}
 let mutation = {}
@@ -37,7 +36,7 @@ query.notifications = async (root, args, context, schema) => {
   return list
 }
 
-query.notificationsCount = async (root, args, context, schema) => {
+query.countNotifications = async (root, args, context, schema) => {
 
   const { user, role } = context
   let { query } = Querys({ args, model: 'notification', role })

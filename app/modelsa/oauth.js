@@ -2,20 +2,34 @@
 import { Oauth } from '../schemas'
 import baseMethod from './base-method'
 
-let Schemas = baseMethod(Oauth)
-
-var sources = {
+const sources = {
   'qq': 0,
   'weibo': 1,
   'github': 2,
   'wechat': 3
 };
 
-Schemas.fetchByUserIdAndSource = (userId, _source) => {
-  return Oauth.findOne({ user_id: userId, source: sources[_source] })
-};
+/**
+ * Oauth 查询类
+ * @extends Model
+ */
 
-module.exports = Schemas;
+class OauthModel extends baseMethod {
+
+  /**
+   * 通过用户id和来源条件查询用户
+   * @param  {String} userId  用户的id
+   * @param  {Int} _source 来源id
+   * @return {Object} Promise
+   */
+  fetchByUserIdAndSource(userId, _source) {
+    return this.findOne({ user_id: userId, source: sources[_source] })
+  }
+
+}
+
+
+module.exports = new OauthModel(Oauth);
 
 
 /*

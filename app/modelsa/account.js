@@ -1,21 +1,34 @@
 
 import bcrypt from 'bcryptjs'
-
 import { Account } from '../schemas'
 import baseMethod from './base-method'
 
-let Schemas = baseMethod(Account)
 
-// 验证码密码是否正确
-Schemas.verifyPassword = ({ password, currentPassword }) => {
-  return new Promise((resolve, reject) => {
-    bcrypt.compare(password, currentPassword, (err, res)=>{
-      err ? reject(err) : resolve(res)
-    });
-  });
-};
+/**
+ * Account 查询类
+ * @extends Model
+ */
 
-module.exports = Schemas;
+class AccountModel extends baseMethod {
+
+  /**
+   * 通过用户id和来源条件查询用户
+   * @param  {String} userId  用户的id
+   * @param  {Int} _source 来源id
+   * @return {Object} Promise
+   */
+   verifyPassword ({ password, currentPassword }) {
+     return new Promise((resolve, reject) => {
+       bcrypt.compare(password, currentPassword, (err, res)=>{
+         err ? reject(err) : resolve(res)
+       });
+     });
+   }
+
+}
+
+
+module.exports = new AccountModel(Account);
 
 
 /*

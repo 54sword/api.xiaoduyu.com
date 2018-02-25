@@ -1,11 +1,13 @@
 
-import Captcha from '../../modelsa/captcha'
+import { Captcha } from '../../modelsa'
+// import Captcha from '../../modelsa/captcha'
 import To from '../../common/to'
 // var captchapng = require('captchapng');
 import captchapng from 'captchapng'
 
 // const fs = require('fs')
 // const captcha = require('trek-captcha')
+
 
 import CreateError from '../resolvers/errors'
 
@@ -16,7 +18,7 @@ exports.showImage = async (req, res, next) => {
   let [ err, result ] = await To(Captcha.findOne({
     query: { _id: id }
   }))
-  
+
   if (err || !result) {
 
     throw CreateError({

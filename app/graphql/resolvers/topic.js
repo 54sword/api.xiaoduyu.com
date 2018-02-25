@@ -1,5 +1,4 @@
-
-import Topic from '../../modelsa/topic'
+import { Topic } from '../../modelsa'
 
 let query = {}
 let mutation = {}
@@ -49,7 +48,7 @@ query.topics = async (root, args, context, schema) => {
 }
 
 
-query.topicsCount = async (root, args, context, schema) => {
+query.countTopics = async (root, args, context, schema) => {
 
   const { user, role } = context
   let select = {}

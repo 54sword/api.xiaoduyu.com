@@ -3,7 +3,7 @@
 import { Topic } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(Topic)
+export default new baseMethod(Topic)
 
 /*
 var Topic = require('../schemas').Topic;

@@ -6,17 +6,17 @@ import comment from './comment'
 import userNotification from './user-notification'
 import notification from './notification'
 import account from './account'
-import analysis from './analysis'
+// import analysis from './analysis'
 
 let list = {
   posts, topic, user, comment,
   'user-notification': userNotification,
-  notification, account, analysis
+  notification, account
 }
 
 export default ({ args = {}, model, role = '' }) => {
 
-  let { queryList, optionList } = list[model]
+  let { queryList, optionList } = list[model];
 
   let query = {}, options = {}, querySchema = ``;
 
@@ -24,7 +24,18 @@ export default ({ args = {}, model, role = '' }) => {
     if (queryList[i]) {
       let result = queryList[i](args[i])
       if (result.role && role != result.role) continue
-      if (result.name) query[result.name] = result.value
+      if (result.name) {
+        if (typeof result.value == 'object') {
+
+          if (!query[result.name]) query[result.name] = {};
+
+          for (let n in result.value) {
+            query[result.name][n] = result.value[n]
+          }
+        } else {
+          query[result.name] = result.value
+        }
+      }
     }
   }
 
@@ -42,7 +53,6 @@ export default ({ args = {}, model, role = '' }) => {
   else if (options.limit > 300) options.limit = 300
 
   options.skip = !options.skip ? 0 : options.skip * options.limit
-
 
   // 生成 query schema
 

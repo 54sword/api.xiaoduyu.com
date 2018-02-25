@@ -2,6 +2,6 @@
 import { Report } from '../schemas'
 import baseMethod from './base-method'
 
-const Schemas = baseMethod(Report)
+const Schemas = new baseMethod(Report)
 
 module.exports = Schemas

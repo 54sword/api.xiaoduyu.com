@@ -1,45 +1,53 @@
-
-
-const Account = require('../../modelsa').Account;
-const User = require('../../modelsa').User;
-const Captcha = require('../../modelsa').Captcha;
-const Phone = require('../../modelsa').Phone;
+import { Account, User, Captcha, Phone } from '../../modelsa'
 
 import bcrypt from 'bcryptjs';
 
-let query = {}
-let mutation = {}
-let resolvers = {}
+let query = {};
+let mutation = {};
+let resolvers = {};
 
-import JWT from '../../common/jwt'
-import To from '../../common/to'
-import CreateError from './errors'
-import Querys from '../querys'
-import Updates from '../updates'
+import JWT from '../../common/jwt';
+import To from '../../common/to';
+import CreateError from './errors';
+// import Querys from '../querys';
+// import Updates from '../updates';
+
+import { getQuery, getOption } from '../config'
 
 query.signIn = async (root, args, context, schema) => {
 
   const { user, role, ip, jwtTokenSecret } = context
   const { method } = args
 
-  let select = {};
-  let { query, options } = Querys({ args, model: 'account', role })
+  let select = {}, query = {}, options = {}, err, result, account;
+
+  // let { query, options } = Querys({ args, model: 'account', role })
+
+  [ err, query ] = getQuery({ args, model: 'account', role });
+
+  if (!err) {
+    createCaptcha()
+    throw CreateError({ message: err });
+  }
+
+  [ err, options ] = getOption({ args, model: 'account', role });
+
+  if (!err) {
+    createCaptcha()
+    throw CreateError({ message: err });
+  }
 
   // -----
 
   let { email, phone, password, captcha, captcha_id } = query;
 
-  let err, result, account;
-
+  // let err, result, account;
 
   const createCaptcha = async () => {
     var captcha = Math.round(900000*Math.random()+100000);
     await To(Captcha.save({ data: { captcha, ip } }))
   }
 
-  // console.log(query);
-
-  // if (!user) throw CreateError({ message: '请求被拒绝' });
   if (!ip) {
     createCaptcha()
     throw CreateError({ message: '获取不到您的IP' });
@@ -118,8 +126,6 @@ query.signIn = async (root, args, context, schema) => {
     password,
     currentPassword: account.user_id.password
   }))
-
-  // console.log(result);
 
   if (err || !result) {
     createCaptcha()

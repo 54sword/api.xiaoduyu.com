@@ -3,7 +3,7 @@
 import { Posts } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(Posts)
+export default new baseMethod(Posts)
 
 /*
 exports.add = function(info, callback) {

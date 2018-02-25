@@ -1,6 +1,4 @@
-
-import Comment from '../../modelsa/comment'
-import Like from '../../modelsa/like'
+import { Comment, Like } from '../../modelsa'
 
 let query = {}
 let mutation = {}
@@ -124,12 +122,6 @@ query.comments = async (root, args, context, schema) => {
     });
   }
 
-  // } catch (err) {
-  //   console.log(err);
-  //   res.send({ success: false })
-  //   return
-  // }
-
   // 如果未登录，那么直接返回结果
   if (!user || !select.like || Reflect.has(select, 'like') && !select.like) {
     return commentList
@@ -199,12 +191,13 @@ query.comments = async (root, args, context, schema) => {
   return commentList
 }
 
-query.commentsCount = async (root, args, context, schema) => {
+query.countComments = async (root, args, context, schema) => {
 
   const { role } = context
-  let { query } = Querys({ args, model: 'comment', role })
+  let { query } = Querys({ args, model: 'comment', role });
+  let result;
 
-  let [ err, count ] = await To(Comment.count({ query }))
+  let [ err, count ] = await To(Comment.count({ query }));
 
   if (err) {
     throw CreateError({

@@ -443,7 +443,7 @@ exports.signup = function(req, res, next) {
 };
 
 
-/**
+/*
  * 发送验证邮件
  * @param  {string}   domain              网站地址
  * @param  {string}   email               邮箱地址

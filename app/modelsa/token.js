@@ -3,7 +3,7 @@
 import { Token } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(Token)
+export default new baseMethod(Token)
 
 /*
 var Token = require('../schemas').Token;

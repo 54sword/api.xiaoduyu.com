@@ -2,6 +2,7 @@
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { formatError } from 'apollo-errors';
 import { makeExecutableSchema } from 'graphql-tools';
+import bodyParser from 'body-parser';
 
 import { debug, jwt_secret } from '../../config'
 
@@ -13,13 +14,16 @@ import checkToken from './auto';
 
 let schema = makeExecutableSchema({ typeDefs, resolvers });
 
-module.exports = (app, bodyParser) => {
+
+/**
+ * 启动 graphql
+ * @param  {Object} app - express 的 app
+ */
+module.exports = (app) => {
 
   app.use('/graphql', bodyParser.json(), async (req, res, next) => {
 
-    /**
-     * 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
-     */
+    // 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
     let token = req.headers.accesstoken || '';
     let role = req.headers.role || '';
 
@@ -46,35 +50,23 @@ module.exports = (app, bodyParser) => {
 
     return {
 			// tracing: true,
-			debug: false,
+			debug,
       schema,
-			rootValue: {
-				// test:'test'
-			},
+			rootValue: {},
       context: {
         user: req.user || null,
         role: req.role || '',
         ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
         jwtTokenSecret: jwt_secret
       },
-			formatParams: params =>{
-				return params
-			},
+			// formatParams: params =>{
+			// 	return params
+			// },
 			// formatResponse: e => e,
 			formatError
-			/*
-			formatError: error => {
-				// console.log('1111111');
-				// console.log(err);
-			  // return err;
-				return {
-			    name: error.name,
-			    mensaje: error.message
-			  }
-			}
-			*/
     };
-  }))
+
+  }));
 
   // IDE
   if (debug) app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));

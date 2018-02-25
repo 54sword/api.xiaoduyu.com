@@ -2,7 +2,7 @@
 import { UserNotification } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(UserNotification)
+export default new baseMethod(UserNotification)
 
 /*
 var UserNotification = require('../schemas').UserNotification;

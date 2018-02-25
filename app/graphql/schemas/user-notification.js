@@ -62,7 +62,7 @@ type updateUserNotifaction {
 }
 
 # 用户通知计数
-type userNotificationsCount {
+type countUserNotifications {
   count: Int
 }
 
@@ -74,7 +74,7 @@ exports.Query = `
 userNotifications(${querySchema}): [userNotification]
 
 # 用户通知计数
-userNotificationsCount(${querySchema}): userNotificationsCount
+countUserNotifications(${querySchema}): countUserNotifications
 
 `
 

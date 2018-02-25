@@ -1,5 +1,4 @@
-
-import UserNotification from '../../modelsa/user-notification'
+import { UserNotification } from '../../modelsa'
 
 let query = {}
 let mutation = {}
@@ -158,7 +157,7 @@ query.userNotifications = async (root, args, context, schema) => {
   return _notices
 }
 
-query.userNotificationsCount = async (root, args, context, schema) => {
+query.countUserNotifications = async (root, args, context, schema) => {
 
   if (!context.user) {
     throw CreateError({ message: '请求被拒绝' })

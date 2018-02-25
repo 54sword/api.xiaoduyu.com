@@ -71,7 +71,7 @@ type updateUser {
 }
 
 # 用户计数
-type usersCount {
+type countUsers {
   count: Int
 }
 
@@ -89,7 +89,7 @@ selfInfo(
 ): SelfInfo
 
 # 用户计数
-usersCount(${querySchema}): usersCount
+countUsers(${querySchema}): countUsers
 
 `
 

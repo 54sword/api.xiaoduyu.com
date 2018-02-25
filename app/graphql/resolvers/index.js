@@ -6,7 +6,6 @@ import userNotification from './user-notification'
 import notification from './notification'
 import captcha from './captcha'
 import account from './account'
-import analysis from './analysis'
 import qiniu from './qiniu'
 
 let Query = {}
@@ -28,8 +27,6 @@ Object.assign(Query, captcha.query)
 Object.assign(Mutation, captcha.mutation)
 Object.assign(Query, account.query)
 Object.assign(Mutation, account.mutation)
-Object.assign(Query, analysis.query)
-Object.assign(Mutation, analysis.mutation)
 Object.assign(Query, qiniu.query)
 Object.assign(Mutation, qiniu.mutation)
 
@@ -46,7 +43,6 @@ Object.assign(resolvers, userNotification.resolvers)
 Object.assign(resolvers, notification.resolvers)
 Object.assign(resolvers, captcha.resolvers)
 Object.assign(resolvers, account.resolvers)
-Object.assign(resolvers, analysis.resolvers)
 Object.assign(resolvers, qiniu.resolvers)
 
 export default resolvers

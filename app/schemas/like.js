@@ -2,13 +2,13 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
 
-/**
+/*
  * type:
  * feed
  * comment
  */
 
-/**
+/*
  * mood
  * 0: 赞
  * 1: 喜欢

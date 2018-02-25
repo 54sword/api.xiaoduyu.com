@@ -1,6 +1,5 @@
 
-import Query from '../querys'
-const { querySchema } = Query({ model: 'account' })
+import { getQuerySchema } from '../config'
 
 exports.Schema = `
 
@@ -15,7 +14,7 @@ type signIn {
 exports.Query = `
 
 # 登录前先通过，captcha API，获取验证码，如果有返回验证码图片，则将其显示给用户
-signIn(${querySchema}): signIn
+signIn(${getQuerySchema('account')}): signIn
 
 `
 

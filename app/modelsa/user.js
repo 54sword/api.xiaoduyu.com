@@ -2,7 +2,7 @@
 import { User } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(User)
+export default new baseMethod(User)
 
 /*
 var User = require('../schemas').User;

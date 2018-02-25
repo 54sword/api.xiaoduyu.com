@@ -35,7 +35,7 @@ type updateTopic {
 }
 
 # 话题计数
-type topicsCount {
+type countTopics {
   count: Int
 }
 
@@ -52,7 +52,7 @@ exports.Query = `
 topics(${querySchema}): [Topic]
 
 # 话题计数
-topicsCount(${querySchema}): topicsCount
+countTopics(${querySchema}): countTopics
 
 `
 

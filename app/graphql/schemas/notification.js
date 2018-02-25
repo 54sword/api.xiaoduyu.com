@@ -23,7 +23,7 @@ type updateNotifaction {
 }
 
 # 评论计数
-type notificationsCount {
+type countNotifications {
   count: Int
 }
 
@@ -35,7 +35,7 @@ exports.Query = `
 notifications(${querySchema}): [notification]
 
 # 评论计数
-notificationsCount(${querySchema}): notificationsCount
+countNotifications(${querySchema}): countNotifications
 
 `
 

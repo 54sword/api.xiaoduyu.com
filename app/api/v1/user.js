@@ -350,7 +350,7 @@ exports.resetNickname = function(req, res) {
 }
 
 
-/**
+/*
  * @api {post} /v1/reset-password 重置密码
  * @apiName Password
  * @apiGroup Password

@@ -336,62 +336,6 @@ exports.update = function(req, res, next) {
 
 };
 
-/**
- * @api {get} /v1/questions 获取问题
- * @apiName Fetch question
- * @apiGroup Fotgot
- * @apiVersion 1.0.0
- *
- * @apiParam {String} date 用户名
- * @apiParam {String} type 获取类型
- * @apiParam {String} user_id 用户id
- * @apiParam {String} feed_id 问题id
- * @apiParam {String} node_id 主题id
- * @apiParam {Number} per_page 每页显示数量
- * @apiParam {String} children_limit 评论显示数量
- * @apiParam {String} grandson_limit 回复显示数量
- *
- * @apiSuccess {String} err 错误信息，如果为空，则发送成功
- *
- * @apiSuccessExample 成功:
- * HTTP/1.1 200 OK
- * {
- *   	[{
-          "user_id": {
-              "_id": "575e921a2f2ee7dd3527fd87",
-              "nickname": "吴世剑",
-              "follow_total": 0,
-              "fans_total": 0,
-              "node_follow_total": 3,
-              "feed_total": 9,
-              "brief": "123123123123123",
-              "avatar": true,
-              "create_at": "2016-06-13T10:59:37.706Z",
-              "avatar_url": "http://192.168.31.210:3000/avatar/2016/06/13/575e921a2f2ee7dd3527fd87_thumbnail.jpg",
-              "id": "575e921a2f2ee7dd3527fd87"
-          },
-          "node_id": {
-              "_id": "5752f0bfe0d1ae6f0f872df5",
-              "name": "好奇心",
-              "avatar_url": "http://192.168.31.210:3000/images/nodes/1.jpg",
-              "id": "5752f0bfe0d1ae6f0f872df5"
-          },
-          "last_comment_at": "2016-08-27T10:35:11.848Z",
-          "_id": "57c16cdffaab2a47112eec08",
-          "recommend": false,
-          "verify": true,
-          "deleted": false,
-          "ip": "::ffff:192.168.31.210",
-          "device": 1,
-          "answers_count": 0,
-          "answers": [],
-          "create_at": "2016-08-27T10:35:11.848Z",
-          "content": "11测试",
-          "title": "11测试"
-      }]
- * }
- */
-
 
 exports.fetch = function(req, res, next) {
 
@@ -402,9 +346,9 @@ exports.fetch = function(req, res, next) {
       topicId = req.query.topic_id || '',
       postsId = req.query.posts_id || '',
       // 大于创建日期
-      gtCreateAt = req.query.gt_create_at,
-      gtDate = req.query.gt_date,
-      ltDate = req.query.lt_date,
+      gtCreateAt = req.query.gt_create_at  ? parseInt(req.query.gt_create_at) : null,
+      gtDate = req.query.gt_date ? parseInt(req.query.gt_date) : null,
+      ltDate = req.query.lt_date ? parseInt(req.query.lt_date) : null,
       or = req.query.or || true,
       draft = req.query.draft || false,
       method = req.query.method || '', // user_custom 根据用户偏好查询、
