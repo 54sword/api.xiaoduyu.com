@@ -27,6 +27,7 @@ type Topic {
   user_id: String
   follow: Boolean
   parent_id: String
+  children: String
 }
 
 # 更新话题

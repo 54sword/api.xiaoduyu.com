@@ -42,14 +42,15 @@ query.posts = async (root, args, context, schema) => {
 
     let newQuery = { '$or': [] }
 
-    if (query.user_id) delete query.user_id
-    if (query.topic_id) delete query.topic_id
-    if (query.posts_id) delete query.posts_id
-    if (query._id) delete query._id
+    if (query.user_id) delete query.user_id;
+    if (query.topic_id) delete query.topic_id;
+    if (query.posts_id) delete query.posts_id;
+    if (query._id) delete query._id;
 
     // 用户
     if (user.follow_people.length > 0) {
-      newQuery['$or'].push(Object.assign(query, {
+
+      newQuery['$or'].push(Object.assign({}, query, {
         user_id: {
           '$in': user.follow_people,
           // 过滤屏蔽用户
@@ -61,7 +62,7 @@ query.posts = async (root, args, context, schema) => {
 
     // 话题
     if (user.follow_topic.length > 0) {
-      newQuery['$or'].push(Object.assign(query, {
+      newQuery['$or'].push(Object.assign({}, query, {
         topic_id: {'$in': user.follow_topic },
         deleted: false
       }, {}))
@@ -69,7 +70,7 @@ query.posts = async (root, args, context, schema) => {
 
     // 帖子
     if (user.follow_posts.length > 0) {
-      newQuery['$or'].push(Object.assign(query, {
+      newQuery['$or'].push(Object.assign({}, query, {
         posts_id: {
           '$in': user.follow_posts,
           // 过滤屏蔽的帖子
@@ -79,6 +80,7 @@ query.posts = async (root, args, context, schema) => {
       }, {}))
     }
 
+    query = newQuery;
   }
 
   if (select.user_id) {
@@ -112,7 +114,7 @@ query.posts = async (root, args, context, schema) => {
     })
   }
 
-  [ err, postList ] = await To(Posts.find({ query, select, options }))
+  [ err, postList ] = await To(Posts.find({ query, select, options }));
 
   if (err) {
     throw CreateError({
@@ -142,8 +144,9 @@ query.posts = async (root, args, context, schema) => {
 
   }
 
+
   // 如果未登陆，直接返回
-  if (!user) return postList
+  if (!user) return postList;
 
   // find follow status
   ids = [];
@@ -155,6 +158,8 @@ query.posts = async (root, args, context, schema) => {
     select: { posts_id: 1 }
   }));
 
+  // console.log(followList);
+
   ids = {};
 
   followList.map(item=>ids[item.posts_id] = 1);
@@ -163,7 +168,7 @@ query.posts = async (root, args, context, schema) => {
 
   // find like status
   ids = [];
-
+  
   postList.map(item=>ids.push(item._id));
 
   [ err, likeList ] = await To(Like.find({
@@ -173,7 +178,7 @@ query.posts = async (root, args, context, schema) => {
 
   ids = {};
 
-  likeList.map(item=>ids[item.posts_id] = 1);
+  likeList.map(item=>ids[item.target_id] = 1);
   postList.map(item => item.like = ids[item._id] ? true : false);
 
   // 更新最近查询关注的帖子
@@ -240,7 +245,7 @@ query.countPosts = async (root, args, context, schema) => {
 
     // 用户
     if (user.follow_people.length > 0) {
-      newQuery['$or'].push(Object.assign(query, {
+      newQuery['$or'].push(Object.assign({}, query, {
         user_id: {
           '$in': user.follow_people,
           // 过滤屏蔽用户
@@ -252,7 +257,7 @@ query.countPosts = async (root, args, context, schema) => {
 
     // 话题
     if (user.follow_topic.length > 0) {
-      newQuery['$or'].push(Object.assign(query, {
+      newQuery['$or'].push(Object.assign({}, query, {
         topic_id: {'$in': user.follow_topic },
         deleted: false
       }, {}))
@@ -260,7 +265,7 @@ query.countPosts = async (root, args, context, schema) => {
 
     // 帖子
     if (user.follow_posts.length > 0) {
-      newQuery['$or'].push(Object.assign(query, {
+      newQuery['$or'].push(Object.assign({}, query, {
         posts_id: {
           '$in': user.follow_posts,
           // 过滤屏蔽的帖子
@@ -270,6 +275,7 @@ query.countPosts = async (root, args, context, schema) => {
       }, {}))
     }
 
+    query = newQuery;
   }
 
   [ err, count ] = await To(Posts.count({ query }))

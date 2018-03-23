@@ -1,19 +1,14 @@
 
-import posts from './posts'
-// import topic from './topic'
-// import user from './user'
-// import comment from './comment'
-// import userNotification from './user-notification'
-// import notification from './notification'
-import account from './account'
-// import analysis from './analysis'
+import posts from './posts';
+import account from './account';
+import follow from './follow';
+import like from './like';
 
 let list = {
   posts,
-  // topic, user, comment,
-  // 'user-notification': userNotification,
-  // notification,
-  account
+  account,
+  follow,
+  like
 }
 
 let s = {
@@ -34,32 +29,38 @@ let s = {
 
     for (let i in args) {
 
+      // 参数不存在
       if (!filters[i] && !options[i]) {
         err = i + ' is invalid';
         break;
-      } else if (!filters[i]) {
+      // 如果是 option 项，则跳过
+      } else if (!filters[i] && options[i]) {
         continue;
       }
 
       let result = filters[i](args[i]);
 
+      // 权限控制
       if (result.role && role != result.role) {
         err = i + ' be rejected';
         break;
       }
 
+      // 没有参数返回
       if (!result.name) continue;
 
+      // 参数对象
       if (typeof result.value == 'object') {
         if (!query[result.name]) query[result.name] = {};
         for (let n in result.value) query[result.name][n] = result.value[n];
       } else {
+        // 非对象
         query[result.name] = result.value;
       }
 
     }
 
-    return [ err, query ]
+    return [ err, query ];
 
   },
 
@@ -110,6 +111,9 @@ let s = {
    * @return {Array} err 错误, query 结果对象
    */
   getUpdateQuery: ({ args = {}, model, role = '' }) => {
+
+    // args = Object.assign({}, args);
+    // args = JSON.parse(JSON.stringify(args));
 
     let { filters, content } = list[model].update;
 
@@ -187,6 +191,48 @@ let s = {
   },
 
   /**
+   * 获取保存字段
+   * @param  {Object} object
+   * @param  {Object} object.args - 查询参数
+   * @param  {String} object.model - 要查询model名称
+   * @param  {String} object.role - 查询角色
+   * @return {Array} err 错误, query 结果对象
+   */
+  getSaveFields: ({ args = {}, model, role = '' }) => {
+
+    let fields = list[model].save;
+
+    let _content = {}, err;
+
+    for (let i in args) {
+
+      if (!fields[i]) {
+        err = i + ' is invalid';
+        break;
+      }
+
+      let result = fields[i](args[i]);
+
+      if (!result.name) continue;
+
+      if (result.role && role != result.role) {
+        err = i + ' be rejected';
+        break;
+      }
+
+      _content[result.name] = result.value;
+
+    }
+
+    if (Reflect.ownKeys(_content).length == 0) {
+      return [ 'no field' ]
+    }
+
+    return [ err, _content ];
+
+  },
+
+  /**
    * 获取查询参数
    * @param  {String} model 要查询的model名称
    * @return {String}
@@ -243,6 +289,25 @@ let s = {
     return schema;
 
   },
+
+  /**
+   * 获取保存schema
+   * @param  {String} model 要查询的model名称
+   * @return {String}
+   */
+  getSaveSchema: (model) => {
+
+    let content = list[model].save;
+    let schema = ``;
+
+    for (let i in content) {
+      schema += `
+        #${content[i]().desc}${content[i]().role == 'admin' ? ' (管理员)' : ''}
+        ${i}:${content[i]().type}
+      `
+    }
+    return schema;
+  }
 
 }
 

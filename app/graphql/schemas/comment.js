@@ -12,18 +12,22 @@ type _ReplyUser {
 }
 
 type _Reply {
+  content_html: String
+  create_at: String
+  like_count: Int
+  device: Int
+  ip: String
+  blocked: Int
+  deleted: Int
+  verify: Int
+  weaken: Int
+  recommend: Int
   _id: String
   user_id: _User
   posts_id: String
   parent_id: String
   reply_id: _ReplyUser
   update_at: String
-  weaken: Boolean
-  device: Int
-  like_count: Int
-  reply_count: Int
-  create_at: String
-  content_html: String
 }
 
 type _Posts {
@@ -51,6 +55,7 @@ type Comment {
   parent_id: String
   reply_id: _ReplyUser
   reply: [_Reply]
+  update_at: String
 }
 
 # 更新评论

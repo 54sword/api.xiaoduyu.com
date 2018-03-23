@@ -3,24 +3,36 @@
 const query = {
   // 筛选条件
   filters: {
-    _id: data => ({
-      name: '_id', value: data,
-      type: 'ID', desc:'ID'
-    }),
-    user_id: data => ({
-      name: 'user_id', value: data,
-      type: 'ID', desc:'用户ID'
-    }),
-    topic_id: data => ({
-      name: 'topic_id', value: data,
-      type: 'ID', desc:'话题ID'
-    }),
+    _id: data => {
+      let _data = data + '';
+      let value = _data.indexOf(',') != -1 ? { '$in': _data.split(',') } : _data;
+      return {
+        name: '_id', value,
+        type: 'ID', desc:'ID'
+      }
+    },
+    user_id: data => {
+      let _data = data + '';
+      let value = _data.indexOf(',') != -1 ? { '$in': _data.split(',') } : _data;
+      return {
+        name: 'user_id', value,
+        type: 'ID', desc:'用户ID'
+      }
+    },
+    topic_id: data => {
+      let _data = data + '';
+      let value = _data.indexOf(',') != -1 ? { '$in': _data.split(',') } : _data;
+      return {
+        name: 'topic_id', value,
+        type: 'ID', desc:'话题ID'
+      }
+    },
     title: data => ({
       name: 'title', value: data,
       type: 'String', desc:'标题'
     }),
     deleted: data => ({
-      name: 'deleted', value: data, role: 'admin',
+      name: 'deleted', value: data,
       type: 'Boolean', desc:'删除'
     }),
     weaken: data => ({
@@ -31,12 +43,14 @@ const query = {
       name: 'recommend', value: data,
       type: 'Boolean', desc:'推荐'
     }),
+
+    // 因为int类型长度大于11位，graphql 会认为格式不是int
     start_create_at: data => ({
-      name: 'create_at', value: { '$gte': data },
+      name: 'create_at', value: { '$gte': parseInt(data) },
       type: 'String', desc:'开始日期'
     }),
     end_create_at: data => ({
-      name: 'create_at', value: { '$lte': data },
+      name: 'create_at', value: { '$lte': parseInt(data) },
       type: 'String', desc:'结束日期'
     }),
     method: data => ({
@@ -58,12 +72,14 @@ const query = {
 
     sort_by: data => {
 
-      let value = {}
-      value[data] = -1
+      let value = {};
+      (data+'').split(',').map(item=>{
+        if (item) value[item] = -1;
+      });
 
       return ({
         name: 'sort', value,
-        type: 'String', desc:'排序方式'
+        type: 'String', desc:'排序方式: create_at,comment_count,like_count'
       })
     }
   }

@@ -8,6 +8,11 @@ import captcha from './captcha'
 import account from './account'
 import qiniu from './qiniu'
 
+import block from './block'
+import countries from './countries'
+import follow from './follow'
+import like from './like'
+
 let Query = {}
 let Mutation = {}
 
@@ -29,6 +34,12 @@ Object.assign(Query, account.query)
 Object.assign(Mutation, account.mutation)
 Object.assign(Query, qiniu.query)
 Object.assign(Mutation, qiniu.mutation)
+Object.assign(Query, block.query)
+Object.assign(Mutation, block.mutation)
+Object.assign(Query, countries.query)
+Object.assign(Mutation, countries.mutation)
+Object.assign(Mutation, follow.mutation)
+Object.assign(Mutation, like.mutation)
 
 var resolvers = {
   Query,
@@ -44,5 +55,9 @@ Object.assign(resolvers, notification.resolvers)
 Object.assign(resolvers, captcha.resolvers)
 Object.assign(resolvers, account.resolvers)
 Object.assign(resolvers, qiniu.resolvers)
+Object.assign(resolvers, block.resolvers)
+Object.assign(resolvers, countries.resolvers)
+Object.assign(resolvers, follow.resolvers)
+Object.assign(resolvers, like.resolvers)
 
 export default resolvers

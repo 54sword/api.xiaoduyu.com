@@ -7,6 +7,10 @@ import Notification from './notification';
 import Captcha from './captcha';
 import Account from './account';
 import Qiniu from './qiniu';
+import Block from './block';
+import Countries from './countries';
+import Follow from './follow';
+import Like from './like';
 
 const typeDefs = [ `
 
@@ -19,8 +23,12 @@ const typeDefs = [ `
   ${Captcha.Schema}
   ${Account.Schema}
   ${Qiniu.Schema}
+  ${Block.Schema}
+  ${Countries.Schema}
+  ${Follow.Schema}
+  ${Like.Schema}
 
-  # 查询API
+  # 查询
   type Query {
     ${Posts.Query}
     ${Topic.Query}
@@ -31,9 +39,13 @@ const typeDefs = [ `
     ${Captcha.Query}
     ${Account.Query}
     ${Qiniu.Query}
+    ${Block.Query}
+    ${Countries.Query}
+    ${Follow.Query}
+    ${Like.Query}
   }
 
-  # 增、删、改API
+  # 增、删、改
   type Mutation {
     ${Posts.Mutation}
     ${Topic.Mutation}
@@ -44,6 +56,10 @@ const typeDefs = [ `
     ${Captcha.Mutation}
     ${Account.Mutation}
     ${Qiniu.Mutation}
+    ${Block.Mutation}
+    ${Countries.Mutation}
+    ${Follow.Mutation}
+    ${Like.Mutation}
   }
 
   schema {

@@ -8,10 +8,12 @@ const queryList = {
     name: 'user_id', value: data,
     type: 'ID', desc:'用户ID'
   }),
-  topic_id: data => ({
-    name: 'topic_id', value: data,
-    type: 'ID', desc:'话题ID'
-  }),
+  topic_id: data => {
+    return {
+      name: 'topic_id', value: data,
+      type: 'ID', desc:'话题ID'
+    }
+  },
   title: data => ({
     name: 'title', value: data,
     type: 'String', desc:'标题'

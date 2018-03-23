@@ -16,6 +16,14 @@ query.topics = async (root, args, context, schema) => {
   const { method } = args
   let select = {}
   let { query, options } = Querys({ args, model: 'topic', role })
+  
+  // === 设置一些默认值
+
+  if (!Reflect.has(options, 'sort_by')) {
+    options.sort = {
+      sort: -1
+    }
+  }
 
   //===
 
@@ -27,6 +35,7 @@ query.topics = async (root, args, context, schema) => {
     }]
   }
 
+
   let [ err, topicList ] = await To(Topic.find({ query, select, options }))
 
   if (err) {
@@ -36,13 +45,22 @@ query.topics = async (root, args, context, schema) => {
     });
   }
 
+  topicList = JSON.parse(JSON.stringify(topicList))
+
   // 如果是登陆用户，显示是否关注了该话题
   if (user && topicList && Reflect.has(select, 'follow')) {
-    topicList = JSON.parse(JSON.stringify(topicList))
     topicList.map(node => {
       node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
     })
   }
+
+  topicList.map(node => {
+    if (node.children) {
+      node.children = node.children.join(',')
+    } else {
+      node.children = ''
+    }
+  })
 
   return topicList
 }

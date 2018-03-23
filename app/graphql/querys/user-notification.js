@@ -53,7 +53,8 @@ const optionList = {
     name: 'limit', value: data,
     type: 'Int', desc:'每页数量'
   }),
-  
+
+  /*
   sort_by: data => {
 
     let value = {}
@@ -62,6 +63,20 @@ const optionList = {
     return ({
       name: 'sort', value,
       type: 'String', desc:'排序方式'
+    })
+  },
+  */
+
+  sort_by: data => {
+
+    let value = {};
+    (data+'').split(',').map(item=>{
+      if (item) value[item] = -1;
+    });
+
+    return ({
+      name: 'sort', value,
+      type: 'String', desc:'排序方式: create_at'
     })
   }
 

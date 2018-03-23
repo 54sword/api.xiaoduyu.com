@@ -12,7 +12,7 @@ import resolvers from './resolvers';
 import router from './router';
 import checkToken from './auto';
 
-let schema = makeExecutableSchema({ typeDefs, resolvers });
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 
 /**

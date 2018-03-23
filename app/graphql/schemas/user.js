@@ -44,15 +44,15 @@ type SelfInfo {
   avatar: String
   brief: String
   source: Boolean
-  posts_count: Boolean
-  comment_count: Boolean
-  fans_count: Boolean
-  like_count: Boolean
-  follow_people_count: Boolean
-  follow_topic_count: Boolean
-  follow_posts_count: Boolean
-  block_people_count: Boolean
-  block_posts_count: Boolean
+  posts_count: Int
+  comment_count: Int
+  fans_count: Int
+  like_count: Int
+  follow_people_count: Int
+  follow_topic_count: Int
+  follow_posts_count: Int
+  block_people_count: Int
+  block_posts_count: Int
   access_token: String
   gender: Boolean
   nickname: String
