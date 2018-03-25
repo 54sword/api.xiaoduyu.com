@@ -40,8 +40,8 @@ const optionList = {
 
   sort_by: data => {
 
-    let value = {}
-    value[data] = -1
+    let value = {};
+    value[data] = -1;
 
     return ({
       name: 'sort', value,

@@ -86,7 +86,26 @@ const query = {
 }
 
 // 储存
-const save = {}
+const save = {
+  title: data => ({
+    name: 'title', value: data, type: 'String!', desc:'标题'
+  }),
+  content: data => ({
+    name: 'content', value: data, type: 'String!', desc:'正文JSON'
+  }),
+  content_html: data => ({
+    name: 'content_html', value: data, type: 'String!', desc:'文本HTML'
+  }),
+  topic_id: data => ({
+    name: 'topic_id', value: data, type: 'ID!', desc:'话题'
+  }),
+  device_id: data => ({
+    name: 'device_id', value: data, type: 'Int', desc:'设备'
+  }),
+  type: data => ({
+    name: 'type', value: data, type: 'Int', desc:'类型'
+  })
+}
 
 // 更新
 const update = {

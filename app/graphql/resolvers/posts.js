@@ -1,9 +1,10 @@
-import { Posts, User, Follow, Like } from '../../modelsa'
+import { Posts, User, Follow, Like, Topic } from '../../modelsa';
 
-import CreateError from './errors'
-import To from '../../common/to'
+import CreateError from './errors';
+import To from '../../common/to';
 
-import { getQuery, getOption, getUpdateQuery, getUpdateContent } from '../config'
+import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
+import xss from 'xss';
 
 let [ query, mutation, resolvers ] = [{},{},{}];
 
@@ -114,7 +115,11 @@ query.posts = async (root, args, context, schema) => {
     })
   }
 
-  [ err, postList ] = await To(Posts.find({ query, select, options }));
+  if (query['$or'] && query['$or'].length == 0) {
+    postList = [];
+  } else {
+    [ err, postList = [] ] = await To(Posts.find({ query, select, options }));
+  }
 
   if (err) {
     throw CreateError({
@@ -123,7 +128,7 @@ query.posts = async (root, args, context, schema) => {
     })
   }
 
-  if (select.comment) {
+  if (select.comment && postList.length > 0) {
 
     options = [
       {
@@ -146,7 +151,7 @@ query.posts = async (root, args, context, schema) => {
 
 
   // 如果未登陆，直接返回
-  if (!user) return postList;
+  if (!user || postList.length == 0) return postList;
 
   // find follow status
   ids = [];
@@ -158,7 +163,6 @@ query.posts = async (root, args, context, schema) => {
     select: { posts_id: 1 }
   }));
 
-  // console.log(followList);
 
   ids = {};
 
@@ -168,7 +172,7 @@ query.posts = async (root, args, context, schema) => {
 
   // find like status
   ids = [];
-  
+
   postList.map(item=>ids.push(item._id));
 
   [ err, likeList ] = await To(Like.find({
@@ -205,8 +209,6 @@ query.countPosts = async (root, args, context, schema) => {
   let [select, err, count, query] = [{}, null, null, null];
 
   // let { query } = Querys({ args, model:'posts', role });
-
-  // console.log(args);
 
   [ err, query ] = getQuery({ args, model:'posts', role });
 
@@ -292,10 +294,149 @@ query.countPosts = async (root, args, context, schema) => {
   }
 }
 
+function Countdown(nowDate, endDate) {
 
-// mutation.addPosts = (root) => {
-//   return { success: true, error: 10000 }
-// }
+  var lastDate = Math.ceil(new Date(endDate).getTime()/1000)
+  var now = Math.ceil(new Date(nowDate).getTime()/1000)
+  var timeCount = lastDate - now
+  var days = parseInt( timeCount / (3600*24) )
+  var hours = parseInt( (timeCount - (3600*24*days)) / 3600 )
+  var mintues = parseInt( (timeCount - (3600*24*days) - (hours*3600)) / 60)
+  var seconds = timeCount - (3600*24*days) - (3600*hours) - (60*mintues)
+
+  return {
+    days: days,
+    hours: hours,
+    mintues: mintues,
+    seconds: seconds
+  }
+
+}
+
+mutation.addPosts = async (root, args, context, schema) => {
+
+  const { user, role, ip  } = context;
+  let err, // 错误
+      result, // 结果
+      fields; // 字段
+
+  if (!user) throw CreateError({ message: '请求被拒绝' });
+
+  [ err, fields ] = getSaveFields({ args, model:'posts', role });
+
+  if (err) throw CreateError({ message: err });
+
+  // 开始逻辑
+  let { title, content, content_html, topic_id, device_id = 1, type = 1 } = fields;
+
+  if (!ip) throw CreateError({ message: '无效的ip' });
+  if (type > 1) throw CreateError({ message: 'type 无效' });
+
+  // 判断是否禁言
+  if (user && user.banned_to_post &&
+    new Date(user.banned_to_post).getTime() > new Date().getTime()
+  ) {
+    let countdown = Countdown(new Date(), user.banned_to_post);
+    throw CreateError({
+      message: '禁言中',
+      data: { error_data: err.countdown }
+    });
+  }
+
+
+  // title
+  title = xss(title, {
+    whiteList: {},
+    stripIgnoreTag: true,
+    onTagAttr: (tag, name, value, isWhiteAttr) => ''
+  })
+
+  if (!title || title.replace(/(^\s*)|(\s*$)/g, "") == '') {
+    throw CreateError({ message: 'title 不能为空' });
+  } else if (title.length > 120) {
+    throw CreateError({ message: 'title 不能大于120个字符' });
+  }
+
+  // content
+  content = xss(content, {
+    whiteList: {},
+    stripIgnoreTag: true,
+    onTagAttr: (tag, name, value, isWhiteAttr) => ''
+  });
+
+  content_html = xss(content_html, {
+    whiteList: {
+      a: ['href', 'title', 'target', 'rel'],
+      img: ['src', 'alt'],
+      p: [], div: [], br: [], blockquote: [], li: [], ol: [], ul: [],
+      strong: [], em: [], u: [], pre: [], b: [], h1: [], h2: [], h3: [],
+      h4: [], h5: [], h6: [], h7: []
+    },
+    stripIgnoreTag: true,
+    onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
+      if (tag == 'div' && name.substr(0, 5) === 'data-') {
+        // 通过内置的escapeAttrValue函数来对属性值进行转义
+        return name + '="' + xss.escapeAttrValue(value) + '"';
+      }
+    }
+  });
+
+  // topic
+  [ err, result ] = await To(Topic.findOne({
+    query: { _id: topic_id }
+  }));
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    })
+  }
+
+  if (!result) {
+    throw CreateError({
+      message: 'topic_id 不存在'
+    })
+  }
+
+  // 储存
+  [ err, result ] = await To(Posts.save({
+    data: {
+      user_id: user._id,
+      title,
+      content,
+      content_html,
+      topic_id,
+      ip,
+      device: device_id,
+      type,
+      last_comment_at: new Date().getTime()
+    }
+  }));
+
+  // 更新
+  await To(Topic.update({
+    query: { _id: topic_id },
+    update: { $inc: { 'posts_count': 1 } }
+  }));
+
+  await To(User.update({
+    query: { _id: user._id },
+    update: { $inc: { 'posts_count': 1 } }
+  }));
+
+  if (err) {
+    throw CreateError({
+      message: '储存失败',
+      data: { errorInfo: err.message }
+    })
+  }
+
+  return {
+    success: true,
+    _id: result._id
+  }
+}
 
 
 // 更新

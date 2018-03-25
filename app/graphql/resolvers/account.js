@@ -118,10 +118,6 @@ query.signIn = async (root, args, context, schema) => {
 mutation.signUp = () => ({ success: true })
 mutation.sendCaptchaToEmail = () => ({ success: true })
 mutation.bindingEmail = (root, args, context, schema) => {
-  // console.log(root);
-  // console.log(args);
-  // console.log(context);
-  // console.log(schema);
   return {
     success: true
   }

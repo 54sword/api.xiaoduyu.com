@@ -1,8 +1,10 @@
 
-import Query from '../querys'
-import Updates from '../updates'
-const { querySchema } = Query({ model: 'comment' })
-const { updateSchema } = Updates({ model: 'comment' })
+// import Query from '../querys'
+// import Updates from '../updates'
+// const { querySchema } = Query({ model: 'comment' })
+// const { updateSchema } = Updates({ model: 'comment' })
+
+import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
@@ -68,21 +70,32 @@ type countComments {
   count: Int
 }
 
+# 添加评论
+type addComment {
+  # 结果
+  success: Boolean
+  # posts id
+  _id: ID
+}
+
 `
 
 exports.Query = `
 
 # 查询用户
-comments(${querySchema}): [Comment]
+comments(${getQuerySchema('comment')}): [Comment]
 
 # 评论计数
-countComments(${querySchema}): countComments
+countComments(${getQuerySchema('comment')}): countComments
 
 `
 
 exports.Mutation = `
 
+# 添加评论
+addComment(${getSaveSchema('comment')}): addComment
+
 # 更新评论
-updateComment(${updateSchema}): updateComment
+updateComment(${getUpdateSchema('comment')}): updateComment
 
 `

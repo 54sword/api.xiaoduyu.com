@@ -129,7 +129,7 @@ io.on('connection', function(socket){
 });
 global.io = io
 
-graphql(app, bodyParser)
+graphql(app, bodyParser);
 
 app.use('/oauth', OauthRouter());
 app.use('/api/v1', API_V1());

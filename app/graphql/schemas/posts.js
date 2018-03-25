@@ -1,13 +1,11 @@
 
-import Query from '../querys'
+import Query from '../querys';
 
-// console.log(getQuerySchema('posts'));
+import Updates from '../updates';
+const { querySchema } = Query({ model: 'posts' });
+const { updateSchema } = Updates({ model: 'posts' });
 
-import Updates from '../updates'
-const { querySchema } = Query({ model: 'posts' })
-const { updateSchema } = Updates({ model: 'posts' })
-
-import { getQuerySchema, getUpdateSchema } from '../config'
+import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
@@ -86,7 +84,13 @@ type Posts {
   like: Boolean
 }
 
-
+# 添加帖子
+type addPosts {
+  # 结果
+  success: Boolean
+  # posts id
+  _id: ID
+}
 
 # 更新帖子
 type updatePosts {
@@ -113,19 +117,10 @@ countPosts(${getQuerySchema('posts')}): countPosts
 
 exports.Mutation = `
 
+# 添加帖子
+addPosts(${getSaveSchema('posts')}): addPosts
+
 # 更新帖子
 updatePosts(${getUpdateSchema('posts')}): updatePosts
 
 `
-
-/**
-
-# 添加帖子
-type addPosts {
-  success: Boolean
-  error: Int
-}
-
-addPosts(message: String): addPosts
-
- */

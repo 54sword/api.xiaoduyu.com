@@ -15,13 +15,18 @@ import checkToken from './auto';
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 
+
 /**
  * 启动 graphql
  * @param  {Object} app - express 的 app
  */
 module.exports = (app) => {
-
+  
   app.use('/graphql', bodyParser.json(), async (req, res, next) => {
+
+
+    // console.log('-----');
+    // console.log(req.body.query);
 
     // 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
     let token = req.headers.accesstoken || '';
@@ -49,7 +54,7 @@ module.exports = (app) => {
   }, graphqlExpress(req => {
 
     return {
-			// tracing: true,
+			tracing: true,
 			debug,
       schema,
 			rootValue: {},

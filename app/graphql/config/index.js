@@ -3,12 +3,14 @@ import posts from './posts';
 import account from './account';
 import follow from './follow';
 import like from './like';
+import comment from './comment';
 
 let list = {
   posts,
   account,
   follow,
-  like
+  like,
+  comment
 }
 
 let s = {

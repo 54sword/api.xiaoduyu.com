@@ -38,7 +38,7 @@ class Model {
       let find = this.schema.findOne(query, select);
       for (let i in options) find[i](options[i]);
       find.exec((err, res) => {
-        if (err) console.log(err);
+        // if (err) console.log(err);
         resolve(res);
       })
     })
@@ -57,7 +57,7 @@ class Model {
       let find = this.schema.find(query, select);
       for (let i in options) find[i](options[i]);
       find.exec((err, res) => {
-        if (err) console.log(err);
+        // if (err) console.log(err);
         resolve(res);
       })
     })
@@ -73,7 +73,7 @@ class Model {
     return new Promise((resolve, reject) => {
       if (!collections) return reject('collections is null');
       this.schema.populate(collections, options, (err, res) => {
-        if (err) console.log(err);
+        // if (err) console.log(err);
         resolve(res);
       })
     })
@@ -116,7 +116,7 @@ class Model {
   count ({ query = {} }) {
     return new Promise((resolve, reject) => {
       this.schema.count(query, (err, res) => {
-        if (err) console.log(err);
+        // if (err) console.log(err);
         resolve(res);
       })
     })

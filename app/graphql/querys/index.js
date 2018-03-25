@@ -39,8 +39,6 @@ export default ({ args = {}, model, role = '' }) => {
     }
   }
 
-  console.log(query);
-
   for (let i in args) {
     if (optionList[i]) {
       let result = optionList[i](args[i])
