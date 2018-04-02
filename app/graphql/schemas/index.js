@@ -11,6 +11,7 @@ import Block from './block';
 import Countries from './countries';
 import Follow from './follow';
 import Like from './like';
+import Password from './password';
 
 const typeDefs = [ `
 
@@ -27,6 +28,7 @@ const typeDefs = [ `
   ${Countries.Schema}
   ${Follow.Schema}
   ${Like.Schema}
+  ${Password.Schema}
 
   # 查询
   type Query {
@@ -43,6 +45,7 @@ const typeDefs = [ `
     ${Countries.Query}
     ${Follow.Query}
     ${Like.Query}
+    ${Password.Query}
   }
 
   # 增、删、改
@@ -60,6 +63,7 @@ const typeDefs = [ `
     ${Countries.Mutation}
     ${Follow.Mutation}
     ${Like.Mutation}
+    ${Password.Mutation}
   }
 
   schema {

@@ -111,7 +111,7 @@ mutation.updateUser = async (root, args, context, schema) => {
 
   const { user, role } = context
   let options = {}
-  let { error, query, update } = Updates({ args, model: 'user', role })
+  let { error, query, update } = Updates({ args, model: 'user', role });
 
   if (error) {
     throw CreateError({
@@ -120,6 +120,10 @@ mutation.updateUser = async (root, args, context, schema) => {
     })
   }
 
+  if (query._id != user._id + '') {
+    throw CreateError({ message: '无权修改' });
+  }
+  
   let [ err, result ] = await To(User.update({ query, update, options }))
 
   if (err) {

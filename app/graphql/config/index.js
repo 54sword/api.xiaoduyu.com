@@ -4,13 +4,15 @@ import account from './account';
 import follow from './follow';
 import like from './like';
 import comment from './comment';
+import password from './password';
 
 let list = {
   posts,
   account,
   follow,
   like,
-  comment
+  comment,
+  password
 }
 
 let s = {
