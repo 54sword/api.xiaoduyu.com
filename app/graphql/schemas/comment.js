@@ -1,9 +1,4 @@
 
-// import Query from '../querys'
-// import Updates from '../updates'
-// const { querySchema } = Query({ model: 'comment' })
-// const { updateSchema } = Updates({ model: 'comment' })
-
 import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
@@ -30,6 +25,7 @@ type _Reply {
   parent_id: String
   reply_id: _ReplyUser
   update_at: String
+  like: Boolean
 }
 
 type _Posts {
@@ -53,11 +49,12 @@ type Comment {
   recommend: Int
   _id: String
   user_id: _User
-  posts_id: _Posts
+  posts_id: ID
   parent_id: String
   reply_id: _ReplyUser
   reply: [_Reply]
   update_at: String
+  like: Boolean
 }
 
 # 更新评论

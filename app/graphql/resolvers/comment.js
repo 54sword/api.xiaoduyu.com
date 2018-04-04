@@ -24,8 +24,6 @@ query.comments = async (root, args, context, schema) => {
 
   //===
 
-  // let err, commentList = [], likeList = []
-
   options.populate = []
 
   if (Reflect.has(select, 'user_id') && select.user_id) {
@@ -40,11 +38,13 @@ query.comments = async (root, args, context, schema) => {
     ])
   }
 
+  /*
   if (Reflect.has(select, 'posts_id') && select.posts_id) {
     options.populate.push([
       { path: 'posts_id', select: { _id:1, title:1, content_html:1 } }
     ])
   }
+  */
 
   if (Reflect.has(select, 'reply') && select.reply) {
 
@@ -66,8 +66,6 @@ query.comments = async (root, args, context, schema) => {
     }
 
   }
-
-  // let comments = [];
 
   [ err, commentList ] = await To(Comment.find({ query, select, options }))
 
@@ -105,7 +103,7 @@ query.comments = async (root, args, context, schema) => {
     [ err, commentList ] = await To(Comment.populate({ collections: commentList, options }))
   }
 
-  options = []
+  options = [];
 
   if (Reflect.has(select, 'reply') && select.reply) {
     options.push({
@@ -126,6 +124,7 @@ query.comments = async (root, args, context, schema) => {
     });
   }
 
+
   // 如果未登录，那么直接返回结果
   if (!user || !select.like || Reflect.has(select, 'like') && !select.like) {
     return commentList
@@ -136,16 +135,12 @@ query.comments = async (root, args, context, schema) => {
   commentList = JSON.stringify(commentList);
   commentList = JSON.parse(commentList);
 
-  var ids = []
+  var ids = [];
 
   commentList.map(function(item){
     ids.push(item._id)
     if (item.reply) item.reply.map(item => ids.push(item._id))
-  })
-
-  if (!select.like || Reflect.has(select, 'like') && !select.like) {
-    return commentList
-  }
+  });
 
   [ err, likeList ] = await To(Like.find({
     query: {
@@ -309,7 +304,9 @@ mutation.addComment = async (root, args, context, schema) => {
       })
     }
 
-    if (parentComment.posts_id != posts_id) {
+    // console.log(parentComment);
+
+    if (parentComment.posts_id + '' != posts_id) {
       throw CreateError({
         message: 'parent_id 不属于 posts_id 的评论'
       })
@@ -561,7 +558,7 @@ async function updateUserCommentCount(user_id) {
 
 // 更新帖子的评论数量，以及评论id
 async function updateCommentReplyCount(comment_id, posts_id) {
-  
+
   let [ err, result ] = await To(Comment.find({
     query: {
       posts_id,
