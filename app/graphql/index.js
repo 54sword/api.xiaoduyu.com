@@ -21,7 +21,7 @@ const schema = makeExecutableSchema({ typeDefs, resolvers });
  * @param  {Object} app - express 的 app
  */
 module.exports = (app) => {
-  
+
   app.use('/graphql', bodyParser.json(), async (req, res, next) => {
 
 

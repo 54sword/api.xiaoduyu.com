@@ -1,21 +1,25 @@
 import { Topic } from '../../modelsa'
 
-let query = {}
-let mutation = {}
-let resolvers = {}
-
+// tools
 import To from '../../common/to'
 import CreateError from './errors'
-import Querys from '../querys'
-import Updates from '../updates'
-import Saves from '../saves'
+// import Querys from '../querys'
+// import Updates from '../updates'
+// import Saves from '../saves'
+
+
+import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
+let [ query, mutation, resolvers ] = [{},{},{}];
 
 query.topics = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
-  let select = {}
-  let { query, options } = Querys({ args, model: 'topic', role });
+  let select = {}, err, query, options, topicList;
+  // let { query, options } = Querys({ args, model: 'topic', role });
+  
+  [ err, query ] = getQuery({ args, model:'topic', role });
+  [ err, options ] = getOption({ args, model:'topic', role });
 
   // === 设置一些默认值
 
@@ -36,7 +40,7 @@ query.topics = async (root, args, context, schema) => {
   }
 
 
-  let [ err, topicList ] = await To(Topic.find({ query, select, options }))
+  [ err, topicList ] = await To(Topic.find({ query, select, options }))
 
   if (err) {
     throw CreateError({
@@ -60,7 +64,7 @@ query.topics = async (root, args, context, schema) => {
     } else {
       node.children = ''
     }
-  })
+  });
 
   return topicList
 }
@@ -69,12 +73,15 @@ query.topics = async (root, args, context, schema) => {
 query.countTopics = async (root, args, context, schema) => {
 
   const { user, role } = context
-  let select = {}
-  let { query, options } = Querys({ args, model: 'topic', role })
+  let err, select = {}, query, options, count;
+  // let { query, options } = Querys({ args, model: 'topic', role })
+
+  [ err, query ] = getQuery({ args, model:'topic', role });
+  [ err, options ] = getOption({ args, model:'topic', role });
 
   //===
 
-  let [ err, count ] = await To(Topic.count({ query }))
+  [ err, count ] = await To(Topic.count({ query }))
 
   if (err) {
     throw CreateError({
@@ -89,8 +96,9 @@ query.countTopics = async (root, args, context, schema) => {
 mutation.addTopic = async (root, args, context, schema) => {
 
   const { user, role } = context;
-  let { save } = Saves({ args, model: 'topic', role });
-  let err, result;
+  let err, result, save;
+  [ err, save ] = getSaveFields({ args, model: 'topic', role });
+
 
   if (!user || role != 'admin') {
     throw CreateError({
@@ -172,8 +180,11 @@ mutation.addTopic = async (root, args, context, schema) => {
 
 mutation.updateTopic = async (root, args, context, schema) => {
 
-  const { user, role } = context
-  let { query, update } = Updates({ args, model: 'topic', role })
+  const { user, role } = context;
+  let err, query, update, topic, result;
+
+  [ err, query ] = getUpdateQuery({ args, model: 'topic', role });
+  [ err, update ] = getUpdateContent({ args, model: 'topic', role });
 
   if (!user || role != 'admin') {
     throw CreateError({
@@ -183,8 +194,6 @@ mutation.updateTopic = async (root, args, context, schema) => {
   }
 
   // --------------------------------------
-
-  let err, result, topic;
 
   [ err, topic ] = await To(Topic.findOne({ query: { _id: query._id } }))
 

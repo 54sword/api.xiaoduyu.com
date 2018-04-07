@@ -5,6 +5,11 @@ import follow from './follow';
 import like from './like';
 import comment from './comment';
 import password from './password';
+import captcha from './captcha';
+import topic from './topic';
+import notification from './notification';
+import userNotification from './user-notification';
+import user from './user';
 
 let list = {
   posts,
@@ -12,7 +17,12 @@ let list = {
   follow,
   like,
   comment,
-  password
+  password,
+  captcha,
+  topic,
+  notification,
+  'user-notification': userNotification,
+  user
 }
 
 let s = {

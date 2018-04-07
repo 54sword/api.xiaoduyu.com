@@ -19,7 +19,7 @@ exports.sendSMS = function({ PhoneNumbers, SignName, TemplateCode, TemplateParam
       if (body && body.code && body.code == 0) {
         callback(null)
       } else {
-        callback(30000)
+        callback('短信发送失败')
       }
     })
 }

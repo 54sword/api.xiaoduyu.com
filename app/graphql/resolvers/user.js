@@ -1,13 +1,16 @@
 import { User, Account, Oauth, Phone } from '../../modelsa'
-
-let query = {}
-let mutation = {}
-let resolvers = {}
+//
+// let query = {}
+// let mutation = {}
+// let resolvers = {}
 
 import To from '../../common/to'
 import CreateError from './errors'
-import Querys from '../querys'
-import Updates from '../updates'
+// import Querys from '../querys'
+// import Updates from '../updates'
+
+import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
+let [ query, mutation, resolvers ] = [{},{},{}];
 
 function changeString(str) {
   var length = str.length
@@ -82,15 +85,19 @@ query.users = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
-  let select = {}
-  let { query, options } = Querys({ args, model: 'user', role })
+  let select = {}, err, query, options, userList;
+  // let { query, options } = Querys({ args, model: 'user', role });
+
+
+  [ err, query ] = getQuery({ args, model: 'user', role });
+  [ err, options ] = getOption({ args, model: 'user', role });
 
   // select
-  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
 
   //===
 
-  let [ err, userList ] = await To(User.find({ query, select, options }))
+  [ err, userList ] = await To(User.find({ query, select, options }));
 
   return userList
 }
@@ -98,11 +105,13 @@ query.users = async (root, args, context, schema) => {
 query.countUsers = async (root, args, context, schema) => {
 
   const { user, role } = context
-  let { query } = Querys({ args, model: 'user', role })
+  let err, query, count;
+  // let { query } = Querys({ args, model: 'user', role });
+  [ err, query ] = getQuery({ args, model: 'user', role });
 
   //===
 
-  let [ err, count ] = await To(User.count({ query }))
+  [ err, count ] = await To(User.count({ query }));
 
   return { count }
 }
@@ -110,8 +119,10 @@ query.countUsers = async (root, args, context, schema) => {
 mutation.updateUser = async (root, args, context, schema) => {
 
   const { user, role } = context
-  let options = {}
-  let { error, query, update } = Updates({ args, model: 'user', role });
+  let options = {}, err, query, update, result;
+
+  [ err, query ] = getUpdateContent({ args, model: 'user', role });
+  [ err, update ] = getUpdateContent({ args, model: 'user', role });
 
   if (error) {
     throw CreateError({
@@ -123,8 +134,8 @@ mutation.updateUser = async (root, args, context, schema) => {
   if (query._id != user._id + '') {
     throw CreateError({ message: '无权修改' });
   }
-  
-  let [ err, result ] = await To(User.update({ query, update, options }))
+
+  [ err, result ] = await To(User.update({ query, update, options }));
 
   if (err) {
     throw CreateError({

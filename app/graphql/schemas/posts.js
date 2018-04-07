@@ -1,9 +1,9 @@
 
-import Query from '../querys';
+// import Query from '../querys';
 
-import Updates from '../updates';
-const { querySchema } = Query({ model: 'posts' });
-const { updateSchema } = Updates({ model: 'posts' });
+// import Updates from '../updates';
+// const { querySchema } = Query({ model: 'posts' });
+// const { updateSchema } = Updates({ model: 'posts' });
 
 import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 

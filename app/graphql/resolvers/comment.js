@@ -3,8 +3,8 @@ import xss from 'xss';
 
 import To from '../../common/to';
 import CreateError from './errors';
-import Querys from '../querys';
-import Updates from '../updates';
+// import Querys from '../querys';
+// import Updates from '../updates';
 
 let [ query, mutation, resolvers ] = [{},{},{}];
 

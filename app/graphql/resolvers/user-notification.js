@@ -1,13 +1,11 @@
 import { UserNotification } from '../../modelsa'
 
-let query = {}
-let mutation = {}
-let resolvers = {}
-
 import To from '../../common/to'
 import CreateError from './errors'
-import Querys from '../querys'
-import Updates from '../updates'
+
+
+import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
+let [ query, mutation, resolvers ] = [{},{},{}];
 
 query.userNotifications = async (root, args, context, schema) => {
 
@@ -17,8 +15,11 @@ query.userNotifications = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
-  let select = {}
-  let { query, options } = Querys({ args, model:'user-notification', role })
+  let select = {}, err, query, options, notificationList;
+  // let { query, options } = Querys({ args, model:'user-notification', role })
+
+  [ err, query ] = getQuery({ args, model:'user-notification', role });
+  [ err, options ] = getOption({ args, model:'user-notification', role });
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -26,8 +27,7 @@ query.userNotifications = async (root, args, context, schema) => {
   //===
 
   // 请求用户的角色
-  let admin = role == 'admin' ? true : false
-  let err, notificationList
+  let admin = role == 'admin' ? true : false;
 
 
   if (user.block_people_count > 0 && !admin) {
@@ -164,7 +164,12 @@ query.countUserNotifications = async (root, args, context, schema) => {
   }
 
   const { user, role } = context
-  let { query } = Querys({ args, model:'user-notification', role })
+  let err, query, count;
+  // let { query } = Querys({ args, model:'user-notification', role });
+
+  [ err, query ] = getQuery({ args, model:'user-notification', role });
+  // [ err, options ] = getOption({ args, model:'user-notification', role });
+
 
   //===
 
@@ -175,7 +180,7 @@ query.countUserNotifications = async (root, args, context, schema) => {
     query.sender_id = { '$nin': user.block_people }
   }
 
-  let [ err, count ] = await To(UserNotification.count({ query }))
+  [ err, count ] = await To(UserNotification.count({ query }))
 
   return { count }
 }
@@ -184,19 +189,22 @@ mutation.updateUserNotifaction = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
-  let options = {}
-  let { error, query, update } = Updates({ args, model: 'user-notification', role })
+  let options = {}, err, result, query, update;
+  // let { error, query, update } = Updates({ args, model: 'user-notification', role });
 
-  if (error) {
+  [ err, query ] = getUpdateQuery({ args, model: 'user-notification', role });
+  [ err, update ] = getUpdateContent({ args, model: 'user-notification', role });
+
+  if (err) {
     throw CreateError({
-      message: error,
+      message: err,
       data: {}
     })
   }
 
   //===
 
-  let [ err, result ] = await To(UserNotification.update({ query, update, options }))
+  [ err, result ] = await To(UserNotification.update({ query, update, options }))
 
   if (err) {
     throw CreateError({

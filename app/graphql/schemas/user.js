@@ -1,8 +1,10 @@
 
-import Query from '../querys'
-import Updates from '../updates'
-const { querySchema } = Query({ model: 'user' })
-const { updateSchema } = Updates({ model: 'user' })
+// import Query from '../querys'
+// import Updates from '../updates'
+// const { querySchema } = Query({ model: 'user' })
+// const { updateSchema } = Updates({ model: 'user' })
+
+import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
@@ -80,7 +82,7 @@ type countUsers {
 exports.Query = `
 
 # 查询用户
-users(${querySchema}): [User]
+users(${getQuerySchema('user')}): [User]
 
 # 查询用户
 selfInfo(
@@ -89,13 +91,13 @@ selfInfo(
 ): SelfInfo
 
 # 用户计数
-countUsers(${querySchema}): countUsers
+countUsers(${getQuerySchema('user')}): countUsers
 
 `
 
 exports.Mutation = `
 
 # 更新用户
-updateUser(${updateSchema}): updateUser
+updateUser(${getUpdateSchema('user')}): updateUser
 
 `
