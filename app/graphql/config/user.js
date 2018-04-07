@@ -53,6 +53,27 @@ const query = {
 
 // 储存
 const save = {
+  email: data => ({
+    name: 'email', value: data, type: 'String!', desc:'邮箱'
+  }),
+  phone: data => ({
+    name: 'phone', value: data, type: 'String!', desc:'手机'
+  }),
+  area_code: data => ({
+    name: 'area_code', value: data, type: 'String!', desc:'手机区号'
+  }),
+  nickname: data => ({
+    name: 'nickname', value: data, type: 'String!', desc:'昵称'
+  }),
+  password: data => ({
+    name: 'password', value: data, type: 'String!', desc:'密码'
+  }),
+  captcha: data => ({
+    name: 'captcha', value: data, type: 'String!', desc:'验证码'
+  }),
+  source: data => ({
+    name: 'source', value: data, type: 'Int', desc:'来源id'
+  })
 }
 
 // 更新

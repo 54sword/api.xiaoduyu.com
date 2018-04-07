@@ -14,6 +14,7 @@ import follow from './follow';
 import like from './like';
 
 import password from './password';
+import phone from './phone';
 
 let Query = {};
 let Mutation = {};
@@ -43,6 +44,7 @@ Object.assign(Mutation, countries.mutation);
 Object.assign(Mutation, follow.mutation);
 Object.assign(Mutation, like.mutation);
 Object.assign(Mutation, password.mutation);
+Object.assign(Mutation, phone.mutation);
 
 var resolvers = {
   Query,
@@ -63,5 +65,6 @@ Object.assign(resolvers, countries.resolvers);
 Object.assign(resolvers, follow.resolvers);
 Object.assign(resolvers, like.resolvers);
 Object.assign(resolvers, password.resolvers);
+Object.assign(resolvers, phone.resolvers);
 
 export default resolvers

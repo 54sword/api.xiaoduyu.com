@@ -73,9 +73,9 @@ query.selfInfo = async (root, args, context, schema) => {
 
   [ err, result ] = await To(Phone.findOne({
     query: { user_id: user._id }
-  }))
+  }));
 
-  user.phone = result ? changeString(result.phone + '') : ''
+  user.phone = result ? changeString(result.phone + '') : '';
 
   return user
 
@@ -114,6 +114,12 @@ query.countUsers = async (root, args, context, schema) => {
   [ err, count ] = await To(User.count({ query }));
 
   return { count }
+}
+
+mutation.addUser = async (root, args, context, schema) => {
+  return {
+    success: true
+  }
 }
 
 mutation.updateUser = async (root, args, context, schema) => {

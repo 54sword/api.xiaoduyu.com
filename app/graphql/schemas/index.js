@@ -12,6 +12,7 @@ import Countries from './countries';
 import Follow from './follow';
 import Like from './like';
 import Password from './password';
+import Phone from './phone';
 
 const typeDefs = [ `
 
@@ -29,6 +30,7 @@ const typeDefs = [ `
   ${Follow.Schema}
   ${Like.Schema}
   ${Password.Schema}
+  ${Phone.Schema}
 
   # 查询
   type Query {
@@ -46,6 +48,7 @@ const typeDefs = [ `
     ${Follow.Query}
     ${Like.Query}
     ${Password.Query}
+    ${Phone.Query}
   }
 
   # 增、删、改
@@ -64,6 +67,7 @@ const typeDefs = [ `
     ${Follow.Mutation}
     ${Like.Mutation}
     ${Password.Mutation}
+    ${Phone.Mutation}
   }
 
   schema {

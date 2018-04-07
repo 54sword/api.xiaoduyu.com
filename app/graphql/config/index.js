@@ -10,6 +10,7 @@ import topic from './topic';
 import notification from './notification';
 import userNotification from './user-notification';
 import user from './user';
+import phone from './phone';
 
 let list = {
   posts,
@@ -22,7 +23,8 @@ let list = {
   topic,
   notification,
   'user-notification': userNotification,
-  user
+  user,
+  phone
 }
 
 let s = {

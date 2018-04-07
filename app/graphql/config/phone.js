@@ -11,11 +11,11 @@ const query = {
 const save = {
   phone: data => ({
     name: 'phone', value: data,
-    type: 'String', desc:'手机'
+    type: 'String!', desc:'手机'
   }),
   area_code: data => ({
     name: 'area_code', value: data,
-    type: 'String', desc:'手机国家代码'
+    type: 'String!', desc:'手机国家代码'
   }),
   captcha: data => ({
     name: 'captcha', value: data,
@@ -26,9 +26,24 @@ const save = {
 // 更新
 const update = {
   // 筛选参数
-  filters: {},
+  filters: {
+    captcha: data => ({
+      name: 'captcha', value: data,
+      type: 'String!', desc:'验证码'
+    })
+  },
   // 更新内容
-  content: {}
+  content: {
+    phone: data => ({
+      name: 'phone', value: data,
+      type: 'String!', desc:'手机'
+    }),
+    area_code: data => ({
+      name: 'area_code', value: data,
+      type: 'String!', desc:'手机国家代码'
+    }),
+
+  }
 }
 
 export default { query, save, update }

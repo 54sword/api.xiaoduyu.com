@@ -1,9 +1,4 @@
 
-// import Query from '../querys'
-// import Updates from '../updates'
-// const { querySchema } = Query({ model: 'user' })
-// const { updateSchema } = Updates({ model: 'user' })
-
 import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
@@ -64,6 +59,7 @@ type SelfInfo {
   weibo: Boolean
   qq: Boolean
   github: Boolean
+  phone: String
 }
 
 # 更新用户返回
@@ -77,6 +73,10 @@ type countUsers {
   count: Int
 }
 
+type addUser {
+  success: Boolean
+}
+
 `
 
 exports.Query = `
@@ -84,18 +84,20 @@ exports.Query = `
 # 查询用户
 users(${getQuerySchema('user')}): [User]
 
+# 用户计数
+countUsers(${getQuerySchema('user')}): countUsers
+
 # 查询用户
 selfInfo(
   # 随机字符串，让他始终重服务器获取
   randomString: String
 ): SelfInfo
 
-# 用户计数
-countUsers(${getQuerySchema('user')}): countUsers
-
 `
 
 exports.Mutation = `
+
+addUser(${getSaveSchema('user')}): addUser
 
 # 更新用户
 updateUser(${getUpdateSchema('user')}): updateUser
