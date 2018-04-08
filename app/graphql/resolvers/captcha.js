@@ -127,7 +127,7 @@ const sendEmail = ({ user, email, type, captcha }) => {
                       '</span>'+
                       '<div>请注意: 为了保障您帐号的安全性，验证码15分钟后过期，请尽快验证!</div>';
 
-    } else if (type == 'signup') {
+    } else if (type == 'sign-up') {
 
       title = '请输入验证码 '+captcha+' 完成账号注册';
       content = '<div style="font-size:18px;">尊敬的 '+email+'，您好！</div>'+
@@ -284,7 +284,7 @@ const sendSMS = ({ user, area_code, phone, type, captcha }) => {
 
       if (!phoneAccount) return reject('手机号不存在');
 
-    } else if (type == 'signup') {
+    } else if (type == 'sign-up') {
 
       if (!existAreaCode) return reject('区号不存在');
       if (phoneAccount) return reject('手机号已被注册');

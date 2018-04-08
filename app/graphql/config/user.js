@@ -54,10 +54,10 @@ const query = {
 // 储存
 const save = {
   email: data => ({
-    name: 'email', value: data, type: 'String!', desc:'邮箱'
+    name: 'email', value: data, type: 'String', desc:'邮箱'
   }),
   phone: data => ({
-    name: 'phone', value: data, type: 'String!', desc:'手机'
+    name: 'phone', value: data, type: 'String', desc:'手机'
   }),
   area_code: data => ({
     name: 'area_code', value: data, type: 'String!', desc:'手机区号'
@@ -73,6 +73,9 @@ const save = {
   }),
   source: data => ({
     name: 'source', value: data, type: 'Int', desc:'来源id'
+  }),
+  gender: data => ({
+    name: 'gender', value: data, type: 'Int', desc:'性别 0女 / 1男'
   })
 }
 
