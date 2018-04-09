@@ -60,7 +60,7 @@ const save = {
     name: 'phone', value: data, type: 'String', desc:'手机'
   }),
   area_code: data => ({
-    name: 'area_code', value: data, type: 'String!', desc:'手机区号'
+    name: 'area_code', value: data, type: 'String', desc:'手机区号'
   }),
   nickname: data => ({
     name: 'nickname', value: data, type: 'String!', desc:'昵称'

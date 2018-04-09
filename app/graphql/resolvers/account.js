@@ -19,7 +19,6 @@ query.signIn = async (root, args, context, schema) => {
 
   // 判断ip是否存在
   if (!ip) {
-    await To(Captcha.create(ip));
     throw CreateError({ message: '获取不到您的IP' });
   }
 
@@ -28,7 +27,7 @@ query.signIn = async (root, args, context, schema) => {
 
   // 判断查询参数是否合法
   if (err) {
-    await To(Captcha.create(ip));
+    await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: err });
   }
 
@@ -37,7 +36,7 @@ query.signIn = async (root, args, context, schema) => {
   let { email, phone, password, captcha, captcha_id } = query;
 
   if (!email && !phone) {
-    await To(Captcha.create(ip));
+    await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '需要邮箱或手机号' });
   }
 
@@ -50,15 +49,15 @@ query.signIn = async (root, args, context, schema) => {
   }));
 
   if (err) {
-    await To(Captcha.create(ip));
+    await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '查询验证码失败' });
 
   } else if (result && !captcha) {
-    await To(Captcha.create(ip));
+    await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '缺少验证码' });
 
   } else if (result && !captcha_id) {
-    await To(Captcha.create(ip));
+    await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '缺少验证码ID' });
 
   } else if (result && captcha_id && captcha) {
@@ -68,7 +67,7 @@ query.signIn = async (root, args, context, schema) => {
     }));
 
     if (err || !result || result.captcha != captcha) {
-      await To(Captcha.create(ip));
+      await To(Captcha.create({ ip, type: 'sign-in' }));
       throw CreateError({ message: '验证码无效' });
     }
   }
@@ -89,7 +88,7 @@ query.signIn = async (root, args, context, schema) => {
   }
 
   if (err || !account) {
-    await To(Captcha.create(ip));
+    await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '账号错误或不存在' });
   }
 
@@ -100,10 +99,10 @@ query.signIn = async (root, args, context, schema) => {
   }))
 
   if (err || !result) {
-    await To(Captcha.create(ip));
+    await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '密码错误' });
   }
-
+  
   // 生产 access token -----------------------
 
   result = JWT.encode(jwtTokenSecret, account.user_id._id, account.user_id.access_token, ip);

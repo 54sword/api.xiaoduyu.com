@@ -11,6 +11,7 @@ import notification from './notification';
 import userNotification from './user-notification';
 import user from './user';
 import phone from './phone';
+import forgot from './forgot';
 
 let list = {
   posts,
@@ -24,7 +25,8 @@ let list = {
   notification,
   'user-notification': userNotification,
   user,
-  phone
+  phone,
+  forgot
 }
 
 let s = {

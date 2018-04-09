@@ -13,6 +13,7 @@ import Follow from './follow';
 import Like from './like';
 import Password from './password';
 import Phone from './phone';
+import Forgot from './forgot';
 
 const typeDefs = [ `
 
@@ -31,6 +32,7 @@ const typeDefs = [ `
   ${Like.Schema}
   ${Password.Schema}
   ${Phone.Schema}
+  ${Forgot.Schema}
 
   # 查询
   type Query {
@@ -49,6 +51,7 @@ const typeDefs = [ `
     ${Like.Query}
     ${Password.Query}
     ${Phone.Query}
+    ${Forgot.Query}
   }
 
   # 增、删、改
@@ -68,6 +71,7 @@ const typeDefs = [ `
     ${Like.Mutation}
     ${Password.Mutation}
     ${Phone.Mutation}
+    ${Forgot.Mutation}
   }
 
   schema {

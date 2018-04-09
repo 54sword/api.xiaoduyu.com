@@ -5,6 +5,7 @@ import config , { domain } from '../../../config';
 // tools
 import To from '../../common/to';
 import CreateError from './errors';
+import Validate from '../../common/validate';
 
 import Email from '../../common/email';
 import Countries from '../../data/countries';
@@ -29,7 +30,6 @@ mutation.addCaptcha = async (root, args, context, schema) => {
   }
 
   const { email, phone, area_code, type } = fields;
-  const captcha = Math.round(900000*Math.random()+100000);
 
   // =========================
   // 图片验证码
@@ -43,9 +43,11 @@ mutation.addCaptcha = async (root, args, context, schema) => {
 
     if (!result) return { success: true, _id: '', url: '' };
 
-    [ err, result ] = await To(Captcha.save({
-      data: { captcha, ip }
-    }));
+    if (type != 'sign-in') {
+      throw CreateError({ message: 'type 错误' });
+    }
+
+    [ err, result ] = await To(Captcha.create({ ip, type }));
 
     return { success: true, _id: result._id, url: domain + '/captcha/' + result._id }
 
@@ -54,25 +56,27 @@ mutation.addCaptcha = async (root, args, context, schema) => {
   // =========================
   // 发送验证码到邮箱
   if (email && type) {
-    [ err, result ] = await To(sendEmail({ user, email, type, captcha }));
-  }
-
-  // =========================
-  // 发送验证码到手机
-  if (phone && area_code && type) {
-    [ err, result ] = await To(sendSMS({ user, area_code, phone, type, captcha }));
+    [ err, result ] = await To(sendEmail({ user, email, type }));
 
     if (err) {
       throw CreateError({ message: err });
     }
 
-    return {
-      success: false
+  }
+
+  // =========================
+  // 发送验证码到手机
+  if (phone && type) {
+    [ err, result ] = await To(sendSMS({ user, area_code, phone, type }));
+
+    if (err) {
+      throw CreateError({ message: err });
     }
+
   }
 
   return {
-    success: false
+    success: true
   }
 
 }
@@ -85,7 +89,7 @@ exports.resolvers = resolvers;
 
 // 发送验证码到邮箱
 
-const sendEmail = ({ user, email, type, captcha }) => {
+const sendEmail = ({ user, email, type }) => {
   return new Promise(async (resolve, reject)=>{
 
     if (Validate.email(email) != 'ok') {
@@ -102,60 +106,77 @@ const sendEmail = ({ user, email, type, captcha }) => {
       }
     }));
 
-    if (!res) {
-      return reject('邮箱不存在');
-    }
-
-    user = res.user_id;
-
-    if (res.user_id + '' != user._id + '' ||
-      type == 'binding-email' && !user ||
-      type == 'reset-email' && !user) {
-      return reject('无权访问');
-    }
-
+    let nickname = res ? res.user_id.nickname : '';
     let title = '', content = '';
+
+    let data = {
+      email,
+      type
+    }
 
     if (type == 'binding-email') {
 
-      title = '请输入验证码 '+captcha+' 完成绑定邮箱';
-      content = '<div style="font-size:18px;">尊敬的 '+user.nickname+'，您好！</div>'+
+      if (!user) return reject('无权访问');
+      if (res) return reject('邮箱已经被注册');
+
+      data.user_id = user._id;
+
+      [ err, res ] = await To(Captcha.create(data));
+
+      title = '请输入验证码 '+res.captcha+' 完成绑定邮箱';
+      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
                       '<div>您正在绑定小度鱼账号，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的注册验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
-                      captcha+
+                      res.captcha+
                       '</span>'+
                       '<div>请注意: 为了保障您帐号的安全性，验证码15分钟后过期，请尽快验证!</div>';
 
     } else if (type == 'sign-up') {
 
-      title = '请输入验证码 '+captcha+' 完成账号注册';
-      content = '<div style="font-size:18px;">尊敬的 '+email+'，您好！</div>'+
+      if (user) return reject('登陆用户不能注册，请退出账户后注册');
+      if (res) return reject('邮箱已被注册');
+
+      [ err, res ] = await To(Captcha.create(data));
+
+      title = '请输入验证码 '+res.captcha+' 完成账号注册';
+      content = '<div style="font-size:18px;">尊敬的用户，您好！</div>'+
                       '<div>您正在注册小度鱼账号，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的注册验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
-                      captcha+
+                      res.captcha+
                       '</span>'+
                       '<div>请注意: 为了保障您帐号的安全性，验证码15分钟后过期，请尽快验证!</div>'
     }  else if (type == 'reset-email') {
 
-      title = '请输入验证码 '+captcha+' 完成绑定邮箱';
-      content = '<div style="font-size:18px;">尊敬的 '+user.nickname+'，您好！</div>'+
+      if (!user) return reject('无权访问');
+      if (res) return reject('邮箱已被注册');
+
+      data.user_id = user._id;
+
+      [ err, res ] = await To(Captcha.create(data));
+
+      title = '请输入验证码 '+res.captcha+' 完成绑定邮箱';
+      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
                       '<div>您正在绑定新的小度鱼账号邮箱，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
-                      captcha+
+                      res.captcha+
                       '</span>'+
                       '<div>请注意: 为了保障您帐号的安全性，验证码15分钟后过期，请尽快验证!</div>'
 
     } else if (type == 'forgot') {
 
-      title = '请输入验证码 '+captcha+' 完成找回密码';
-      content = '<div style="font-size:18px;">尊敬的 '+user.nickname+'，您好！</div>'+
+      if (!res) return reject('邮箱不存在');
+
+      [ err, res ] = await To(Captcha.create(data));
+
+      title = '请输入验证码 '+res.captcha+' 完成找回密码';
+      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
                       '<div>您正在操作小度鱼账号密码找回，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的注册验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
-                      captcha+
+                      res.captcha+
                       '</span>'+
                       '<div>请注意: 为了保障您帐号的安全性，验证码15分钟后过期，请尽快验证!</div>';
 
@@ -163,16 +184,12 @@ const sendEmail = ({ user, email, type, captcha }) => {
       return reject('类型错误');
     }
 
-    [ err, res ] = await To(Captcha.save({
-      data: { email, captcha, user_id: user._id }
-    }));
-
     let mailOptions = {
       to: email,
       subject: title,
       text: content,
       html: generateEmailHTMLContent(content)
-    };
+    }
 
     Email.send(mailOptions, (res, response) => {
 
@@ -249,7 +266,7 @@ const generateEmailHTMLContent = (content) => {
 }
 
 
-const sendSMS = ({ user, area_code, phone, type, captcha }) => {
+const sendSMS = ({ user, area_code = '', phone, type }) => {
 
   return new Promise(async (resolve, reject) => {
 
@@ -268,7 +285,7 @@ const sendSMS = ({ user, area_code, phone, type, captcha }) => {
 
     let data = {
       phone,
-      captcha
+      type
     }
 
     if (type == 'binding-phone' || type == 'reset-phone') {
@@ -293,7 +310,7 @@ const sendSMS = ({ user, area_code, phone, type, captcha }) => {
       return reject('type 错误');
     }
 
-    [ err, res ] = await To(Captcha.save({ data }));
+    [ err, res ] = await To(Captcha.create(data));
 
     if (err) {
       throw CreateError({
@@ -308,7 +325,7 @@ const sendSMS = ({ user, area_code, phone, type, captcha }) => {
     let _area_code = '';
 
     if (phoneAccount && phoneAccount.area_code) {
-      area_code = phoneAccount.area_code
+      area_code = phoneAccount.area_code;
     }
 
     // 如果不是国内，则使用云片
@@ -319,13 +336,9 @@ const sendSMS = ({ user, area_code, phone, type, captcha }) => {
 
     serviceProvider.sendSMS({
       PhoneNumbers: encodeURI(_area_code + phone),
-      TemplateParam: { code: captcha }
+      TemplateParam: { code: res.captcha }
     }, (err)=>{
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
+      err ? reject(err) : resolve();
     })
 
   });

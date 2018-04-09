@@ -11,6 +11,7 @@ var CaptchaSchema = new Schema({
   email: { type: String, lowercase: true, trim: true },
   captcha: { type: String, required: true },
   ip: { type: String },
+  type: { type: String },
   create_at: { type: Date, expires: 60*15*24, default: Date.now } // 半小时后自动删除
 })
 
