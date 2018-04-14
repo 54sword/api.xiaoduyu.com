@@ -1,4 +1,4 @@
-import { User, Account, Oauth, Phone, Captcha } from '../../modelsa';
+import { User, Account, Oauth, Phone, Captcha, Follow } from '../../modelsa';
 
 import xss from 'xss';
 import uuid from 'node-uuid';
@@ -83,23 +83,53 @@ query.selfInfo = async (root, args, context, schema) => {
 
 query.users = async (root, args, context, schema) => {
 
-  const { user, role } = context
-  const { method } = args
-  let select = {}, err, query, options, userList;
-  // let { query, options } = Querys({ args, model: 'user', role });
-
+  const { user, role } = context;
+  const { method } = args;
+  let select = {}, err, query, options, list, ids, res;
 
   [ err, query ] = getQuery({ args, model: 'user', role });
   [ err, options ] = getOption({ args, model: 'user', role });
+
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
 
   //===
 
-  [ err, userList ] = await To(User.find({ query, select, options }));
+  [ err, list ] = await To(User.find({ query, select, options }));
 
-  return userList
+  list = JSON.parse(JSON.stringify(list));
+
+  if (user) {
+
+    if (Reflect.has(select, 'follow')) {
+
+      ids = [];
+
+      list.map(item=>ids.push(item._id));
+
+      [ err, res ] = await To(Follow.find({
+        query: {
+          user_id: user._id,
+          people_id: { "$in": ids },
+          deleted: false
+        }
+      }));
+
+      ids = {};
+
+      res.map(item=>ids[item.people_id] = 1);
+
+      list.map(item => {
+        item.follow = ids[item._id] ? true : false;
+        return item;
+      });
+
+    }
+
+  }
+
+  return list
 }
 
 query.countUsers = async (root, args, context, schema) => {

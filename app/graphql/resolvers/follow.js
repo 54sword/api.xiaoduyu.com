@@ -1,16 +1,201 @@
 
 import { Follow, Topic, User, Posts, UserNotification } from '../../modelsa';
-import { domain } from '../../../config';
-
-let query = {};
-let mutation = {};
-let resolvers = {};
 
 import To from '../../common/to';
 import CreateError from './errors';
+import xss from 'xss';
 
-import { getSaveFields } from '../config';
+import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
+let [ query, mutation, resolvers ] = [{},{},{}];
 
+
+query.findFollows = async (root, args, context, schema) => {
+
+  const { user, role } = context
+  const { method } = args
+
+  let err, query, options, res, select = {}, list, ids;
+
+  [ err, query ] = getQuery({ args, model:'follow', role });
+  [ err, options ] = getOption({ args, model:'follow', role });
+
+  // select
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
+
+  if (Reflect.has(select, 'user_id')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'user_id',
+      model: 'User',
+      select:{ _id: 1, nickname: 1, create_at: 1, avatar: 1, fans_count: 1, comment_count:1, follow_people_count: 1 }
+    });
+  }
+
+  if (Reflect.has(select, 'people_id')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'people_id',
+      model: 'User',
+      select:{ _id: 1, nickname: 1, create_at: 1, avatar: 1, fans_count: 1, comment_count:1, follow_people_count: 1 }
+    });
+  }
+
+  if (Reflect.has(select, 'topic_id')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'topic_id',
+      model: 'Topic',
+      select:{ '_id': 1, 'avatar': 1, 'name': 1 }
+    });
+  }
+
+  if (Reflect.has(select, 'posts_id')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'posts_id',
+      model: 'Posts',
+      select:{ '_id': 1, 'title': 1 }
+    });
+  }
+
+  [ err, list ] = await To(Follow.find({ query, options }));
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    })
+  }
+
+  list = JSON.parse(JSON.stringify(list));
+
+  if (user) {
+
+    if (Reflect.has(select, 'people_id')) {
+
+      ids = [];
+
+      list.map(item=>{
+        if (item.people_id) ids.push(item.people_id._id);
+      });
+
+      [ err, res ] = await To(Follow.find({
+        query: {
+          user_id: user._id,
+          people_id: { "$in": ids },
+          deleted: false
+        }
+      }));
+
+      ids = {};
+
+      res.map(item=>ids[item.people_id] = 1);
+      list.map(item => {
+        item.people_id.follow = ids[item.people_id._id] ? true : false;
+        return item;
+      });
+    }
+
+    if (Reflect.has(select, 'user_id')) {
+
+      ids = [];
+
+      list.map(item=>{
+        if (item.user_id) ids.push(item.user_id._id);
+      });
+
+      [ err, res ] = await To(Follow.find({
+        query: {
+          user_id: user._id,
+          people_id: { "$in": ids },
+          deleted: false
+        }
+      }));
+
+      ids = {};
+
+      res.map(item=>ids[item.people_id] = 1);
+      list.map(item => {
+        item.user_id.follow = ids[item.user_id._id] ? true : false;
+        return item;
+      });
+    }
+
+    if (Reflect.has(select, 'posts_id')) {
+
+      ids = [];
+
+      list.map(item=>{
+        if (item.posts_id) ids.push(item.posts_id._id);
+      });
+
+      [ err, res ] = await To(Follow.find({
+        query: {
+          user_id: user._id,
+          posts_id: { "$in": ids },
+          deleted: false
+        }
+      }));
+
+      ids = {};
+
+      res.map(item=>ids[item.posts_id] = 1);
+      list.map(item => {
+        item.posts_id.follow = ids[item.posts_id._id] ? true : false;
+        return item;
+      });
+    }
+
+    if (Reflect.has(select, 'topic_id')) {
+
+      ids = [];
+
+      list.map(item=>{
+        if (item.topic_id) ids.push(item.topic_id._id);
+      });
+
+      [ err, res ] = await To(Follow.find({
+        query: {
+          user_id: user._id,
+          topic_id: { "$in": ids },
+          deleted: false
+        }
+      }));
+
+      ids = {};
+
+      res.map(item=>ids[item.topic_id] = 1);
+      list.map(item => {
+        item.topic_id.follow = ids[item.topic_id._id] ? true : false;
+        return item;
+      });
+    }
+
+  }
+
+  return list
+}
+
+query.countFindFollows = async (root, args, context, schema) => {
+
+  const { user, role } = context
+  const { method } = args
+
+  let err, query, options, count;
+
+  [ err, query ] = getQuery({ args, model:'follow', role });
+
+  [ err, count ] = await To(Follow.count({ query, options }));
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    })
+  }
+
+  return { count }
+}
 
 // 还缺少通知
 mutation.addFollow = async (root, args, context, schema) => {
@@ -92,13 +277,14 @@ mutation.addFollow = async (root, args, context, schema) => {
 
   }
 
+  // 查询关注
   let query = {
     user_id: user._id
   }
 
   if (topic_id) query.topic_id = topic_id;
   else if (posts_id) query.posts_id = posts_id;
-  else if (user_id) query.user_id = user_id;
+  else if (user_id) query.people_id = user_id;
 
   [ err, result ] = await To(Follow.findOne({
     query: query
@@ -195,7 +381,7 @@ mutation.addFollow = async (root, args, context, schema) => {
         addressee_id: user_id
       }
     }
-    
+
     [ err, result ] = await To(UserNotification.findOne({ query: data }));
 
     if (!result && status) {
@@ -258,9 +444,9 @@ async function updateUserTopicCount(userId) {
     },
     select: { topic_id: 1, _id: 0 }
   }));
-
+  
   var ids = [];
-  result.map(item =>{ ids.push(item.posts_id) });
+  result.map(item =>{ ids.push(item.topic_id) });
 
   [ err, result ] = await To(User.update({
     query: { _id: userId },
@@ -282,7 +468,7 @@ async function updateUserFollowPeopleCount(userId) {
   }));
 
   var ids = [];
-  result.map(item =>{ ids.push(item.posts_id) });
+  result.map(item =>{ ids.push(item.people_id) });
 
   [ err, result ] = await To(User.update({
     query: { _id: userId },

@@ -28,6 +28,7 @@ type User {
   nickname: String
   banned_to_post: String
   avatar_url: String
+  follow: Boolean
 }
 
 # 获取自己的个人信息

@@ -12,7 +12,7 @@ const query = {
       type: 'Boolean', desc:'削弱'
     }),
     deleted: data => ({
-      name: 'deleted', value: data, role: 'admin',
+      name: 'deleted', value: data,
       type: 'Boolean', desc:'删除'
     }),
     recommend: data => ({

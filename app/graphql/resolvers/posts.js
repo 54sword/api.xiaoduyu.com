@@ -16,7 +16,7 @@ query.posts = async (root, args, context, schema) => {
   const { method } = args
 
   let select = {}, err, postList, followList, likeList, ids, query, options;
-  // let { query, options } = Querys({ args, model:'posts', role })
+  
   [ err, query ] = getQuery({ args, model:'posts', role });
   [ err, options ] = getOption({ args, model:'posts', role });
 
