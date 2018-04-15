@@ -269,6 +269,21 @@ mutation.addComment = async (root, args, context, schema) => {
     });
   }
 
+  // 一个用户只能评论一次
+  if (posts_id && !parent_id && !reply_id) {
+
+    [ err, result ] = await To(Comment.findOne({
+      query: { user_id: user._id, posts_id, parent_id: { $exists : false } }
+    }));
+
+    if (result) {
+      throw CreateError({
+        message: '提交失败，一个帖子只能评论一次'
+      });
+    }
+
+  }
+
   // posts_id
   if (posts_id) {
     [ err, posts ] = await To(Posts.findOne({
@@ -303,8 +318,6 @@ mutation.addComment = async (root, args, context, schema) => {
         message: 'parent_id 不存在'
       })
     }
-
-    // console.log(parentComment);
 
     if (parentComment.posts_id + '' != posts_id) {
       throw CreateError({
