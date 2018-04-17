@@ -16,7 +16,7 @@ query.posts = async (root, args, context, schema) => {
   const { method } = args
 
   let select = {}, err, postList, followList, likeList, ids, query, options;
-  
+
   [ err, query ] = getQuery({ args, model:'posts', role });
   [ err, options ] = getOption({ args, model:'posts', role });
 
@@ -343,6 +343,31 @@ mutation.addPosts = async (root, args, context, schema) => {
     });
   }
 
+
+  // 一天仅能发布一次
+  let date = new Date();
+  [ err, result ] = await To(Posts.findOne({
+    query: {
+      user_id: user._id,
+      create_at: {
+        '$gte': new Date(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate())
+      }
+    }
+  }));
+
+  if (err) {
+    throw CreateError({
+      message: '添加失败',
+      data: { errorInfo: err.message }
+    })
+  }
+
+  if (result) {
+    throw CreateError({
+      message: '一天仅能发布一次'
+    })
+  }
+  
 
   // title
   title = xss(title, {

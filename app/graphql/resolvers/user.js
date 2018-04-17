@@ -336,21 +336,28 @@ mutation.addUser = async (root, args, context, schema) => {
 
 mutation.updateUser = async (root, args, context, schema) => {
 
-  const { user, role } = context
+  const { user, role } = context;
   let options = {}, err, query, update, result;
 
-  [ err, query ] = getUpdateContent({ args, model: 'user', role });
+  [ err, query ] = getUpdateQuery({ args, model: 'user', role });
   [ err, update ] = getUpdateContent({ args, model: 'user', role });
 
-  if (error) {
+  if (err) {
     throw CreateError({
-      message: error,
-      data: {}
+      message: err
     })
   }
 
   if (query._id != user._id + '') {
     throw CreateError({ message: '无权修改' });
+  }
+
+  if (Reflect.has(update, 'nickname')) {
+    if (!update.nickname) {
+      throw CreateError({ message: '昵称不能为空' });
+    } else if (update.nickname.length > 12) {
+      throw CreateError({ message: '字符长度不能大于16个字符' });
+    }
   }
 
   [ err, result ] = await To(User.update({ query, update, options }));

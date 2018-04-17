@@ -269,6 +269,7 @@ mutation.addComment = async (root, args, context, schema) => {
     });
   }
 
+  /*
   // 一个用户只能评论一次
   if (posts_id && !parent_id && !reply_id) {
 
@@ -283,6 +284,7 @@ mutation.addComment = async (root, args, context, schema) => {
     }
 
   }
+  */
 
   // posts_id
   if (posts_id) {
