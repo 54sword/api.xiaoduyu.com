@@ -30,11 +30,13 @@ type posts_id {
   title: String
   content_html: String
   _id: ID
+  content_trim: String
 }
 
 type un__comment {
   _id: ID
   content_html: String
+  content_trim: String
 }
 
 type un_comment {
@@ -43,6 +45,7 @@ type un_comment {
   posts_id: posts_id
   reply_id: un__comment
   parent_id: un__comment
+  content_trim: String
 }
 
 # 话题
