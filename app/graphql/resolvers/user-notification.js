@@ -114,6 +114,7 @@ query.userNotifications = async (root, args, context, schema) => {
     })
   }
 
+  /*
   _notices.map(function(item, key){
 
     if (item.comment_id) {
@@ -137,15 +138,6 @@ query.userNotifications = async (root, args, context, schema) => {
       _notices[key].comment_id.reply_id.content_trim = text
     }
 
-    /*
-    if (item.answer_id) {
-      var text = item.answer_id.content_html
-      text = text.replace(/<[^>]+>/g,"");
-      if (text.length > 100) text = text.substring(0,100) + '...'
-      _notices[key].answer_id.content_trim = text
-    }
-    */
-
     if (item.comment_id && item.comment_id.answer_id) {
       var text = item.comment_id.answer_id.content_html
       text = text.replace(/<[^>]+>/g,"");
@@ -153,6 +145,7 @@ query.userNotifications = async (root, args, context, schema) => {
       _notices[key].comment_id.answer_id.content_html = text
     }
   })
+  */
 
   // let [ err, userList ] = await To(User.find({ query, select, options }))
 

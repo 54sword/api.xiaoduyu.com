@@ -17,7 +17,7 @@ query.topics = async (root, args, context, schema) => {
   const { method } = args
   let select = {}, err, query, options, topicList;
   // let { query, options } = Querys({ args, model: 'topic', role });
-  
+
   [ err, query ] = getQuery({ args, model:'topic', role });
   [ err, options ] = getOption({ args, model:'topic', role });
 
@@ -38,7 +38,6 @@ query.topics = async (root, args, context, schema) => {
       select: { '_id': 1, 'avatar': 1, 'name': 1 }
     }]
   }
-
 
   [ err, topicList ] = await To(Topic.find({ query, select, options }))
 

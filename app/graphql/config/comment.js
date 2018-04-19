@@ -35,10 +35,23 @@ const query = {
       name: 'posts_id', value: data,
       type: 'String', desc:'帖子ID'
     }),
-    parent_id: data => ({
-      name: 'parent_id', value: { '$exists': data },
-      type: 'Boolean', desc:'true 查询reply，false 查询 comment，不提交则同时返回两种类型'
-    })
+    parent_id: data => {
+
+      if (data == 'exists') {
+        data = { '$exists': true }
+      } else if (data == 'not-exists') {
+        data = { '$exists': false }
+      }
+      
+      return {
+        name: 'parent_id', value: data, type: 'String', desc:'父评论id / exists / not-exists'
+      }
+    }
+
+    // ({
+    //   name: 'parent_id', value: { '$exists': data },
+    //   type: 'Boolean', desc:'true 查询reply，false 查询 comment，不提交则同时返回两种类型'
+    // })
   },
   // 排序，page size，page number
   options: {

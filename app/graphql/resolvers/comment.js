@@ -37,14 +37,12 @@ query.comments = async (root, args, context, schema) => {
       { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } }
     ])
   }
-
-  /*
+  
   if (Reflect.has(select, 'posts_id') && select.posts_id) {
     options.populate.push([
       { path: 'posts_id', select: { _id:1, title:1, content_html:1 } }
     ])
   }
-  */
 
   if (Reflect.has(select, 'reply') && select.reply) {
 

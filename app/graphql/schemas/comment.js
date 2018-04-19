@@ -49,7 +49,7 @@ type Comment {
   recommend: Int
   _id: String
   user_id: _User
-  posts_id: ID
+  posts_id: _Posts
   parent_id: String
   reply_id: _ReplyUser
   reply: [_Reply]
