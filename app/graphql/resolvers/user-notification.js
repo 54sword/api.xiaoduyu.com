@@ -1,4 +1,4 @@
-import { UserNotification } from '../../modelsa'
+import { UserNotification, Notification, User } from '../../modelsa'
 
 import To from '../../common/to'
 import CreateError from './errors'
@@ -178,6 +178,101 @@ query.countUserNotifications = async (root, args, context, schema) => {
   [ err, count ] = await To(UserNotification.count({ query }))
 
   return { count }
+}
+
+
+// 获取未读消息的[id]
+query.fetchUnreadUserNotification = async (root, args, context, schema) => {
+
+  const { user, role } = context;
+
+  if (!user) throw CreateError({ message: '请求被拒绝' });
+
+  // 拉取通知
+  let query = { addressee_id: user._id, deleted: false };
+
+  if (user.find_notification_at) query.create_at = { '$gt': user.find_notification_at }
+
+  let [ err, res ] = await To(Notification.find({
+    query,
+    options:{
+      sort:{ 'create_at': -1 }
+    }
+  }));
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  // 如果有未读通知（广播），生成用户通知
+  if (res && res.length > 0) {
+
+    // 更新用户最近一次拉取通知的时间
+    [ err ] = await To(User.update({
+      query: { _id: user._id },
+      update: { find_notification_at: res[0].create_at }
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: '更新失败',
+        data: { errorInfo: err.message }
+      });
+    }
+
+    // 添加用户通知
+    let notificationArr = [];
+
+    res.map((item) => {
+      if (item.type == 'new-comment') {
+        notificationArr.push({
+          sender_id: item.sender_id,
+          comment_id: item.target,
+          addressee_id: user._id,
+          create_at: item.create_at,
+          type: item.type
+        });
+      }
+    });
+
+    [ err ] = await To(UserNotification.save({
+      data: notificationArr
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: '储存失败',
+        data: { errorInfo: err.message }
+      });
+    }
+
+  }
+
+  query = {
+    addressee_id: user._id, has_read: false, deleted: false
+  }
+
+  // 增加屏蔽条件
+  if (user) {
+    if (user.block_people_count > 0) query.sender_id = { '$nin': user.block_people }
+  }
+
+  [ err, res ] = await To(UserNotification.find({ query, select: { _id: 1} }));
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  let ids = [];
+  if (res && res.length > 0) res.map(item=>ids.push(item._id));
+
+  return { ids }
 }
 
 mutation.updateUserNotifaction = async (root, args, context, schema) => {

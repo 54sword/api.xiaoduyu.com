@@ -71,6 +71,11 @@ type countUserNotifications {
   count: Int
 }
 
+# 获取未读的用户消息
+type fetchUnreadUserNotification {
+  ids: [String]
+}
+
 `
 
 exports.Query = `
@@ -80,6 +85,9 @@ userNotifications(${getQuerySchema('user-notification')}): [userNotification]
 
 # 用户通知计数
 countUserNotifications(${getQuerySchema('user-notification')}): countUserNotifications
+
+# 获取未读的用户消息
+fetchUnreadUserNotification: fetchUnreadUserNotification
 
 `
 

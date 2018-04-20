@@ -37,7 +37,7 @@ query.comments = async (root, args, context, schema) => {
       { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } }
     ])
   }
-  
+
   if (Reflect.has(select, 'posts_id') && select.posts_id) {
     options.populate.push([
       { path: 'posts_id', select: { _id:1, title:1, content_html:1 } }
@@ -452,10 +452,10 @@ mutation.addComment = async (root, args, context, schema) => {
       update: { $inc: { comment_count: 1 } }
     }));
     */
-
+    
     if (user._id + '' != posts.user_id + '') {
       // 发送通知邮件给帖子作者
-      await To(UserNotification.save({
+      await To(UserNotification.addOneAndSendNotification({
         data: {
           type: 'comment',
           sender_id: user._id,

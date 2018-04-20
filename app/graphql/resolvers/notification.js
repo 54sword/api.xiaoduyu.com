@@ -15,6 +15,8 @@ query.notifications = async (root, args, context, schema) => {
   [ err, query ] = getQuery({ args, model:'notification', role });
   [ err, options ] = getOption({ args, model:'notification', role });
 
+
+
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
 
@@ -27,9 +29,9 @@ query.notifications = async (root, args, context, schema) => {
         '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1
       }
     }
-  ]
-
-  [ err, list ] = await To(Notification.find({ query, select, options }))
+  ];
+  
+  [ err, list ] = await To(Notification.find({ query, select, options }));
 
   return list
 }

@@ -16,7 +16,7 @@ const query = {
       type: 'ID', desc:'收件用户ID'
     }),
     deleted: data => ({
-      name: 'deleted', value: data, role: 'admin',
+      name: 'deleted', value: data,
       type: 'Boolean', desc:'删除'
     }),
     type: data => ({
