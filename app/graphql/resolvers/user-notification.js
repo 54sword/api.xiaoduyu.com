@@ -42,7 +42,7 @@ query.userNotifications = async (root, args, context, schema) => {
       select: { _id: 1, nickname: 1, avatar: 1, create_at: 1 }
     })
   }
-
+  
   if (Reflect.has(select, 'sender_id')) {
     options.populate.push({
       path: 'sender_id',
@@ -66,9 +66,9 @@ query.userNotifications = async (root, args, context, schema) => {
     })
   };
 
-  [ err, notificationList ] = await To(UserNotification.find({ query, select, options }))
+  [ err, notificationList ] = await To(UserNotification.find({ query, select, options }));
 
-  options = []
+  options = [];
 
   if (Reflect.has(select, 'comment_id')) {
     options = [
@@ -95,11 +95,11 @@ query.userNotifications = async (root, args, context, schema) => {
 
   [ err, notificationList ] = await To(UserNotification.populate({ collections: notificationList, options }))
 
-  // console.log(notificationList);
-
   // 删除一些，通知
   let _notices = JSON.stringify(notificationList);
   _notices = JSON.parse(_notices);
+
+  let new_notices = [];
 
   if (_notices && _notices.map) {
     _notices.map(function(item, key){
@@ -109,9 +109,24 @@ query.userNotifications = async (root, args, context, schema) => {
         item.comment_id && typeof item.comment_id.parent_id != 'undefined' && item.comment_id.parent_id == null ||
         item.comment_id && typeof item.comment_id.reply_id != 'undefined' && item.comment_id.reply_id == null
         ) {
-          item.type = 'delete'
+          // delete _notices[key];
+          // item.type = 'delete'
+      } else {
+        new_notices.push(item)
       }
     })
+  }
+
+  _notices = new_notices;
+
+  if (notificationList && notificationList.length && role != 'admin') {
+    // 未读的通知设置成已读
+    for (var i = 0, max = notificationList.length; i < max; i++) {
+      if (notificationList[i].has_read == false) {
+        notificationList[i].has_read = true;
+        notificationList[i].save();
+      }
+    }
   }
 
   /*

@@ -1,10 +1,9 @@
 import { Comment, Like, Posts, User, UserNotification } from '../../modelsa';
 import xss from 'xss';
 
+import jpush from '../../common/jpush';
 import To from '../../common/to';
 import CreateError from './errors';
-// import Querys from '../querys';
-// import Updates from '../updates';
 
 let [ query, mutation, resolvers ] = [{},{},{}];
 
@@ -267,7 +266,6 @@ mutation.addComment = async (root, args, context, schema) => {
     });
   }
 
-  /*
   // 一个用户只能评论一次
   if (posts_id && !parent_id && !reply_id) {
 
@@ -282,7 +280,6 @@ mutation.addComment = async (root, args, context, schema) => {
     }
 
   }
-  */
 
   // posts_id
   if (posts_id) {
@@ -420,39 +417,18 @@ mutation.addComment = async (root, args, context, schema) => {
     updatePostsCommentCount(posts_id);
     updateUserCommentCount(user._id);
 
-    /*
-    let count;
-    [ err, count ] = await To(Comment.count({
-      query: {
-        posts_id: posts_id,
-        parent_id: { $exists: false },
-        deleted: false
-      }
-    }));
-
-    // 更新评论通知
-    let update = {
-      comment_count: count,
-      $addToSet: { comment: result._id }
-    }
-
     // 如果帖子创建日期，小于30天，置顶帖子
     if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 30) {
-      update.sort_by_date = new Date();
+
+      await To(Posts.update({
+        query: { _id: posts_id },
+        update: {
+          sort_by_date: new Date()
+        }
+      }));
+
     }
 
-    await To(Posts.update({
-      query: { _id: posts_id },
-      update
-    }));
-
-
-    await To(User.update({
-      query: { _id: user._id },
-      update: { $inc: { comment_count: 1 } }
-    }));
-    */
-    
     if (user._id + '' != posts.user_id + '') {
       // 发送通知邮件给帖子作者
       await To(UserNotification.addOneAndSendNotification({
@@ -464,19 +440,13 @@ mutation.addComment = async (root, args, context, schema) => {
         }
       }));
       // 极光推送
-      // jpush.pushCommentToUser({ comment, posts, user })
+      jpush.pushCommentToUser({ comment: result, posts, user });
     }
 
   }
 
   // 回复累计更新以及通知
   if (posts_id && parent_id) {
-
-    // 更新累计数
-    // await To(Comment.update({
-    //   query: { _id: parent_id },
-    //   update: { '$addToSet': { 'reply': result._id }, $inc: { 'reply_count': 1 } }
-    // }));
 
     updateCommentReplyCount(parent_id, posts_id);
 
@@ -490,7 +460,8 @@ mutation.addComment = async (root, args, context, schema) => {
       }));
     }
 
-    // jpush.pushReplyToUser({ comment: parentComment, reply: comment, user })
+    // 极光推送
+    jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
   }
 
   return {

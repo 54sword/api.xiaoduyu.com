@@ -24,6 +24,9 @@ query.posts = async (root, args, context, schema) => {
   if (!user && method) {
     throw CreateError({ message: '请求被拒绝' })
   }
+  
+  // 每页数量
+  let limit = options.limit;
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -187,7 +190,8 @@ query.posts = async (root, args, context, schema) => {
 
   // 更新最近查询关注的帖子
 
-  if (user && method == 'user_follow') {
+  if (user && method == 'user_follow' && limit != 1) {
+
     await User.update({
       query: { _id: user._id },
       update: { last_find_posts_at: new Date() }
@@ -367,7 +371,7 @@ mutation.addPosts = async (root, args, context, schema) => {
       message: '一天仅能发布一次'
     })
   }
-  
+
 
   // title
   title = xss(title, {
@@ -490,6 +494,33 @@ mutation.updatePosts = async (root, args, context, schema) => {
   return { success: true }
 }
 
+
+mutation.viewPosts = async (root, args, context, schema) => {
+
+  const { posts_id } = args;
+
+  let query = {
+    _id: posts_id
+  }
+
+  let [ err, result ] = await To(Posts.update({
+    query,
+    update: { $inc: { view_count: 1 } }
+  }));
+
+  if (err) {
+    throw CreateError({
+      message: '更新失败',
+      data: { errorInfo: err.message }
+    });
+
+    return { success: false }
+  }
+
+  return {
+    success: true
+  }
+}
 
 exports.query = query
 exports.mutation = mutation

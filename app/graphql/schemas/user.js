@@ -51,7 +51,6 @@ type SelfInfo {
   follow_posts_count: Int
   block_people_count: Int
   block_posts_count: Int
-  access_token: String
   gender: Boolean
   nickname: String
   banned_to_post: String
@@ -61,6 +60,8 @@ type SelfInfo {
   qq: Boolean
   github: Boolean
   phone: String
+  find_notification_at: String
+  last_find_posts_at: String
 }
 
 # 更新用户返回

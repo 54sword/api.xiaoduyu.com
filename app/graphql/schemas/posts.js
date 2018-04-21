@@ -1,10 +1,4 @@
 
-// import Query from '../querys';
-
-// import Updates from '../updates';
-// const { querySchema } = Query({ model: 'posts' });
-// const { updateSchema } = Updates({ model: 'posts' });
-
 import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
@@ -102,6 +96,10 @@ type countPosts {
   count: Int
 }
 
+# 帖子阅读数+1
+type viewPosts {
+  success: Boolean
+}
 
 `
 
@@ -122,5 +120,8 @@ addPosts(${getSaveSchema('posts')}): addPosts
 
 # 更新帖子
 updatePosts(${getUpdateSchema('posts')}): updatePosts
+
+# 帖子阅读数+1
+viewPosts(posts_id:String!): viewPosts
 
 `
