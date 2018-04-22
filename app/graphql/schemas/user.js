@@ -38,7 +38,7 @@ type SelfInfo {
   create_at: String
   last_sign_at: String
   blocked: Boolean
-  role: Boolean
+  role: Int
   avatar: String
   brief: String
   source: Boolean

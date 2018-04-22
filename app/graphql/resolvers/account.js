@@ -92,6 +92,10 @@ query.signIn = async (root, args, context, schema) => {
     throw CreateError({ message: '账号错误或不存在' });
   }
 
+  // if (role == 'admin' && account.role != 100) {
+  //   throw CreateError({ message: '您不是管理员，无法登陆' });
+  // }
+
   // 判断密码是否正确
   [ err, result ] = await To(Account.verifyPassword({
     password,
@@ -102,7 +106,7 @@ query.signIn = async (root, args, context, schema) => {
     await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '密码错误' });
   }
-  
+
   // 生产 access token -----------------------
 
   result = JWT.encode(jwtTokenSecret, account.user_id._id, account.user_id.access_token, ip);
