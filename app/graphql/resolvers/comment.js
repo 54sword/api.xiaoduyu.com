@@ -64,6 +64,11 @@ query.comments = async (root, args, context, schema) => {
 
   }
 
+  // 增加一些默认的筛选调价
+  if (!Reflect.has(query, 'deleted')) {
+    query.deleted = false;
+  }
+
   [ err, commentList ] = await To(Comment.find({ query, select, options }))
 
   if (err) {
@@ -163,7 +168,7 @@ query.comments = async (root, args, context, schema) => {
 
   likeList.map(function(item){
     ids[item.target_id] = 1
-  })
+  });
 
   commentList.map(function(item){
     if (ids[item._id]) {
@@ -182,7 +187,8 @@ query.comments = async (root, args, context, schema) => {
       })
     }
 
-  })
+    return item;
+  });
 
   return commentList
 }
@@ -265,7 +271,7 @@ mutation.addComment = async (root, args, context, schema) => {
       data: { error_data: err.countdown }
     });
   }
-
+  
   // 一个用户只能评论一次
   if (posts_id && !parent_id && !reply_id) {
 
@@ -305,6 +311,7 @@ mutation.addComment = async (root, args, context, schema) => {
     [ err, parentComment ] = await To(Comment.findOne({
       query: { _id: parent_id }
     }));
+
 
     if (err) {
       throw CreateError({ message: '查询失败', data: { errorInfo: err.message } })
@@ -440,7 +447,7 @@ mutation.addComment = async (root, args, context, schema) => {
         }
       }));
       // 极光推送
-      jpush.pushCommentToUser({ comment: result, posts, user });
+      // jpush.pushCommentToUser({ comment: result, posts, user });
     }
 
   }
@@ -452,16 +459,19 @@ mutation.addComment = async (root, args, context, schema) => {
 
     // 发送通知
     if (reply.user_id + '' != user._id + '') {
-      await To(UserNotification.add({
-        type: 'reply',
-        sender_id: user._id,
-        addressee_id: reply_id ? reply.user_id : parentComment.user_id,
-        comment_id: result._id,
+
+      await To(UserNotification.addOneAndSendNotification({
+        data: {
+          type: 'reply',
+          sender_id: user._id,
+          addressee_id: reply_id ? reply.user_id : parentComment.user_id,
+          comment_id: result._id
+        }
       }));
     }
 
     // 极光推送
-    jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
+    // jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
   }
 
   return {
@@ -546,7 +556,7 @@ async function updateCommentReplyCount(comment_id, posts_id) {
   let [ err, result ] = await To(Comment.find({
     query: {
       posts_id,
-      parent_id: { $exists: true },
+      parent_id: comment_id,
       deleted: false
     },
     select: { _id: 1 }

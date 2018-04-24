@@ -54,7 +54,7 @@ module.exports = (app) => {
   }, graphqlExpress(req => {
 
     return {
-			tracing: true,
+			tracing: debug,
 			debug,
       schema,
 			rootValue: {},

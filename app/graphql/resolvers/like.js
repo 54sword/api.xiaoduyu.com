@@ -143,7 +143,7 @@ mutation.like = async (root, args, context, schema) => {
 
   } else if (!result && status) {
     // 添加通知
-    await To(UserNotification.save({ data }));
+    await To(UserNotification.addOneAndSendNotification({ data }));
   }
 
   // 返回

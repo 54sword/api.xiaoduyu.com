@@ -386,7 +386,7 @@ mutation.addFollow = async (root, args, context, schema) => {
 
     if (!result && status) {
       // 不存在则创建一条通知
-      await To(UserNotification.save({ data }));
+      await To(UserNotification.addOneAndSendNotification({ data }));
     } else if (result && !status) {
       // 如果存在，并且是取消关注，则标记通知为删除
       await To(UserNotification.update({
@@ -444,7 +444,7 @@ async function updateUserTopicCount(userId) {
     },
     select: { topic_id: 1, _id: 0 }
   }));
-  
+
   var ids = [];
   result.map(item =>{ ids.push(item.topic_id) });
 
