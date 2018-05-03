@@ -35,6 +35,7 @@ function changeString(str) {
 
 }
 
+// 获取用户自己的个人资料
 query.selfInfo = async (root, args, context, schema) => {
 
   let { user } = context

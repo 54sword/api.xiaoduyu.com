@@ -14,6 +14,7 @@ import Like from './like';
 import Password from './password';
 import Phone from './phone';
 import Forgot from './forgot';
+import Oauth from './oauth';
 
 const typeDefs = [ `
 
@@ -33,6 +34,7 @@ const typeDefs = [ `
   ${Password.Schema}
   ${Phone.Schema}
   ${Forgot.Schema}
+  ${Oauth.Schema}
 
   # 查询
   type Query {
@@ -52,6 +54,7 @@ const typeDefs = [ `
     ${Password.Query}
     ${Phone.Query}
     ${Forgot.Query}
+    ${Oauth.Query}
   }
 
   # 增、删、改
@@ -72,6 +75,7 @@ const typeDefs = [ `
     ${Password.Mutation}
     ${Phone.Mutation}
     ${Forgot.Mutation}
+    ${Oauth.Mutation}
   }
 
   schema {

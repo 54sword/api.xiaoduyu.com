@@ -36,6 +36,7 @@ type _Posts {
 
 # 评论
 type Comment {
+  content: String
   content_html: String
   create_at: String
   reply_count: Int

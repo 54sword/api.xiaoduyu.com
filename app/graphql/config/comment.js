@@ -5,7 +5,7 @@ const query = {
   filters: {
     _id: data => ({
       name: '_id', value: data,
-      type: 'String', desc:'ID'
+      type: 'ID', desc:'ID'
     }),
     weaken: data => ({
       name: 'weaken', value: data,
@@ -42,7 +42,7 @@ const query = {
       } else if (data == 'not-exists') {
         data = { '$exists': false }
       }
-      
+
       return {
         name: 'parent_id', value: data, type: 'String', desc:'父评论id / exists / not-exists'
       }
@@ -122,7 +122,7 @@ const update = {
       name: 'content', value: data,
       type: 'String', desc:'评论DraftJS JSON'
     }),
-    content: data => ({
+    content_html: data => ({
       name: 'content_html', value: data,
       type: 'String', desc:'评论HTML'
     })

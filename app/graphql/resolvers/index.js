@@ -7,15 +7,14 @@ import notification from './notification';
 import captcha from './captcha';
 import account from './account';
 import qiniu from './qiniu';
-
 import block from './block';
 import countries from './countries';
 import follow from './follow';
 import like from './like';
-
 import password from './password';
 import phone from './phone';
 import forgot from './forgot';
+import oauth from './oauth';
 
 let Query = {};
 let Mutation = {};
@@ -32,6 +31,7 @@ Object.assign(Query, qiniu.query);
 Object.assign(Query, block.query);
 Object.assign(Query, countries.query);
 Object.assign(Query, follow.query);
+Object.assign(Query, oauth.query);
 
 Object.assign(Mutation, posts.mutation);
 Object.assign(Mutation, topic.mutation);
@@ -49,6 +49,7 @@ Object.assign(Mutation, like.mutation);
 Object.assign(Mutation, password.mutation);
 Object.assign(Mutation, phone.mutation);
 Object.assign(Mutation, forgot.mutation);
+Object.assign(Mutation, oauth.mutation);
 
 var resolvers = {
   Query,
@@ -71,5 +72,6 @@ Object.assign(resolvers, like.resolvers);
 Object.assign(resolvers, password.resolvers);
 Object.assign(resolvers, phone.resolvers);
 Object.assign(resolvers, forgot.resolvers);
+Object.assign(resolvers, oauth.resolvers);
 
 export default resolvers

@@ -24,7 +24,7 @@ query.posts = async (root, args, context, schema) => {
   if (!user && method) {
     throw CreateError({ message: '请求被拒绝' })
   }
-  
+
   // 每页数量
   let limit = options.limit;
 
@@ -473,16 +473,36 @@ mutation.updatePosts = async (root, args, context, schema) => {
 
   const { user, role } = context;
 
+  // 必须登陆用户才有权限
   if (!user) throw CreateError({ message: '请求被拒绝' });
-
+  
   let [err, query, content, result] = [];
 
+  // 获取查询条件
   [ err, query ] = getUpdateQuery({ args, model:'posts', role });
   if (err) throw CreateError({ message: err });
 
+  // 获取更新内容
   [ err, content ] = getUpdateContent({ args, model:'posts', role });
   if (err) throw CreateError({ message: err });
 
+  // 判断帖子是否存在
+  [ err, result ] = await To(Posts.findOne({ query }));
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  if (!result) throw CreateError({ message: '帖子不存在' });
+
+  // 是否有权限修改
+  if (role != 'admin' && user._id + '' != result.user_id + '') {
+    throw CreateError({ message: '无权修改' });
+  }
+
+  // 更新
   [ err, result ] = await To(Posts.update({ query, update: content }));
   if (err) {
     throw CreateError({

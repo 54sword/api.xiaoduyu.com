@@ -23,7 +23,9 @@ class OauthModel extends baseMethod {
    * @return {Object} Promise
    */
   fetchByUserIdAndSource(userId, _source) {
-    return this.findOne({ user_id: userId, source: sources[_source] })
+    return this.findOne({
+      query: { user_id: userId, source: sources[_source] || -1 }
+    })
   }
 
 }

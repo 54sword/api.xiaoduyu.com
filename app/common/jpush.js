@@ -68,21 +68,21 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
 
 exports.pushReplyToUser = function({ comment, reply, user }) {
 
-  if (!jpush.appKey || !jpush.masterSecret) return
+  if (!jpush.appKey || !jpush.masterSecret) return;
 
-  var client = JPush.buildClient(jpush.appKey, jpush.masterSecret)
+  var client = JPush.buildClient(jpush.appKey, jpush.masterSecret);
 
-  let replyContent = reply.content_html.replace(/<[^>]+>/g,"")
-  let summaryComment = comment.content_html.replace(/<[^>]+>/g,"")
-  if (summaryComment.length > 20) summaryComment = summaryComment.slice(0, 20)
+  let replyContent = reply.content_html.replace(/<[^>]+>/g,"");
+  let summaryComment = comment.content_html.replace(/<[^>]+>/g,"");
+  if (summaryComment.length > 20) summaryComment = summaryComment.slice(0, 20);
 
-  let title = user.nickname + ': ' + replyContent
-  if (title.length > 40) title = title.slice(0, 40) + '...'
-
+  let title = user.nickname + ': ' + replyContent;
+  if (title.length > 40) title = title.slice(0, 40) + '...';
+  
   client.push()
     .setPlatform(JPush.ALL)
     // 广播特定的用户
-    .setAudience(JPush.alias(reply.reply_id.user_id._id + ''))
+    .setAudience(JPush.alias(reply.reply_id && reply.reply_id.user_id  ? reply.reply_id.user_id._id + '' : reply.reply_id + ''))
     .setNotification(title,
       JPush.ios(title, 'comment', 1, true, {
         routeName: 'CommentDetail', params: { title:summaryComment, id:comment._id }

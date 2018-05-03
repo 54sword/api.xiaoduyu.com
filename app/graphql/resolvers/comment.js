@@ -64,12 +64,14 @@ query.comments = async (root, args, context, schema) => {
 
   }
 
-  // 增加一些默认的筛选调价
-  if (!Reflect.has(query, 'deleted')) {
-    query.deleted = false;
+  if (role != 'admin') {
+    // 增加一些默认的筛选条件
+    if (!Reflect.has(query, 'deleted')) {
+      query.deleted = false;
+    }
   }
 
-  [ err, commentList ] = await To(Comment.find({ query, select, options }))
+  [ err, commentList ] = await To(Comment.find({ query, select, options }));
 
   if (err) {
     throw CreateError({
@@ -125,7 +127,6 @@ query.comments = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     });
   }
-
 
   // 如果未登录，那么直接返回结果
   if (!user || !select.like || Reflect.has(select, 'like') && !select.like) {
@@ -271,7 +272,7 @@ mutation.addComment = async (root, args, context, schema) => {
       data: { error_data: err.countdown }
     });
   }
-  
+
   // 一个用户只能评论一次
   if (posts_id && !parent_id && !reply_id) {
 
@@ -447,7 +448,7 @@ mutation.addComment = async (root, args, context, schema) => {
         }
       }));
       // 极光推送
-      // jpush.pushCommentToUser({ comment: result, posts, user });
+      jpush.pushCommentToUser({ comment: result, posts, user });
     }
 
   }
@@ -468,10 +469,19 @@ mutation.addComment = async (root, args, context, schema) => {
           comment_id: result._id
         }
       }));
+
+
+    try {
+      // 极光推送
+      jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
+    } catch (err) {
+      console.log(err);
     }
 
-    // 极光推送
-    // jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
+
+
+    }
+
   }
 
   return {
