@@ -15,6 +15,7 @@ import Password from './password';
 import Phone from './phone';
 import Forgot from './forgot';
 import Oauth from './oauth';
+import Report from './report';
 
 const typeDefs = [ `
 
@@ -35,6 +36,7 @@ const typeDefs = [ `
   ${Phone.Schema}
   ${Forgot.Schema}
   ${Oauth.Schema}
+  ${Report.Schema}
 
   # 查询
   type Query {
@@ -55,6 +57,7 @@ const typeDefs = [ `
     ${Phone.Query}
     ${Forgot.Query}
     ${Oauth.Query}
+    ${Report.Query}
   }
 
   # 增、删、改
@@ -76,6 +79,7 @@ const typeDefs = [ `
     ${Phone.Mutation}
     ${Forgot.Mutation}
     ${Oauth.Mutation}
+    ${Report.Mutation}
   }
 
   schema {

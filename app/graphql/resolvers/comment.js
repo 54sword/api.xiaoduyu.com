@@ -50,14 +50,14 @@ query.comments = async (root, args, context, schema) => {
       options.populate.push({
         path: 'reply',
         select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-        options: { limit: 10 },
+        options: { limit: 3 },
         match: { user_id: { '$nin': user.block_people }, deleted: false }
       })
     } else {
       options.populate.push({
         path: 'reply',
         select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-        options: { limit: 10 },
+        options: { limit: 3 },
         match: { deleted: false }
       })
     }
