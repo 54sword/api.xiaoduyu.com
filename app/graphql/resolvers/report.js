@@ -1,5 +1,5 @@
 
-import { Phone, User, Captcha, Posts, Comment } from '../../modelsa';
+import { Report, Phone, User, Captcha, Posts, Comment } from '../../modelsa';
 
 // tools
 import Countries from '../../data/countries';
@@ -44,7 +44,7 @@ mutation.addReport = async (root, args, context, schema) => {
 
   if (err) throw CreateError({ message: err });
 
-  if (!Reflect.has('report_id', fields)) {
+  if (!Reflect.has(fields, 'report_id')) {
     if (err) throw CreateError({ message: '缺少参数' });
   }
 
@@ -75,9 +75,9 @@ mutation.addReport = async (root, args, context, schema) => {
   }
 
   let query = {
-    user_id: user._id
+    user_id: user._id,
     // 三天内不能重复提交
-    // create_at:  { '$lt': new Date().getTime(), '$gt': new Date().getTime() - 1000*60*60*24*3 }
+    create_at:  { '$lt': new Date().getTime(), '$gt': new Date().getTime() - 1000*60*60*24*3 }
   }
 
   if (data.posts_id) query.posts_id = data.posts_id;
@@ -87,13 +87,15 @@ mutation.addReport = async (root, args, context, schema) => {
   [ err, res ] = await To(Report.findOne({ query }));
 
   if (res) {
-    if (err) throw CreateError({ message: '你已经举报过了' });
+    throw CreateError({ message: '你已经举报过了' });
   }
-  
-  data.user_id = user._id;
-  data.report_id = report_id;
 
-  [ err, res ] = await Report.save({ data });
+  data.user_id = user._id;
+  data.report_id = fields.report_id;
+
+  if (fields.detail) data.detail = fields.detail;
+
+  [ err, res ] = await To(Report.save({ data }));
 
   return { success: true }
 }

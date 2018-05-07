@@ -11,9 +11,9 @@ const ReportSchema = new Schema({
   posts_id: { type: ObjectId, ref: 'Posts' },
   comment_id: { type: ObjectId, ref: 'Comment' },
   people_id: { type: ObjectId, ref: 'User' },
-  report_id: { Type: Number },
-  detail: { Type: String },
+  report_id: { type: Number },
+  detail: { type: String },
   create_at: { type: Date, default: Date.now }
-})
+});
 
 mongoose.model('Report', ReportSchema)

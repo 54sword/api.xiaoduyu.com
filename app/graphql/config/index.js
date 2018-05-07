@@ -13,6 +13,7 @@ import user from './user';
 import phone from './phone';
 import forgot from './forgot';
 import report from './report';
+import block from './block';
 
 let list = {
   posts,
@@ -28,7 +29,8 @@ let list = {
   user,
   phone,
   forgot,
-  report
+  report,
+  block
 }
 
 let s = {

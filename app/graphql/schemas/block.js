@@ -1,5 +1,5 @@
 
-
+import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
@@ -7,10 +7,12 @@ exports.Schema = `
     success: Boolean
   }
 
+  # 添加屏蔽
   type addBlock {
     success: Boolean
   }
 
+  # 移除屏蔽
   type removeBlock {
     success: Boolean
   }
@@ -19,26 +21,17 @@ exports.Schema = `
 
 exports.Query = `
 
-  # 登录前先通过，captcha API，获取验证码，如果有返回验证码图片，则将其显示给用户
-  blocks(
-    people_exsits: Boolean
-    posts_exsits: Boolean
-    page_size: Int
-    page_number: Int
-  ): blocks
+  # 获取屏蔽列表
+  blocks(${getQuerySchema('block')}): blocks
 
 `
 
 exports.Mutation = `
 
-  addBlock(
-    posts_id: ID
-    user_id: ID
-  ): addBlock
+  # 添加屏蔽
+  addBlock(${getSaveSchema('block')}): addBlock
 
-  removeBlock(
-    posts_id: ID
-    user_id: ID
-  ): removeBlock
+  # 移除屏蔽
+  removeBlock(${getUpdateSchema('block')}): removeBlock
 
 `

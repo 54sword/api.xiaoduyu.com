@@ -59,6 +59,10 @@ var UserSchema = new Schema({
   // 屏蔽的帖子
   block_posts: [{ type: ObjectId, ref: 'Posts' }],
   block_posts_count: { type: Number, default: 0 },
+  
+  // 屏蔽的评论
+  block_comment: [{ type: ObjectId, ref: 'Comment' }],
+  block_comment_count: { type: Number, default: 0 },
 
   // 最近一次查询Notification的日期
   find_notification_at: { type: Date },
