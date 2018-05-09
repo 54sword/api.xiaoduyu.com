@@ -3,8 +3,22 @@ import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
+  type blocks_comment {
+    _id: ID
+    content_html: String
+    posts_id: ID
+    parent_id: ID
+  }
+
   type blocks {
-    success: Boolean
+    _id: String
+    deleted: Boolean
+    create_at: String
+    ip: String
+    user_id: ID
+    comment_id: blocks_comment
+    people_id: sender_id
+    posts_id: posts_id
   }
 
   # 添加屏蔽
@@ -17,12 +31,20 @@ exports.Schema = `
     success: Boolean
   }
 
+  # 帖子计数
+  type countBlocks {
+    count: Int
+  }
+
 `
 
 exports.Query = `
 
   # 获取屏蔽列表
-  blocks(${getQuerySchema('block')}): blocks
+  blocks(${getQuerySchema('block')}): [blocks]
+
+  # 帖子计数
+  countBlocks(${getQuerySchema('block')}): countBlocks
 
 `
 

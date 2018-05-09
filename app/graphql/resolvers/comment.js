@@ -23,7 +23,57 @@ query.comments = async (root, args, context, schema) => {
 
   //===
 
-  options.populate = []
+  options.populate = [];
+
+  //======== 添加屏蔽条件
+
+  if (Reflect.has(select, 'reply')) {
+
+    // reply 添加屏蔽条件
+
+    if (user && !query._id) {
+
+      let match = {
+        $or: [{
+          deleted: false,
+          weaken: false,
+        }]
+      }
+
+
+      if (user.block_comment_count > 0) {
+        match['$or'][0]._id = { '$nin': user.block_comment }
+      }
+
+      if (user.block_people_count > 0) {
+        match['$or'][0].user_id = { '$nin': user.block_people }
+      }
+      options.populate.push({
+        path: 'reply',
+        // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 3 },
+        match
+      });
+
+      // console.log(options.populate[0].match);
+
+    } else {
+      options.populate.push({
+        path: 'reply',
+        // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 3 },
+        match: { deleted: false, weaken: false }
+      });
+    }
+
+  }
+
+  if (user && !query._id) {
+    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+    if (user.block_comment_count > 0) query._id = { '$nin': user.block_comment }
+  }
+
+  //======== 添加屏蔽条件 end
 
   if (Reflect.has(select, 'user_id') && select.user_id) {
     options.populate.push([
@@ -43,27 +93,6 @@ query.comments = async (root, args, context, schema) => {
     ])
   }
 
-  if (Reflect.has(select, 'reply') && select.reply) {
-
-    // reply 添加屏蔽条件
-    if (user && !query._id) {
-      options.populate.push({
-        path: 'reply',
-        select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-        options: { limit: 3 },
-        match: { user_id: { '$nin': user.block_people }, deleted: false }
-      })
-    } else {
-      options.populate.push({
-        path: 'reply',
-        select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-        options: { limit: 3 },
-        match: { deleted: false }
-      })
-    }
-
-  }
-
   if (role != 'admin') {
     // 增加一些默认的筛选条件
     if (!Reflect.has(query, 'deleted')) {
@@ -73,6 +102,8 @@ query.comments = async (root, args, context, schema) => {
 
   [ err, commentList ] = await To(Comment.find({ query, select, options }));
 
+  // console.log(commentList);
+
   if (err) {
     throw CreateError({
       message: '查询失败',
@@ -80,7 +111,7 @@ query.comments = async (root, args, context, schema) => {
     });
   }
 
-  options = []
+  options = [];
 
   if (Reflect.has(select, 'reply') && select.reply) {
     options.push({
@@ -197,10 +228,17 @@ query.comments = async (root, args, context, schema) => {
 
 query.countComments = async (root, args, context, schema) => {
 
-  const { role } = context;
+  const { user, role } = context;
   let err, query, count;
 
   [ err, query ] = getQuery({ args, model: 'comment', role });
+
+
+  if (user && !query._id) {
+    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+    if (user.block_comment_count > 0) query._id = { '$nin': user.block_comment }
+  }
+
   [ err, count ] = await To(Comment.count({ query }));
 
   if (err) {

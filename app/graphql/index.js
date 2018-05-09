@@ -14,8 +14,6 @@ import checkToken from './auto';
 
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-
-
 /**
  * 启动 graphql
  * @param  {Object} app - express 的 app

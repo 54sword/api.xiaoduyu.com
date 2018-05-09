@@ -7,7 +7,78 @@ import CreateError from './errors';
 
 let [query, mutation, resolvers] = [{}, {}, {}];
 
-query.blocks = () => ({ success: true });
+query.blocks = async (root, args, context, schema) => {
+
+  const { user, role, ip } = context;
+
+  // 未登陆用户
+  if (!user) throw CreateError({ message: '请求被拒绝' });
+  if (!ip) throw CreateError({ message: '获取不到您的ip' });
+
+  let err, res, query = {}, select = {}, options = {};
+  [ err, query ] = getQuery({ args, model: 'block', role });
+  [ err, options ] = getOption({ args, model:'block', role });
+
+  // select
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
+
+  if (err) throw CreateError({ message: err });
+
+  query.user_id = user._id;
+
+  if (Reflect.has(select, 'people_id')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'people_id',
+      select: { _id: 1, nickname: 1, avatar: 1, create_at: 1 }
+    });
+  }
+
+  if (Reflect.has(select, 'posts_id')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'posts_id',
+      select: { _id: 1, title: 1, content_html: 1, type: 1 }
+    });
+  }
+
+  if (Reflect.has(select, 'comment_id')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'comment_id',
+      select: { _id: 1, content_html: 1,  posts_id: 1, reply_id: 1, parent_id: 1 }
+    });
+  }
+
+  [ err, res ] = await To(Block.find({ query, select, options }));
+
+  return res
+};
+
+// 获取累计数
+query.countBlocks = async (root, args, context, schema) => {
+
+  const { user, role, ip } = context;
+
+  if (!user) throw CreateError({ message: '请求被拒绝' });
+  if (!ip) throw CreateError({ message: '获取不到您的ip' });
+
+  let err, res, query, count;
+
+  [ err, query ] = getQuery({ args, model: 'block', role });
+
+  query.user_id = user._id;
+
+  if (err) throw CreateError({ message: err });
+
+  [ err, count ] = await To(Block.count({ query }));
+
+  return {
+    count
+  }
+
+}
+
 mutation.addBlock = async (root, args, context, schema) => {
 
   const { user, role, ip } = context;
@@ -148,11 +219,9 @@ async function updateUserBlockData(userId) {
   var posts_ids = [], people_ids = [], comment_ids = [];
 
   data.map(function(item){
-
     if (item.posts_id) posts_ids.push(item.posts_id);
     if (item.people_id) people_ids.push(item.people_id);
     if (item.comment_id) comment_ids.push(item.comment_id);
-
   });
 
   User.update({

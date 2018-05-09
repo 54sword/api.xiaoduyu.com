@@ -283,7 +283,7 @@ query.countPosts = async (root, args, context, schema) => {
 
     query = newQuery;
   }
-
+  
   [ err, count ] = await To(Posts.count({ query }))
 
   if (err) {
@@ -475,7 +475,7 @@ mutation.updatePosts = async (root, args, context, schema) => {
 
   // 必须登陆用户才有权限
   if (!user) throw CreateError({ message: '请求被拒绝' });
-  
+
   let [err, query, content, result] = [];
 
   // 获取查询条件
