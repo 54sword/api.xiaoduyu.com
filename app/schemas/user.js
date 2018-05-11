@@ -59,7 +59,7 @@ var UserSchema = new Schema({
   // 屏蔽的帖子
   block_posts: [{ type: ObjectId, ref: 'Posts' }],
   block_posts_count: { type: Number, default: 0 },
-  
+
   // 屏蔽的评论
   block_comment: [{ type: ObjectId, ref: 'Comment' }],
   block_comment_count: { type: Number, default: 0 },
@@ -79,7 +79,7 @@ var UserSchema = new Schema({
 
 UserSchema.virtual('avatar_url').get(function () {
 
-  var url = this.avatar ? this.avatar.replace('!200', '!50') : config.defaultAvatar
+  var url = this.avatar ? this.avatar : config.defaultAvatar
   url += url.indexOf('thumbnail') != -1 ? '/quality/90' : ''
 
   return url

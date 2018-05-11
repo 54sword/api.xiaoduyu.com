@@ -25,6 +25,14 @@ query.blocks = async (root, args, context, schema) => {
   if (err) throw CreateError({ message: err });
 
   query.user_id = user._id;
+  if (!query.deleted) query.deleted = false;
+
+  // 添加默认排序
+  if (!Reflect.has(options, 'sort_by')) {
+    options.sort = {
+      create_at: -1
+    }
+  }
 
   if (Reflect.has(select, 'people_id')) {
     if (!options.populate) options.populate = [];
@@ -68,6 +76,7 @@ query.countBlocks = async (root, args, context, schema) => {
   [ err, query ] = getQuery({ args, model: 'block', role });
 
   query.user_id = user._id;
+  if (!query.deleted) query.deleted = true;
 
   if (err) throw CreateError({ message: err });
 
@@ -182,7 +191,7 @@ mutation.addBlock = async (root, args, context, schema) => {
     });
   }
 
-  if (res) {
+  if (res && res.deleted == false) {
     throw CreateError({
       message: '你已屏蔽了'
     });
@@ -190,21 +199,82 @@ mutation.addBlock = async (root, args, context, schema) => {
 
   //======= 添加
 
-  [ err, res ] = await To(Block.save({ data: query }));
+  if (!res) {
 
-  if (err) {
-    throw CreateError({
-      message: '添加失败',
-      data: { errorInfo: err.message }
-    });
+    [ err, res ] = await To(Block.save({ data: query }));
+
+    if (err) {
+      throw CreateError({
+        message: '添加失败',
+        data: { errorInfo: err.message }
+      });
+    }
+
+
+  } else if (res && res.deleted) {
+    await To(Block.update({
+      query: { _id: res._id },
+      update: { deleted: false }
+    }));
   }
 
   updateUserBlockData(user._id);
 
-  return { success: true }
+  return {
+    success: true,
+    _id: res._id
+  }
 };
-mutation.removeBlock = () => ({ success: true });
 
+
+mutation.removeBlock = async (root, args, context, schema) => {
+
+  const { user, role, ip } = context;
+
+  // 未登陆用户
+  if (!user) throw CreateError({ message: '请求被拒绝' });
+  if (!ip) throw CreateError({ message: '获取不到您的ip' });
+
+  let err, res, fields, query = {}, result;
+
+  // 获取更新内容
+  [ err, query ] = getUpdateQuery({ args, model:'block', role });
+  if (err) throw CreateError({ message: err });
+
+  if (Reflect.ownKeys(query).length == 0) {
+    throw CreateError({ message: '缺少目标参数' });
+  }
+
+  query.user_id = user._id;
+
+  // 判断数据是否存在
+  [ err, result ] = await To(Block.findOne({ query }));
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  if (!result) {
+    throw CreateError({ message: '不存该数据' });
+  }
+
+  // 表示未删除状态
+  if (result && result.deleted == false) {
+    await Block.update({
+      query: { _id: result._id },
+      update: { deleted: true }
+    })
+  }
+
+  updateUserBlockData(user._id);
+
+  return {
+    success: true
+  }
+
+};
 
 async function updateUserBlockData(userId) {
 
@@ -237,8 +307,6 @@ async function updateUserBlockData(userId) {
   });
 
 }
-
-
 
 exports.query = query;
 exports.mutation = mutation;

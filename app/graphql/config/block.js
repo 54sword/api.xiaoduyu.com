@@ -3,6 +3,7 @@
 const query = {
   // 筛选条件
   filters: {
+
     people_id: data => {
 
       if (data == 'exists') {

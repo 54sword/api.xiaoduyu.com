@@ -52,7 +52,7 @@ type SelfInfo {
   block_people_count: Int
   block_posts_count: Int
   block_comment_count: Int
-  gender: Boolean
+  gender: Int
   nickname: String
   banned_to_post: String
   avatar_url: String

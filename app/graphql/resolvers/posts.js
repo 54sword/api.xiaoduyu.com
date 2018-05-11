@@ -216,6 +216,8 @@ query.countPosts = async (root, args, context, schema) => {
 
   [ err, query ] = getQuery({ args, model:'posts', role });
 
+  console.log(query);
+
   if (err) {
     throw CreateError({ message: err })
   }
@@ -283,7 +285,7 @@ query.countPosts = async (root, args, context, schema) => {
 
     query = newQuery;
   }
-  
+
   [ err, count ] = await To(Posts.count({ query }))
 
   if (err) {
