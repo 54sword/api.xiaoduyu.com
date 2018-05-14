@@ -11,15 +11,28 @@ import CreateError from './errors'
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];
 
+/*
+const s = async () => {
+  let [ err, res ] = await To(Topic.find({ query:{}, select:{} }));
+  console.log(err);
+  console.log(res);
+}
+
+s();
+*/
+
 query.topics = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
-  let select = {}, err, query, options, topicList;
+  let select = {}, err, res, query = {}, options = {}, topicList;
   // let { query, options } = Querys({ args, model: 'topic', role });
 
   [ err, query ] = getQuery({ args, model:'topic', role });
   [ err, options ] = getOption({ args, model:'topic', role });
+
+  // select
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
 
   // === 设置一些默认值
 
@@ -33,13 +46,24 @@ query.topics = async (root, args, context, schema) => {
 
   // 如果需要返回 parent_id，则获取 parent_id 的详细信息
   if (Reflect.has(select, 'parent_id')) {
-    options.populate = [{
+    if (!options.populate) options.populate = [];
+    options.populate.push({
       path: 'parent_id',
+      model: 'Topic',
       select: { '_id': 1, 'avatar': 1, 'name': 1 }
-    }]
+    });
   }
 
-  [ err, topicList ] = await To(Topic.find({ query, select, options }))
+  if (Reflect.has(select, 'children')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'children',
+      model: 'Topic',
+      select: { '_id': 1, 'avatar': 1, 'name': 1 }
+    });
+  }
+
+  [ err, topicList ] = await To(Topic.find({ query, select, options }));
 
   if (err) {
     throw CreateError({
@@ -48,7 +72,7 @@ query.topics = async (root, args, context, schema) => {
     });
   }
 
-  topicList = JSON.parse(JSON.stringify(topicList))
+  topicList = JSON.parse(JSON.stringify(topicList));
 
   // 如果是登陆用户，显示是否关注了该话题
   if (user && topicList && Reflect.has(select, 'follow')) {
@@ -57,13 +81,18 @@ query.topics = async (root, args, context, schema) => {
     })
   }
 
+  /*
   topicList.map(node => {
+
+    // console.log(node);
+
     if (node.children) {
       node.children = node.children.join(',')
     } else {
       node.children = ''
     }
   });
+  */
 
   return topicList
 }
@@ -174,6 +203,10 @@ mutation.addTopic = async (root, args, context, schema) => {
     });
   }
 
+  if (save.parent_id) {
+    uploadTopicChildren(save.parent_id);
+  }
+
   return { success: true }
 }
 
@@ -281,7 +314,28 @@ mutation.updateTopic = async (root, args, context, schema) => {
     });
   }
 
+  uploadTopicChildren(topic.parent_id ? topic.parent_id : topic._id);
+
   return { success: true }
+}
+
+const uploadTopicChildren = async (topicId) => {
+
+  let [ err, list ] = await To(Topic.find({ query: { parent_id: topicId } }));
+
+  if (!list) return;
+
+  let ids = [];
+
+  list.map(item=>{
+    ids.push(item._id);
+  });
+
+  Topic.update({
+    query: { _id: topicId },
+    update: { children: ids }
+  });
+
 }
 
 exports.query = query

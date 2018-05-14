@@ -7,10 +7,20 @@ const query = {
       name: '_id', value: data,
       type: 'ID', desc:'ID'
     }),
-    parent_id: data => ({
-      name: 'topic_id', value: data,
-      type: 'ID', desc:'父类ID'
-    }),
+
+    parent_id: data => {
+
+      if (data == 'exists') {
+        data = { '$exists': true }
+      } else if (data == 'not-exists') {
+        data = { '$exists': false }
+      }
+
+      return {
+        name: 'parent_id', value: data, type: 'String', desc:'父评论id / exists / not-exists'
+      }
+    },
+
     deleted: data => ({
       name: 'deleted', value: data, role: 'admin',
       type: 'Boolean', desc:'删除'
@@ -30,7 +40,7 @@ const query = {
   },
   // 排序，page size，page number
   options: {
-    
+
     page_number: data => ({
       name: 'skip', value: data - 1 >= 0 ? data - 1 : 0,
       type: 'Int', desc:'第几页'

@@ -216,8 +216,6 @@ query.countPosts = async (root, args, context, schema) => {
 
   [ err, query ] = getQuery({ args, model:'posts', role });
 
-  console.log(query);
-
   if (err) {
     throw CreateError({ message: err })
   }
@@ -367,13 +365,12 @@ mutation.addPosts = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     })
   }
-
+  
   if (result) {
     throw CreateError({
       message: '一天仅能发布一次'
     })
   }
-
 
   // title
   title = xss(title, {

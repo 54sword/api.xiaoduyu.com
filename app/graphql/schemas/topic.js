@@ -11,6 +11,13 @@ import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
+type childrenTopic {
+  _id: String
+  name: String
+  brief: String
+  avatar: String
+}
+
 # 话题
 type Topic {
   _id: String
@@ -28,8 +35,8 @@ type Topic {
   recommend: Boolean
   user_id: String
   follow: Boolean
-  parent_id: String
-  children: String
+  parent_id: childrenTopic
+  children: [childrenTopic]
 }
 
 # 更新话题

@@ -31,7 +31,9 @@ var TopicSchema = new Schema({
   // 语言 0 -> 中文
   language: { type: Number, default: 0 },
   // 推荐节点
-  recommend: { type: Boolean, default: false }
+  recommend: { type: Boolean, default: false },
+  // 子
+  children: [{ type: ObjectId, ref: 'Topic' }]
 });
 
 mongoose.model('Topic', TopicSchema);
