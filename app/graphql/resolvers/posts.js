@@ -51,6 +51,11 @@ query.posts = async (root, args, context, schema) => {
     if (query.posts_id) delete query.posts_id;
     if (query._id) delete query._id;
 
+    newQuery['$or'].push(Object.assign({}, query, {
+      user_id: user._id,
+      deleted: false
+    }, {}));
+
     // 用户
     if (user.follow_people.length > 0) {
 
@@ -68,7 +73,8 @@ query.posts = async (root, args, context, schema) => {
     if (user.follow_topic.length > 0) {
       newQuery['$or'].push(Object.assign({}, query, {
         topic_id: {'$in': user.follow_topic },
-        deleted: false
+        deleted: false,
+        weaken: false
       }, {}))
     }
 
@@ -196,6 +202,7 @@ query.posts = async (root, args, context, schema) => {
       query: { _id: user._id },
       update: { last_find_posts_at: new Date() }
     });
+
   }
 
   return postList
@@ -244,10 +251,15 @@ query.countPosts = async (root, args, context, schema) => {
 
     let newQuery = { '$or': [] }
 
-    if (query.user_id) delete query.user_id
-    if (query.topic_id) delete query.topic_id
-    if (query.posts_id) delete query.posts_id
-    if (query._id) delete query._id
+    if (query.user_id) delete query.user_id;
+    if (query.topic_id) delete query.topic_id;
+    if (query.posts_id) delete query.posts_id;
+    if (query._id) delete query._id;
+
+    newQuery['$or'].push(Object.assign({}, query, {
+      user_id: user._id,
+      deleted: false
+    }, {}));
 
     // 用户
     if (user.follow_people.length > 0) {
@@ -265,7 +277,8 @@ query.countPosts = async (root, args, context, schema) => {
     if (user.follow_topic.length > 0) {
       newQuery['$or'].push(Object.assign({}, query, {
         topic_id: {'$in': user.follow_topic },
-        deleted: false
+        deleted: false,
+        weaken: false
       }, {}))
     }
 
@@ -347,7 +360,6 @@ mutation.addPosts = async (root, args, context, schema) => {
     });
   }
 
-
   // 一天仅能发布一次
   let date = new Date();
   [ err, result ] = await To(Posts.findOne({
@@ -365,7 +377,7 @@ mutation.addPosts = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     })
   }
-  
+
   if (result) {
     throw CreateError({
       message: '一天仅能发布一次'
@@ -459,6 +471,9 @@ mutation.addPosts = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     })
   }
+
+  result.create_at = new Date(result.create_at).getTime();
+  global.io.sockets.emit('new-posts', result.create_at - 1);
 
   return {
     success: true,
