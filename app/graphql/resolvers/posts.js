@@ -378,11 +378,13 @@ mutation.addPosts = async (root, args, context, schema) => {
     })
   }
 
+  /*
   if (result) {
     throw CreateError({
       message: '一天仅能发布一次'
     })
   }
+  */
 
   // title
   title = xss(title, {

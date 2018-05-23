@@ -31,6 +31,9 @@ exports.sendSMS = function({ PhoneNumbers, SignName, TemplateCode, TemplateParam
       callback(null)
     }
   }, function (err) {
+
+    // console.log(err);
+
     if (err && err.code == 'isv.MOBILE_NUMBER_ILLEGAL') {
       callback('无效的手机号')
     } else {

@@ -28,6 +28,7 @@ psd
 dist
 config.js
 config/index.js
+config/index_*.js
 *.DS_Store
 package-lock.json
 docs

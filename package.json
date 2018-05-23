@@ -48,7 +48,7 @@
     "request": "^2.69.0",
     "sendcloud-client": "^0.1.1",
     "serve-favicon": "^2.2.1",
-    "socket.io": "^2.0.3",
+    "socket.io": "^2.1.1",
     "trek-captcha": "^0.3.0",
     "xss": "^0.2.6"
   },

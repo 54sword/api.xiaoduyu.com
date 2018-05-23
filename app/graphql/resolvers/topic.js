@@ -59,7 +59,14 @@ query.topics = async (root, args, context, schema) => {
     options.populate.push({
       path: 'children',
       model: 'Topic',
-      select: { '_id': 1, 'avatar': 1, 'name': 1 }
+      select: { '_id': 1, 'avatar': 1, 'name': 1 },
+      options: {
+        sort: {
+          recommend: -1,
+          sort: -1,
+          posts_count: -1
+        }
+      }
     });
   }
 

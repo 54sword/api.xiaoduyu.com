@@ -104,10 +104,23 @@ if (config.oauth.wechatToken) {
 
 }
 
-var onlineUserCount = 0
+const handlePreflightRequest = (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-fc-token');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.end();
+};
 
-var io = require("socket.io").listen(server)
+var onlineUserCount = 0;
+
+// var allowedOrigins = "*:*";
+var io = require("socket.io").listen(server);
+// io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);
+// io.origins(['*','*:*']);
+// io.set('origins', 'www.acgnz.com:* http://127.0.0.1:4000');
 io.on('connection', function(socket){
+
+	// console.log(socket.server);
 
 	// console.log(socket.handshake.query);
 
