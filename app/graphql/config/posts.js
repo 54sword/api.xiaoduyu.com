@@ -28,7 +28,8 @@ const query = {
       }
     },
     title: data => ({
-      name: 'title', value: data,
+      name: 'title',
+      value: { $regex: RegExp(data,"i") },
       type: 'String', desc:'标题'
     }),
     deleted: data => ({
