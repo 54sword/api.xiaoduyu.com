@@ -40,9 +40,7 @@ query.posts = async (root, args, context, schema) => {
     if (user.block_posts_count > 0) query._id = { '$nin': user.block_posts }
     if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
   }
-
-  console.log(query);
-
+  
   // 用户关注
   if (user && method == 'user_follow') {
 
