@@ -91,7 +91,6 @@ query.users = async (root, args, context, schema) => {
   [ err, query ] = getQuery({ args, model: 'user', role });
   [ err, options ] = getOption({ args, model: 'user', role });
 
-
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
 

@@ -7,6 +7,17 @@ const query = {
       name: '_id', value: data,
       type: 'ID', desc:'ID'
     }),
+    nickname: data => {
+
+      let s = (data+'').split(' ');
+
+      return {
+        name: 'nickname',
+        value: { $regex: RegExp("("+s.join('|')+")","i") },
+        // value: { $regex: RegExp(s,"i") },
+        type: 'String', desc:'昵称'
+      }
+    },
     blocked: data => ({
       name: 'deleted', value: data, role: 'admin',
       type: 'Boolean', desc:'屏蔽'

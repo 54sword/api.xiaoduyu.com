@@ -27,11 +27,16 @@ const query = {
         type: 'ID', desc:'话题ID'
       }
     },
-    title: data => ({
-      name: 'title',
-      value: { $regex: RegExp(data,"i") },
-      type: 'String', desc:'标题'
-    }),
+    title: data => {
+
+      let s = (data+'').split(' ');
+
+      return {
+        name: 'title',
+        value: { $regex: RegExp("("+s.join('|')+")","i") },
+        type: 'String', desc:'标题'
+      }
+    },
     deleted: data => ({
       name: 'deleted', value: data,
       type: 'Boolean', desc:'删除'
