@@ -63,7 +63,6 @@ query.selfInfo = async (root, args, context, schema) => {
   };
 
   [ err, result ] = await To(Oauth.fetchByUserIdAndSource(user._id, 'weibo'));
-
   user.weibo = result && result.deleted == false ? true : false;
 
   [ err, result ] = await To(Oauth.fetchByUserIdAndSource(user._id, 'qq'));
@@ -72,13 +71,10 @@ query.selfInfo = async (root, args, context, schema) => {
   [ err, result ] = await To(Oauth.fetchByUserIdAndSource(user._id, 'github'));
   user.github = result && result.deleted == false ? true : false;
 
-  [ err, result ] = await To(Phone.findOne({
-    query: { user_id: user._id }
-  }));
-
+  [ err, result ] = await To(Phone.findOne({ query: { user_id: user._id } }));
   user.phone = result ? changeString(result.phone + '') : '';
 
-  return user
+  return user;
 
 }
 

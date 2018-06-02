@@ -24,7 +24,7 @@ class OauthModel extends baseMethod {
    */
   fetchByUserIdAndSource(userId, _source) {
     return this.findOne({
-      query: { user_id: userId, source: sources[_source] || -1 }
+      query: { user_id: userId, source: sources[_source] }
     })
   }
 
