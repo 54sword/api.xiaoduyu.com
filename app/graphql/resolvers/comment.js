@@ -306,8 +306,8 @@ mutation.addComment = async (root, args, context, schema) => {
   ) {
     let countdown = Countdown(new Date(), user.banned_to_post);
     throw CreateError({
-      message: '禁言中',
-      data: { error_data: err.countdown }
+      message: '您被禁言，{days}天{hours}小时{mintues}分钟后解除禁言',
+      data: { error_data: countdown }
     });
   }
 
@@ -320,7 +320,7 @@ mutation.addComment = async (root, args, context, schema) => {
 
     if (result) {
       throw CreateError({
-        message: '提交失败，一个帖子只能评论一次'
+        message: '提交失败，每个帖子仅能评论一次'
       });
     }
 

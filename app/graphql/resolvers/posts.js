@@ -40,7 +40,7 @@ query.posts = async (root, args, context, schema) => {
     if (user.block_posts_count > 0) query._id = { '$nin': user.block_posts }
     if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
   }
-  
+
   // 用户关注
   if (user && method == 'user_follow') {
 
@@ -355,8 +355,8 @@ mutation.addPosts = async (root, args, context, schema) => {
   ) {
     let countdown = Countdown(new Date(), user.banned_to_post);
     throw CreateError({
-      message: '禁言中',
-      data: { error_data: err.countdown }
+      message: '您被禁言，{days}天{hours}小时{mintues}分钟后解除禁言',
+      data: { error_data: countdown }
     });
   }
 
@@ -378,13 +378,11 @@ mutation.addPosts = async (root, args, context, schema) => {
     })
   }
 
-  /*
   if (result) {
     throw CreateError({
       message: '一天仅能发布一次'
     })
   }
-  */
 
   // title
   title = xss(title, {

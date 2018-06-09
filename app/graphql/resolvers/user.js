@@ -38,7 +38,14 @@ function changeString(str) {
 // 获取用户自己的个人资料
 query.selfInfo = async (root, args, context, schema) => {
 
-  let { user } = context
+  let { user } = context;
+
+  if (!user) {
+    throw CreateError({
+      message: '没有权限访问',
+      data: { }
+    });
+  }
 
   user = JSON.stringify(user);
   user = JSON.parse(user);

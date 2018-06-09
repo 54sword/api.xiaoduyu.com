@@ -107,6 +107,11 @@ query.signIn = async (root, args, context, schema) => {
     throw CreateError({ message: '密码错误' });
   }
 
+  // 判断是否被拉黑
+  if (account.user_id.blocked) {
+    throw CreateError({ message: '您的账号被禁止使用' });
+  }
+
   // 生产 access token -----------------------
 
   result = JWT.encode(jwtTokenSecret, account.user_id._id, account.user_id.access_token, ip);

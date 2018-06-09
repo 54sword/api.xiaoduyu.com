@@ -22,10 +22,6 @@ module.exports = (app) => {
 
   app.use('/graphql', bodyParser.json(), async (req, res, next) => {
 
-
-    // console.log('-----');
-    // console.log(req.body.query);
-
     // 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
     let token = req.headers.accesstoken || '';
     let role = req.headers.role || '';
@@ -36,11 +32,19 @@ module.exports = (app) => {
       token, role, jwtTokenSecret: jwt_secret
     });
 
+    // console.log(result);
+
     if (!result.user) {
-      // res.status(403);
       res.send({
         errors: [{
-          "message": "invalid token"
+          message: "invalid token"
+        }]
+      });
+    } else if (result.user.blocked) {
+      res.send({
+        errors: [{
+          message: "您的账号被禁止使用",
+          blocked: true
         }]
       });
     } else {
