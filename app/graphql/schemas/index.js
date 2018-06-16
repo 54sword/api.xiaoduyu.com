@@ -16,6 +16,7 @@ import Phone from './phone';
 import Forgot from './forgot';
 import Oauth from './oauth';
 import Report from './report';
+import UnlockToken from './unlock-token';
 
 const typeDefs = [ `
 
@@ -37,7 +38,8 @@ const typeDefs = [ `
   ${Forgot.Schema}
   ${Oauth.Schema}
   ${Report.Schema}
-
+  ${UnlockToken.Schema}
+  
   # 查询
   type Query {
     ${Posts.Query}
@@ -58,6 +60,7 @@ const typeDefs = [ `
     ${Forgot.Query}
     ${Oauth.Query}
     ${Report.Query}
+    ${UnlockToken.Query}
   }
 
   # 增、删、改
@@ -80,6 +83,7 @@ const typeDefs = [ `
     ${Forgot.Mutation}
     ${Oauth.Mutation}
     ${Report.Mutation}
+    ${UnlockToken.Mutation}
   }
 
   schema {

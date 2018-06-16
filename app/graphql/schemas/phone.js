@@ -8,10 +8,7 @@ type addPhone {
   success: Boolean
 }
 
-# 更新手机号
-type updatePhone {
-  success: Boolean
-}
+
 
 `
 
@@ -21,7 +18,17 @@ exports.Mutation = `
 
 # 绑定手机号
 addPhone(${getSaveSchema('phone')}): addPhone
-# 更新手机号
-updatePhone(${getUpdateSchema('phone')}): updatePhone
 
 `
+
+/*
+
+# 更新手机号
+type updatePhone {
+  success: Boolean
+}
+
+# 更新手机号
+# updatePhone(${getUpdateSchema('phone')}): updatePhone
+
+ */

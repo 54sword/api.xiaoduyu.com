@@ -20,6 +20,10 @@ const save = {
   captcha: data => ({
     name: 'captcha', value: data,
     type: 'String!', desc:'验证码'
+  }),
+  unlock_token: data => ({
+    name: 'unlock_token', value: data,
+    type: 'String', desc:'解锁令牌（getUnlockToken），解锁身份后获得，用于修改已绑定的邮箱地址'
   })
 }
 

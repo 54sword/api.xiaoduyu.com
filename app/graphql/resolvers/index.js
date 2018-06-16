@@ -16,6 +16,7 @@ import phone from './phone';
 import forgot from './forgot';
 import oauth from './oauth';
 import report from './report';
+import unlockToken from './unlock-token';
 
 let Query = {};
 let Mutation = {};
@@ -34,6 +35,7 @@ Object.assign(Query, countries.query);
 Object.assign(Query, follow.query);
 Object.assign(Query, oauth.query);
 Object.assign(Query, report.query);
+Object.assign(Query, unlockToken.query);
 
 Object.assign(Mutation, posts.mutation);
 Object.assign(Mutation, topic.mutation);
@@ -53,6 +55,7 @@ Object.assign(Mutation, phone.mutation);
 Object.assign(Mutation, forgot.mutation);
 Object.assign(Mutation, oauth.mutation);
 Object.assign(Mutation, report.mutation);
+Object.assign(Mutation, unlockToken.mutation);
 
 var resolvers = {
   Query,
@@ -77,5 +80,6 @@ Object.assign(resolvers, phone.resolvers);
 Object.assign(resolvers, forgot.resolvers);
 Object.assign(resolvers, oauth.resolvers);
 Object.assign(resolvers, report.resolvers);
+Object.assign(resolvers, unlockToken.resolvers);
 
 export default resolvers

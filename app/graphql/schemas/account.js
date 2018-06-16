@@ -1,5 +1,5 @@
 
-import { getQuerySchema } from '../config'
+import { getQuerySchema, getSaveSchema } from '../config'
 
 exports.Schema = `
 
@@ -8,28 +8,9 @@ exports.Schema = `
     user_id: ID
     access_token: String
   }
-  
-  type signUp {
-    success: Boolean
-  }
 
-  type sendCaptchaToEmail {
-    success: Boolean
-  }
-
-  type bindingEmail {
-    success: Boolean
-  }
-
-  type resetPasswordByCaptcha {
-    success: Boolean
-  }
-
-  type resetEmail {
-    success: Boolean
-  }
-
-  type checkEmailAndSendCaptcha {
+  # 绑定邮箱
+  type addEmail {
     success: Boolean
   }
 
@@ -44,6 +25,40 @@ exports.Query = `
 
 exports.Mutation = `
 
+  # 绑定邮箱和修改邮箱
+  addEmail(${getSaveSchema('account')}): addEmail
+
+`
+
+/*
+
+
+
+type signUp {
+  success: Boolean
+}
+
+type sendCaptchaToEmail {
+  success: Boolean
+}
+
+type bindingEmail {
+  success: Boolean
+}
+
+type resetPasswordByCaptcha {
+  success: Boolean
+}
+
+type resetEmail {
+  success: Boolean
+}
+
+type checkEmailAndSendCaptcha {
+  success: Boolean
+}
+
+
   # 注册
   signUp(
     nickname: String!
@@ -56,33 +71,36 @@ exports.Mutation = `
     gender: Int
   ): signUp
 
-  # 发送验证码到邮箱
-  sendCaptchaToEmail(
-    email: String!
-  ): sendCaptchaToEmail
 
-  # 绑定邮箱
-  bindingEmail(
-    email: String!
-    captcha: String!
-  ): bindingEmail
 
-  # 通过验证码修改密码
-  resetPasswordByCaptcha(
-    email: String!
-    new_password: String!
-    captcha: String!
-  ): resetPasswordByCaptcha
 
-  # 修改邮箱
-  resetEmail(
-    email: String!
-    captcha: String!
-  ): resetEmail
+# 发送验证码到邮箱
+sendCaptchaToEmail(
+  email: String!
+): sendCaptchaToEmail
 
-  # 检测新邮箱，邮箱地址正确，则发送验证码
-  checkEmailAndSendCaptcha(
-    email: String!
-  ): checkEmailAndSendCaptcha
+# 绑定邮箱
+bindingEmail(
+  email: String!
+  captcha: String!
+): bindingEmail
 
-`
+# 通过验证码修改密码
+resetPasswordByCaptcha(
+  email: String!
+  new_password: String!
+  captcha: String!
+): resetPasswordByCaptcha
+
+# 修改邮箱
+resetEmail(
+  email: String!
+  captcha: String!
+): resetEmail
+
+# 检测新邮箱，邮箱地址正确，则发送验证码
+checkEmailAndSendCaptcha(
+  email: String!
+): checkEmailAndSendCaptcha
+
+ */

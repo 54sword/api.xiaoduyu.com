@@ -12,7 +12,7 @@ var CaptchaSchema = new Schema({
   captcha: { type: String, required: true },
   ip: { type: String },
   type: { type: String },
-  create_at: { type: Date, expires: 60*15*24, default: Date.now } // 半小时后自动删除
+  create_at: { type: Date, expires: 60*15, default: Date.now } // 半小时后自动删除
 })
 
 mongoose.model('Captcha', CaptchaSchema)

@@ -23,7 +23,7 @@ const save = {
   }),
   type: data => ({
     name: 'type', value: data,
-    type: 'String!', desc:'类型 - sign-in、binding-email、reset-email、sign-up、forgot、binding-phone、reset-phone'
+    type: 'String!', desc:'类型 - sign-in、binding-email、reset-email、sign-up、forgot、binding-phone、reset-phone、unlock-token'
   })
 }
 

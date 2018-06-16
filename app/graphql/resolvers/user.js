@@ -61,13 +61,15 @@ query.selfInfo = async (root, args, context, schema) => {
 
   [ err, result ] = await To(Account.findOne({
     query: { user_id: user._id }
-  }))
+  }));
 
   if (result) {
     var arr = result.email.split("@");
     var email = changeString(arr[0])+'@'+arr[1];
     user.email = email;
-  };
+  } else {
+    user.email = '';
+  }
 
   [ err, result ] = await To(Oauth.fetchByUserIdAndSource(user._id, 'weibo'));
   user.weibo = result && result.deleted == false ? true : false;
@@ -80,6 +82,7 @@ query.selfInfo = async (root, args, context, schema) => {
 
   [ err, result ] = await To(Phone.findOne({ query: { user_id: user._id } }));
   user.phone = result ? changeString(result.phone + '') : '';
+  user.area_code = result ? result.area_code : '';
 
   return user;
 
@@ -104,7 +107,7 @@ query.users = async (root, args, context, schema) => {
   list = JSON.parse(JSON.stringify(list));
 
   if (user) {
-
+    
     if (Reflect.has(select, 'follow')) {
 
       ids = [];
@@ -149,6 +152,8 @@ query.countUsers = async (root, args, context, schema) => {
   return { count }
 }
 
+
+// 注册用户
 mutation.addUser = async (root, args, context, schema) => {
 
   const { user, role } = context;
@@ -351,8 +356,10 @@ mutation.updateUser = async (root, args, context, schema) => {
     })
   }
 
-  if (query._id != user._id + '') {
-    throw CreateError({ message: '无权修改' });
+  if (role != 'admin') {
+    if (query._id != user._id + '') {
+      throw CreateError({ message: '无权修改' });
+    }
   }
 
   if (Reflect.has(update, 'nickname')) {

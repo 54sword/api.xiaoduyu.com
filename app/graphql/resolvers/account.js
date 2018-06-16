@@ -1,13 +1,14 @@
 import { Account, User, Captcha, Phone } from '../../modelsa'
 
-let [ query, mutation, resolvers ] = [{},{},{}];
-
+// tools
 import JWT from '../../common/jwt';
 import To from '../../common/to';
 import CreateError from './errors';
+import Validate from '../../common/validate';
 
-import { getQuery, getOption } from '../config';
-
+// graphql
+import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
+let [ query, mutation, resolvers ] = [{},{},{}];
 
 // 登录
 query.signIn = async (root, args, context, schema) => {
@@ -123,16 +124,107 @@ query.signIn = async (root, args, context, schema) => {
 
 }
 
-mutation.signUp = () => ({ success: true })
-mutation.sendCaptchaToEmail = () => ({ success: true })
-mutation.bindingEmail = (root, args, context, schema) => {
-  return {
-    success: true
+mutation.addEmail = async (root, args, context, schema) => {
+
+  const { user, role, ip, jwtTokenSecret } = context;
+
+  // 未登陆用户
+  if (!user) throw CreateError({ message: '请求被拒绝' });
+
+  let err, res, fields, account;
+
+  [ err, fields ] = getSaveFields({ args, model:'account', role });
+
+  if (err) throw CreateError({ message: err });
+
+  const { email, captcha, unlock_token } = fields;
+
+  if (Validate.email(email) != 'ok') {
+    throw CreateError({ message: '邮箱格式错误' });
   }
+
+  // =======================
+  // 判断邮箱是否被注册
+  [ err, account ] = await To(Account.findOne({
+    query: { email }
+  }));
+
+  if (err) throw CreateError({ message: '查询异常' });
+  if (account && account.user_id + '' != user._id + '') throw CreateError({ message: '邮箱已被注册' });
+
+  [ err, account ] = await To(Account.findOne({
+    query: { user_id: user._id }
+  }));
+
+  if (err) throw CreateError({ message: '查询异常' });
+
+  // =======================
+  // 解锁token，身份验证的用户，可以修改自己的邮箱
+  if (unlock_token) {
+    let obj = JWT.decode(unlock_token, jwtTokenSecret);
+    if (obj.expires - new Date().getTime() <= 0 || !obj) throw CreateError({ message: '无效的解锁令牌' });
+  } else {
+    if (account) throw CreateError({ message: '您已绑定了邮箱' });
+  }
+
+  // =======================
+  // 判断验证码是否有效
+  [ err, res ] = await To(Captcha.findOne({
+    query: { user_id: user._id, email, captcha, type: account && unlock_token ? 'reset-email' : 'binding-email' },
+    options: { sort:{ create_at: -1 } }
+  }));
+
+  if (err) throw CreateError({ message: '查询异常' });
+  if (!res) throw CreateError({ message: '无效的验证码' });
+
+  if (account && unlock_token) {
+    // =======================
+    // 更新邮箱
+    [ err, res ] = await To(Account.update({
+      query: { _id: account._id },
+      update: { email }
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: '修改邮箱账户失败',
+        data: { errorInfo: err.message }
+      });
+    }
+  } else {
+    // =======================
+    // 添加邮箱
+    [ err, res ] = await To(Account.save({
+      data: { email, user_id: user._id + '' }
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: '创建邮箱账户失败',
+        data: { errorInfo: err.message }
+      });
+    }
+  }
+
+  // 清除该邮箱的验证码
+  [ err, res ] = await To(Captcha.remove({
+    query: { email }
+  }));
+
+  return { success: true }
+
 }
-mutation.resetPasswordByCaptcha = () => ({ success: true })
-mutation.resetEmail = () => ({ success: true })
-mutation.checkEmailAndSendCaptcha = () => ({ success: true })
+
+// mutation.signUp = () => ({ success: true })
+// mutation.sendCaptchaToEmail = () => ({ success: true })
+// mutation.bindingEmail = (root, args, context, schema) => {
+//   return {
+//     success: true
+//   }
+// }
+// mutation.resetPasswordByCaptcha = () => ({ success: true })
+// mutation.resetEmail = () => ({ success: true })
+// mutation.checkEmailAndSendCaptcha = () => ({ success: true })
 
 exports.query = query
 exports.mutation = mutation

@@ -3,12 +3,13 @@ var jwt = require('jsonwebtoken');
 var Token = require('../models').Token;
 
 
-exports.encode = function(jwtTokenSecret, userId, accessToken, ip) {
+exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 1000 * 60 * 60 * 24 * 30, options = {}) {
 
   let token = jwt.sign({
-    expires: new Date().getTime() + 1000 * 60 * 60 * 24 * 30,
+    expires: new Date().getTime() + expires,
     // exp: Math.floor(Date.now() / 1000) + 30, //* 60 * 24,
-    user_id: userId
+    user_id: userId,
+    options
     // access_token: accessToken
   }, jwtTokenSecret);
 
@@ -19,7 +20,7 @@ exports.encode = function(jwtTokenSecret, userId, accessToken, ip) {
     ip
   }, (err)=>{
     if (err) console.log(err)
-  })
+  });
 
   return {
     user_id: userId,

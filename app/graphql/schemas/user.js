@@ -61,6 +61,7 @@ type SelfInfo {
   qq: Boolean
   github: Boolean
   phone: String
+  area_code: String
   find_notification_at: String
   last_find_posts_at: String
 }

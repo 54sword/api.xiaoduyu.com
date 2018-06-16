@@ -6,12 +6,12 @@ import config , { domain } from '../../../config';
 import To from '../../common/to';
 import CreateError from './errors';
 import Validate from '../../common/validate';
-
 import Email from '../../common/email';
-import Countries from '../../data/countries';
 import alicloud from '../../common/alicloud';
 import yunpian from '../../common/yunpian';
 
+// data
+import Countries from '../../data/countries';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];
@@ -25,14 +25,39 @@ mutation.addCaptcha = async (root, args, context, schema) => {
 
   [ err, fields ] = getSaveFields({ args, model:'captcha', role });
 
-  if (err) {
-    throw CreateError({ message: err });
-  }
+  if (err) throw CreateError({ message: err });
 
-  const { email, phone, area_code, type } = fields;
+  let { email, phone, area_code, type } = fields;
 
   // =========================
-  // 图片验证码
+  // 给自己绑定的邮箱发送验证码
+  if (type == 'email-unlock-token') {
+    if (!user) throw CreateError({ message: '未登陆' });
+
+    [ err, result ] = await To(Account.findOne({ query: { user_id: user._id } }));
+
+    if (err) throw CreateError({ message: err });
+    if (!result) throw CreateError({ message: '未绑定邮箱' });
+
+    email = result.email;
+  }
+
+  // =========================
+  // 给自己绑定的手机发送验证码
+  if (type == 'phone-unlock-token') {
+    if (!user) throw CreateError({ message: '未登陆' });
+
+    [ err, result ] = await To(Phone.findOne({ query: { user_id: user._id } }));
+
+    if (err) throw CreateError({ message: err });
+    if (!result) throw CreateError({ message: '未绑定手机' });
+
+    phone = result.phone;
+    area_code = result.area_code;
+  }
+
+  // =========================
+  // 获取图片验证码地址和id
   if (!email && !phone && !area_code) {
 
     [ err, result ] = await To(Captcha.findOne({
@@ -57,22 +82,14 @@ mutation.addCaptcha = async (root, args, context, schema) => {
   // 发送验证码到邮箱
   if (email && type) {
     [ err, result ] = await To(sendEmail({ user, email, type }));
-
-    if (err) {
-      throw CreateError({ message: err });
-    }
-
+    if (err) throw CreateError({ message: err });
   }
 
   // =========================
   // 发送验证码到手机
-  if (phone && type) {
+  if (phone && area_code && type) {
     [ err, result ] = await To(sendSMS({ user, area_code, phone, type }));
-
-    if (err) {
-      throw CreateError({ message: err });
-    }
-
+    if (err) throw CreateError({ message: err });
   }
 
   return {
@@ -179,6 +196,20 @@ const sendEmail = ({ user, email, type }) => {
                       res.captcha+
                       '</span>'+
                       '<div>请注意: 为了保障您帐号的安全性，验证码15分钟后过期，请尽快验证!</div>';
+    } else if (type == 'email-unlock-token') {
+
+      data.user_id = user._id;
+
+      [ err, res ] = await To(Captcha.create(data));
+
+      title = '请输入验证码 '+res.captcha+' 完成身份验证';
+      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
+                      '<div>您正在小度鱼操作验证身份，若不是您本人操作，请忽略此邮件。</div>'+
+                      '如下是您的注册验证码:<br />'+
+                      '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
+                      res.captcha+
+                      '</span>'+
+                      '<div>请注意: 为了保障您帐号的安全性，验证码15分钟后过期，请尽快验证!</div>'
 
     } else {
       return reject('类型错误');
@@ -305,6 +336,12 @@ const sendSMS = ({ user, area_code = '', phone, type }) => {
 
       if (!existAreaCode) return reject('区号不存在');
       if (phoneAccount) return reject('手机号已被注册');
+
+    } else if (type == 'phone-unlock-token') {
+
+      if (!user) return reject('无权访问');
+      data.area_code = area_code;
+      data.user_id = user._id;
 
     } else {
       return reject('type 错误');
