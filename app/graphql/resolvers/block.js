@@ -177,7 +177,7 @@ mutation.addBlock = async (root, args, context, schema) => {
 
   //======= 查询是否屏蔽该资源
 
-  let query = { user_id: user._id, ip }
+  let query = { user_id: user._id }
   if (comment_id) query.comment_id = comment_id;
   else if (people_id) query.people_id = people_id;
   else if (posts_id) query.posts_id = posts_id;
@@ -210,7 +210,6 @@ mutation.addBlock = async (root, args, context, schema) => {
       });
     }
 
-
   } else if (res && res.deleted) {
     await To(Block.update({
       query: { _id: res._id },
@@ -233,7 +232,7 @@ mutation.removeBlock = async (root, args, context, schema) => {
 
   // 未登陆用户
   if (!user) throw CreateError({ message: '请求被拒绝' });
-  if (!ip) throw CreateError({ message: '获取不到您的ip' });
+  if (!ip) throw CreateError({ message: '获取不到你的ip' });
 
   let err, res, fields, query = {}, result;
 
@@ -245,7 +244,7 @@ mutation.removeBlock = async (root, args, context, schema) => {
     throw CreateError({ message: '缺少目标参数' });
   }
 
-  query.user_id = user._id;
+  query.user_id = user._id + '';
 
   // 判断数据是否存在
   [ err, result ] = await To(Block.findOne({ query }));

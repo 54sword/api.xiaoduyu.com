@@ -1,9 +1,9 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var TopicSchema = new Schema({
+const TopicSchema = new Schema({
   // 创建人
   user_id: { type: ObjectId, ref: 'User' },
   // 父级

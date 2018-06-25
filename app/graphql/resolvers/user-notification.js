@@ -1,11 +1,15 @@
 import { UserNotification, Notification, User } from '../../modelsa'
 
-import To from '../../common/to'
-import CreateError from './errors'
+import To from '../../common/to';
+import CreateError from './errors';
 
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];
+
+// test
+
+
 
 query.userNotifications = async (root, args, context, schema) => {
 
@@ -42,7 +46,7 @@ query.userNotifications = async (root, args, context, schema) => {
       select: { _id: 1, nickname: 1, avatar: 1, create_at: 1 }
     })
   }
-  
+
   if (Reflect.has(select, 'sender_id')) {
     options.populate.push({
       path: 'sender_id',
@@ -324,3 +328,34 @@ mutation.updateUserNotifaction = async (root, args, context, schema) => {
 exports.query = query
 exports.mutation = mutation
 exports.resolvers = resolvers
+
+
+/*
+
+// 删除数据中重复的通知
+UserNotification.find({ query: {},  }).then(res=>{
+
+  let exist = [];
+  let noExsit = [];
+  res.map(item=>{
+    if (exist.indexOf(`${item.type}-${item.sender_id}-${item.addressee_id}-${item.posts_id || ''}-${item.comment_id || ''}`) != -1) {
+      noExsit.push(item._id);
+    } else {
+      exist.push(`${item.type}-${item.sender_id}-${item.addressee_id}-${item.posts_id || ''}-${item.comment_id || ''}`)
+    }
+  });
+
+  console.log(noExsit);
+
+  if (noExsit.length > 0) {
+
+    UserNotification.remove({
+      query: { _id: { $in: noExsit } }
+    }).then(res=>{
+      console.log('删除完成');
+    })
+
+  }
+
+});
+*/

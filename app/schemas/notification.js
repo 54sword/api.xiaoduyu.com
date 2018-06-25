@@ -1,7 +1,7 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
 /*
  * type:
@@ -9,7 +9,7 @@ var ObjectId = Schema.Types.ObjectId;
  */
 
 // 通知多人
-var NotificationSchema = new Schema({
+const NotificationSchema = new Schema({
   // 发送人
   sender_id: { type: ObjectId, ref: 'User' },
   // 接收人
@@ -22,7 +22,6 @@ var NotificationSchema = new Schema({
   create_at: { type: Date, default: Date.now }
 });
 
-// Notify.index({ addressee_id: 1 });
-// Notify.index({ addressee_id: 1, create_at: -1, deleted: 1 });
+NotificationSchema.index({ sender_id: 1, addressee_id: 1, target: 1, type: 1 }, { unique: true });
 
 mongoose.model('Notification', NotificationSchema);

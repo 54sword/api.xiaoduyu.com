@@ -1,8 +1,4 @@
-// var mongoose = require('mongoose')
-// var Schema = mongoose.Schema
-// var ObjectId = Schema.Types.ObjectId
-
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose
 const ObjectId = Schema.Types.ObjectId
@@ -16,4 +12,4 @@ const ReportSchema = new Schema({
   create_at: { type: Date, default: Date.now }
 });
 
-mongoose.model('Report', ReportSchema)
+mongoose.model('Report', ReportSchema);

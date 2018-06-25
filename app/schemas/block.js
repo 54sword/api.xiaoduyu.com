@@ -1,8 +1,8 @@
-var mongoose = require('mongoose')
-var Schema = mongoose.Schema
-var ObjectId = Schema.Types.ObjectId
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var BlockSchema = new Schema({
+const BlockSchema = new Schema({
   // 用户自己
   user_id: { type: ObjectId, ref: 'User' },
   // 屏蔽的帖子
@@ -18,5 +18,8 @@ var BlockSchema = new Schema({
   // ip地址
   ip: { type: String, default: '' }
 });
+
+// 组合唯一索引
+BlockSchema.index({ user_id: 1, posts_id: 1, comment_id: 1, people_id: 1 }, { unique: true });
 
 mongoose.model('Block', BlockSchema);

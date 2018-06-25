@@ -107,7 +107,7 @@ query.users = async (root, args, context, schema) => {
   list = JSON.parse(JSON.stringify(list));
 
   if (user) {
-    
+
     if (Reflect.has(select, 'follow')) {
 
       ids = [];
@@ -283,7 +283,7 @@ mutation.addUser = async (root, args, context, schema) => {
   }
 
   // 获取加密的 hash 密码
-  [ err, password ] = await To(Account.generateHashPassword({ password }));
+  [ err, password ] = await To(User.generateHashPassword({ password }));
 
   let data = {
     nickname,
@@ -318,7 +318,7 @@ mutation.addUser = async (root, args, context, schema) => {
     }
 
   }
-
+  
   if (phone) {
     [ err, res ] = await To(Phone.save({
       data: { phone, user_id: res._id, area_code }

@@ -1,6 +1,6 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
 /*
  * type:
@@ -14,7 +14,7 @@ var ObjectId = Schema.Types.ObjectId;
  * 1: 喜欢
  */
 
-var LikeSchema = new Schema({
+const LikeSchema = new Schema({
   user_id: { type: ObjectId },
   type: { type: String },
   target_id: { type: ObjectId },

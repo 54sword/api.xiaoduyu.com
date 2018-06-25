@@ -79,27 +79,20 @@ query.topics = async (root, args, context, schema) => {
     });
   }
 
-  topicList = JSON.parse(JSON.stringify(topicList));
+  if (topicList) {
 
-  // 如果是登陆用户，显示是否关注了该话题
-  if (user && topicList && Reflect.has(select, 'follow')) {
-    topicList.map(node => {
-      node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
-    })
-  }
+    topicList = JSON.parse(JSON.stringify(topicList));
 
-  /*
-  topicList.map(node => {
-
-    // console.log(node);
-
-    if (node.children) {
-      node.children = node.children.join(',')
-    } else {
-      node.children = ''
+    // 如果是登陆用户，显示是否关注了该话题
+    if (user && topicList && Reflect.has(select, 'follow')) {
+      topicList.map(node => {
+        node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
+      })
     }
-  });
-  */
+
+  } else {
+    topicList = [];
+  }
 
   return topicList
 }

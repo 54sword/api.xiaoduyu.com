@@ -1,29 +1,18 @@
 
 import { Account, Captcha, User, Phone } from '../../modelsa';
 
-
 // tools
 import To from '../../common/to';
 import CreateError from './errors';
-import bcrypt from 'bcryptjs';
 
 // graphql
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];
 
-const getHashPassword = ({ password }) => {
-  return new Promise(resolve=>{
-    bcrypt.genSalt(10, function(err, salt) {
-      bcrypt.hash(password, salt, function(err, hash) {
-        resolve(hash);
-      });
-    });
-  });
-}
 
 // 还缺少通知
 mutation.forgot = async (root, args, context, schema) => {
-
+  
   const { role } = context;
   const { method } = args;
 
@@ -38,7 +27,7 @@ mutation.forgot = async (root, args, context, schema) => {
   }
 
   if (email) {
-    
+
     [ err, user ] = await To(Account.findOne({
       query: { email }
     }));
@@ -89,7 +78,7 @@ mutation.forgot = async (root, args, context, schema) => {
     throw CreateError({ message: '验证码无效' });
   }
 
-  [ err, hash ] = await To(getHashPassword({ password: new_password }));
+  [ err, hash ] = await To(User.generateHashPassword({ password: new_password }));
 
   [ err ] = await To(User.update({
     query: { _id: user.user_id },

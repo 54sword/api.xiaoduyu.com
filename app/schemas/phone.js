@@ -1,10 +1,9 @@
 
-var mongoose = require('mongoose');
-var bcrypt = require('bcryptjs');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var PhoneSchema = new Schema({
+const PhoneSchema = new Schema({
   // 区号
   area_code: { type: String },
   // 手机号码
@@ -19,6 +18,6 @@ var PhoneSchema = new Schema({
 
 PhoneSchema.index({ phone: 1 });
 PhoneSchema.index({ user_id: 1 });
-PhoneSchema.index({ phone: 1, user_id: 1 });
+PhoneSchema.index({ phone: 1, user_id: 1 }, { unique: true });
 
 mongoose.model('Phone', PhoneSchema);

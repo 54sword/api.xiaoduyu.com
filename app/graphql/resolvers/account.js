@@ -98,7 +98,7 @@ query.signIn = async (root, args, context, schema) => {
   // }
 
   // 判断密码是否正确
-  [ err, result ] = await To(Account.verifyPassword({
+  [ err, result ] = await To(User.verifyPassword({
     password,
     currentPassword: account.user_id.password
   }))
