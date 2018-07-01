@@ -13,10 +13,10 @@ var config = require('../../config');
 
 var appConfig = {}
 
-if (config.oauth.wechat) {
+if (config.oauth.wechatPC) {
   appConfig = {
-    appid: config.oauth.wechat_pc.appid,
-    appkey: config.oauth.wechat_pc.appkey,
+    appid: config.oauth.wechatPC.appid,
+    appkey: config.oauth.wechatPC.appkey,
     redirectUri: config.domain+'/oauth/wechat-pc-signin',
     scope: 'snsapi_login'
   }

@@ -1,9 +1,9 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var TokenSchema = new Schema({
+const TokenSchema = new Schema({
   // 用户
   user_id: { type: ObjectId, ref: 'User' },
   // 用户的访问令牌

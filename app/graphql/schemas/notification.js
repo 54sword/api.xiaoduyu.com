@@ -1,8 +1,5 @@
 
-import Query from '../querys'
-import Updates from '../updates'
-const { querySchema } = Query({ model: 'notification' })
-const { updateSchema } = Updates({ model: 'notification' })
+import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
@@ -23,7 +20,7 @@ type updateNotifaction {
 }
 
 # 评论计数
-type notificationsCount {
+type countNotifications {
   count: Int
 }
 
@@ -32,16 +29,16 @@ type notificationsCount {
 exports.Query = `
 
 # 查询用户通知
-notifications(${querySchema}): [notification]
+notifications(${getQuerySchema('notification')}): [notification]
 
 # 评论计数
-notificationsCount(${querySchema}): notificationsCount
+countNotifications(${getQuerySchema('notification')}): countNotifications
 
 `
 
 exports.Mutation = `
 
 # 更新用户的通知
-updateNotifaction(${updateSchema}): updateNotifaction
+updateNotifaction(${getUpdateSchema('notification')}): updateNotifaction
 
 `

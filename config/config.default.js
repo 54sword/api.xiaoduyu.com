@@ -38,7 +38,7 @@ var config = {
 		weibo: { appid: 0, appSecret: '' },
 		qq: { appid: '', appkey: '' },
 		github: { appid: '', appkey: '' },
-		wechat_pc: { appid: '', appkey: '' },
+		wechatPC: { appid: '', appkey: '' },
 		wechat: { appid: '', appkey: '' },
 		// 授权成功后跳转到着陆网站
 		landingPage: ''

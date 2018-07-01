@@ -2,7 +2,7 @@
 import { Comment } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(Comment)
+export default new baseMethod(Comment)
 
 /*
 var Comment = require('../schemas').Comment;

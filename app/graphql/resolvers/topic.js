@@ -1,34 +1,76 @@
+import { Topic } from '../../modelsa'
 
-import Topic from '../../modelsa/topic'
-
-let query = {}
-let mutation = {}
-let resolvers = {}
-
+// tools
 import To from '../../common/to'
 import CreateError from './errors'
-import Querys from '../querys'
-import Updates from '../updates'
-import Saves from '../saves'
+// import Querys from '../querys'
+// import Updates from '../updates'
+// import Saves from '../saves'
+
+
+import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
+let [ query, mutation, resolvers ] = [{},{},{}];
+
+/*
+const s = async () => {
+  let [ err, res ] = await To(Topic.find({ query:{}, select:{} }));
+  console.log(err);
+  console.log(res);
+}
+
+s();
+*/
 
 query.topics = async (root, args, context, schema) => {
 
   const { user, role } = context
   const { method } = args
-  let select = {}
-  let { query, options } = Querys({ args, model: 'topic', role })
+  let select = {}, err, res, query = {}, options = {}, topicList;
+  // let { query, options } = Querys({ args, model: 'topic', role });
+
+  [ err, query ] = getQuery({ args, model:'topic', role });
+  [ err, options ] = getOption({ args, model:'topic', role });
+
+  // select
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
+
+  // === 设置一些默认值
+
+  if (!Reflect.has(options, 'sort_by')) {
+    options.sort = {
+      sort: -1
+    }
+  }
 
   //===
 
   // 如果需要返回 parent_id，则获取 parent_id 的详细信息
   if (Reflect.has(select, 'parent_id')) {
-    options.populate = [{
+    if (!options.populate) options.populate = [];
+    options.populate.push({
       path: 'parent_id',
+      model: 'Topic',
       select: { '_id': 1, 'avatar': 1, 'name': 1 }
-    }]
+    });
   }
 
-  let [ err, topicList ] = await To(Topic.find({ query, select, options }))
+  if (Reflect.has(select, 'children')) {
+    if (!options.populate) options.populate = [];
+    options.populate.push({
+      path: 'children',
+      model: 'Topic',
+      select: { '_id': 1, 'avatar': 1, 'name': 1 },
+      options: {
+        sort: {
+          recommend: -1,
+          sort: -1,
+          posts_count: -1
+        }
+      }
+    });
+  }
+
+  [ err, topicList ] = await To(Topic.find({ query, select, options }));
 
   if (err) {
     throw CreateError({
@@ -37,27 +79,37 @@ query.topics = async (root, args, context, schema) => {
     });
   }
 
-  // 如果是登陆用户，显示是否关注了该话题
-  if (user && topicList && Reflect.has(select, 'follow')) {
-    topicList = JSON.parse(JSON.stringify(topicList))
-    topicList.map(node => {
-      node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
-    })
+  if (topicList) {
+
+    topicList = JSON.parse(JSON.stringify(topicList));
+
+    // 如果是登陆用户，显示是否关注了该话题
+    if (user && topicList && Reflect.has(select, 'follow')) {
+      topicList.map(node => {
+        node.follow = user.follow_topic.indexOf(node._id) != -1 ? true : false
+      })
+    }
+
+  } else {
+    topicList = [];
   }
 
   return topicList
 }
 
 
-query.topicsCount = async (root, args, context, schema) => {
+query.countTopics = async (root, args, context, schema) => {
 
   const { user, role } = context
-  let select = {}
-  let { query, options } = Querys({ args, model: 'topic', role })
+  let err, select = {}, query, options, count;
+  // let { query, options } = Querys({ args, model: 'topic', role })
+
+  [ err, query ] = getQuery({ args, model:'topic', role });
+  [ err, options ] = getOption({ args, model:'topic', role });
 
   //===
 
-  let [ err, count ] = await To(Topic.count({ query }))
+  [ err, count ] = await To(Topic.count({ query }))
 
   if (err) {
     throw CreateError({
@@ -72,8 +124,9 @@ query.topicsCount = async (root, args, context, schema) => {
 mutation.addTopic = async (root, args, context, schema) => {
 
   const { user, role } = context;
-  let { save } = Saves({ args, model: 'topic', role });
-  let err, result;
+  let err, result, save;
+  [ err, save ] = getSaveFields({ args, model: 'topic', role });
+
 
   if (!user || role != 'admin') {
     throw CreateError({
@@ -150,13 +203,20 @@ mutation.addTopic = async (root, args, context, schema) => {
     });
   }
 
+  if (save.parent_id) {
+    uploadTopicChildren(save.parent_id);
+  }
+
   return { success: true }
 }
 
 mutation.updateTopic = async (root, args, context, schema) => {
 
-  const { user, role } = context
-  let { query, update } = Updates({ args, model: 'topic', role })
+  const { user, role } = context;
+  let err, query, update, topic, result;
+
+  [ err, query ] = getUpdateQuery({ args, model: 'topic', role });
+  [ err, update ] = getUpdateContent({ args, model: 'topic', role });
 
   if (!user || role != 'admin') {
     throw CreateError({
@@ -166,8 +226,6 @@ mutation.updateTopic = async (root, args, context, schema) => {
   }
 
   // --------------------------------------
-
-  let err, result, topic;
 
   [ err, topic ] = await To(Topic.findOne({ query: { _id: query._id } }))
 
@@ -256,7 +314,28 @@ mutation.updateTopic = async (root, args, context, schema) => {
     });
   }
 
+  uploadTopicChildren(topic.parent_id ? topic.parent_id : topic._id);
+
   return { success: true }
+}
+
+const uploadTopicChildren = async (topicId) => {
+
+  let [ err, list ] = await To(Topic.find({ query: { parent_id: topicId } }));
+
+  if (!list) return;
+
+  let ids = [];
+
+  list.map(item=>{
+    ids.push(item._id);
+  });
+
+  Topic.update({
+    query: { _id: topicId },
+    update: { children: ids }
+  });
+
 }
 
 exports.query = query

@@ -1,13 +1,22 @@
 
-import Query from '../querys'
-import Saves from '../saves'
-import Updates from '../updates'
+// import Query from '../querys'
+// import Saves from '../saves'
+// import Updates from '../updates'
+//
+// const { querySchema } = Query({ model: 'topic' })
+// const { saveSchema } = Saves({ model: 'topic' })
+// const { updateSchema } = Updates({ model: 'topic' })
 
-const { querySchema } = Query({ model: 'topic' })
-const { saveSchema } = Saves({ model: 'topic' })
-const { updateSchema } = Updates({ model: 'topic' })
+import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
+
+type childrenTopic {
+  _id: String
+  name: String
+  brief: String
+  avatar: String
+}
 
 # 话题
 type Topic {
@@ -26,7 +35,8 @@ type Topic {
   recommend: Boolean
   user_id: String
   follow: Boolean
-  parent_id: String
+  parent_id: childrenTopic
+  children: [childrenTopic]
 }
 
 # 更新话题
@@ -35,7 +45,7 @@ type updateTopic {
 }
 
 # 话题计数
-type topicsCount {
+type countTopics {
   count: Int
 }
 
@@ -49,16 +59,16 @@ type addTopic {
 exports.Query = `
 
 # 查询帖子
-topics(${querySchema}): [Topic]
+topics(${getQuerySchema('topic')}): [Topic]
 
 # 话题计数
-topicsCount(${querySchema}): topicsCount
+countTopics(${getQuerySchema('topic')}): countTopics
 
 `
 
 exports.Mutation = `
 
-addTopic(${saveSchema}): addTopic
-updateTopic(${updateSchema}): updateTopic
+addTopic(${getSaveSchema('topic')}): addTopic
+updateTopic(${getUpdateSchema('topic')}): updateTopic
 
 `

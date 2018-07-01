@@ -443,7 +443,7 @@ exports.signup = function(req, res, next) {
 };
 
 
-/**
+/*
  * 发送验证邮件
  * @param  {string}   domain              网站地址
  * @param  {string}   email               邮箱地址
@@ -630,7 +630,7 @@ exports.checkEmailVerifyCaptcha = function(req, res, next) {
 };
 
 // http://localhost:3000/signup-email-verify
-// 登陆邮箱验证
+// url方式验证，邮箱是否有效
 exports.signupEmailVerify = function(req, res) {
 
   var code = req.body.code;

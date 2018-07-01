@@ -1,12 +1,13 @@
 
-var config = require('../../config');
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
-var bcrypt = require('bcryptjs');
+import { defaultAvatar } from '../../config';
 
-var UserSchema = new Schema({
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
+const bcrypt = require('bcryptjs');
+
+const UserSchema = new Schema({
   // 昵称
   nickname: String,
   // 最近一次重置昵称的事件
@@ -19,8 +20,6 @@ var UserSchema = new Schema({
   blocked: { type: Boolean, default: false },
   // 禁言，在该时间前不能发布言论
   banned_to_post: { type: Date },
-  // 限制发送消息
-  // disable_send_reply: { type: Date, default: Date.now },
   // 用户等级
   // 100 后台管理员
   role: { type: Number, default: 0 },
@@ -60,6 +59,10 @@ var UserSchema = new Schema({
   block_posts: [{ type: ObjectId, ref: 'Posts' }],
   block_posts_count: { type: Number, default: 0 },
 
+  // 屏蔽的评论
+  block_comment: [{ type: ObjectId, ref: 'Comment' }],
+  block_comment_count: { type: Number, default: 0 },
+
   // 最近一次查询Notification的日期
   find_notification_at: { type: Date },
 
@@ -72,14 +75,10 @@ var UserSchema = new Schema({
   password: String
 });
 
-
 UserSchema.virtual('avatar_url').get(function () {
-
-  var url = this.avatar ? this.avatar.replace('!200', '!50') : config.defaultAvatar
-  url += url.indexOf('thumbnail') != -1 ? '/quality/90' : ''
-
-  return url
-
+  let url = this.avatar ? this.avatar : defaultAvatar;
+  url += url.indexOf('thumbnail') != -1 ? '/quality/90' : '';
+  return url;
 });
 
 

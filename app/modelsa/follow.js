@@ -2,7 +2,7 @@
 import { Follow } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(Follow)
+export default new baseMethod(Follow)
 
 /*
 var Follow = require('../schemas').Follow;

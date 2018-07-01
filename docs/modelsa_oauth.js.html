@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>modelsa/oauth.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="AccountModel.html">AccountModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#count">count</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#find">find</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#findOne">findOne</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#populate">populate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#remove">remove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#save">save</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#update">update</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#verifyPassword">verifyPassword</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="OauthModel.html">OauthModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#count">count</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#fetchByUserIdAndSource">fetchByUserIdAndSource</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#find">find</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#findOne">findOne</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#populate">populate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#remove">remove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#save">save</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#update">update</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">modelsa/oauth.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+import { Oauth } from '../schemas'
+import baseMethod from './base-method'
+
+const sources = {
+  'qq': 0,
+  'weibo': 1,
+  'github': 2,
+  'wechat': 3
+};
+
+/**
+ * Oauth 查询类
+ * @extends Model
+ */
+
+class OauthModel extends baseMethod {
+
+  /**
+   * 通过用户id和来源条件查询用户
+   * @param  {String} userId  用户的id
+   * @param  {Int} _source 来源id
+   * @return {Object} Promise
+   */
+  fetchByUserIdAndSource(userId, _source) {
+    return this.findOne({ user_id: userId, source: sources[_source] })
+  }
+
+}
+
+
+module.exports = new OauthModel(Oauth);
+
+
+/*
+var Oauth = require('../schemas').Oauth;
+
+var sources = {
+  'qq': 0,
+  'weibo': 1,
+  'github': 2,
+  'wechat': 3
+};
+
+// 通过用户的id获取
+exports.fetchByUserId = function(userId, callback) {
+  Oauth.find({ user_id: userId })
+  .exec(function(err, oauths){
+
+    var oauths = JSON.stringify(oauths);
+    oauths = JSON.parse(oauths);
+
+    var _sources = {};
+    for (var i in sources) {
+      _sources[i] = '';
+    }
+
+    for (var i = 0, max = oauths.length; i &lt; max; i++) {
+      for (var n in sources) {
+        if (oauths[i].source == sources[n]) {
+          _sources[n] = oauths[i];
+          delete _sources[n].source;
+        }
+      }
+    }
+
+    callback(err, _sources);
+  });
+};
+
+
+exports.fetchByUserIdAndSource = function(userId, _source, callback) {
+  Oauth.findOne({ user_id: userId, source: sources[_source] })
+  .exec(callback);
+};
+
+
+// 通过 openid 和 source 查询
+exports.fetchByOpenIdAndSource = function(openid, _source, callback) {
+  Oauth.findOne({ openid: openid, source: sources[_source] })
+  .populate([
+    {
+      path: 'user_id',
+      select: { 'access_token': 1}
+    }
+  ])
+  .exec(callback);
+};
+
+// 创建 oauth 账户
+exports.create = function(info, callback) {
+
+  var oauth = new Oauth();
+  oauth.openid = info.openid;
+  oauth.access_token = info.access_token;
+  oauth.expires_in = info.expires_in || 0;
+
+  if (info.refresh_token) {
+    oauth.refresh_token = info.refresh_token;
+  }
+
+  oauth.source = sources[info.source];
+  oauth.user_id = info.user_id;
+  oauth.save(callback);
+
+};
+
+// 更新 oauth 的信息
+exports.updateById = function(id, info, callback) {
+  Oauth.update({ _id: id },{ $set: info }).exec(callback);
+};
+
+// 删除
+exports.updateDeleteStatus = function(id, bl, callback) {
+  Oauth.update({ _id: id },{ $set: { 'deleted': bl }}).exec(callback);
+  // Oauth.remove({ _id: id }).exec(callback);
+};
+*/
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 24 2018 21:26:35 GMT+0800 (CST) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

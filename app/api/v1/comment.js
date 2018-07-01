@@ -274,7 +274,7 @@ exports.add = function(req, res) {
                       if (userIds.indexOf(follow.user_id) == -1) {
                         userIds.push(follow.user_id)
                       }
-                    })
+                    });
 
                     if (userIds.length > 0) {
                       Notification.add(
@@ -331,7 +331,6 @@ exports.add = function(req, res) {
       } else {
         callback(null, comment)
       }
-
 
     }
 

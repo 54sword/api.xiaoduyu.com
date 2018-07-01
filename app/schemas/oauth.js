@@ -1,9 +1,9 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var OauthSchema = new Schema({
+const OauthSchema = new Schema({
   // 用户的唯一id
   openid: String,
   // 微信登录PC端、服务号的openid，留着备用，微信的 unionid 是该表的 openid

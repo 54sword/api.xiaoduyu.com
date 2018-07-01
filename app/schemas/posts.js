@@ -1,9 +1,9 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var PostsSchema = new Schema({
+const PostsSchema = new Schema({
   // 作者
   user_id: { type: ObjectId, ref: 'User' },
   // 标签
@@ -47,7 +47,5 @@ var PostsSchema = new Schema({
   // 排序
   sort_by_date: { type: Date, default: Date.now }
 });
-
-// PostsSchema.index({ node_id: 1, last_comment_at: -1 });
 
 mongoose.model('Posts', PostsSchema);

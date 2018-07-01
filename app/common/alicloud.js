@@ -11,12 +11,18 @@ if (alicloud.sms && alicloud.sms.accessKeyId && alicloud.sms.secretAccessKey) {
   })
 }
 
+// console.log(smsClient);
+
 exports.sendSMS = function({ PhoneNumbers, SignName, TemplateCode, TemplateParam }, callback){
+
+  if (!smsClient) {
+    return callback('未配置阿里云SMS');
+  }
 
   smsClient.sendSMS({
     PhoneNumbers,
-    SignName,
-    TemplateCode,
+    SignName: alicloud.sms.signName,
+    TemplateCode: alicloud.sms.templateCode,
     TemplateParam: JSON.stringify(TemplateParam)
   }).then(function (res) {
     let { Code } = res
@@ -25,10 +31,13 @@ exports.sendSMS = function({ PhoneNumbers, SignName, TemplateCode, TemplateParam
       callback(null)
     }
   }, function (err) {
+
+    // console.log(err);
+
     if (err && err.code == 'isv.MOBILE_NUMBER_ILLEGAL') {
-      callback(30001)
+      callback('无效的手机号')
     } else {
-      callback(30000)
+      callback('短信发送失败')
     }
 
   })

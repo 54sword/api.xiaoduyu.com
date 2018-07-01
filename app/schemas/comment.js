@@ -1,9 +1,9 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var CommentSchema = new Schema({
+const CommentSchema = new Schema({
   // 作者
   user_id: { type: ObjectId, ref: 'User' },
   // 帖子id
@@ -22,12 +22,10 @@ var CommentSchema = new Schema({
   update_at: { type: Date },
   // 最后的回复时间
   last_reply_at: { type: Date },
-
   // 回复累积数量
   reply_count: { type: Number, default: 0 },
   // 回复ids
   reply: [{ type: ObjectId, ref: 'Comment' }],
-
   // 获得liek的总数
   like_count: { type: Number, default: 0 },
   // 设备
@@ -45,7 +43,5 @@ var CommentSchema = new Schema({
   // 推荐
   recommend: { type: Boolean, default: false }
 });
-
-// CommentSchema.index({ feed_id: 1, last_reply_at: -1 });
 
 mongoose.model('Comment', CommentSchema);

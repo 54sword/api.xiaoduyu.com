@@ -1,59 +1,95 @@
-import Posts from './posts'
-import Topic from './topic'
-import User from './user'
-import Comment from './comment'
-import UserNotification from './user-notification'
-import Notification from './notification'
-import Captcha from './captcha'
-import Account from './account'
-import Analysis from './analysis'
-import Qiniu from './qiniu'
+import Posts from './posts';
+import Topic from './topic';
+import User from './user';
+import Comment from './comment';
+import UserNotification from './user-notification';
+import Notification from './notification';
+import Captcha from './captcha';
+import Account from './account';
+import Qiniu from './qiniu';
+import Block from './block';
+import Countries from './countries';
+import Follow from './follow';
+import Like from './like';
+import Password from './password';
+import Phone from './phone';
+import Forgot from './forgot';
+import Oauth from './oauth';
+import Report from './report';
+import UnlockToken from './unlock-token';
 
-var typeDefs = [ `
+const typeDefs = [ `
 
-${Posts.Schema}
-${Topic.Schema}
-${User.Schema}
-${Comment.Schema}
-${UserNotification.Schema}
-${Notification.Schema}
-${Captcha.Schema}
-${Account.Schema}
-${Analysis.Schema}
-${Qiniu.Schema}
+  ${Posts.Schema}
+  ${Topic.Schema}
+  ${User.Schema}
+  ${Comment.Schema}
+  ${UserNotification.Schema}
+  ${Notification.Schema}
+  ${Captcha.Schema}
+  ${Account.Schema}
+  ${Qiniu.Schema}
+  ${Block.Schema}
+  ${Countries.Schema}
+  ${Follow.Schema}
+  ${Like.Schema}
+  ${Password.Schema}
+  ${Phone.Schema}
+  ${Forgot.Schema}
+  ${Oauth.Schema}
+  ${Report.Schema}
+  ${UnlockToken.Schema}
+  
+  # 查询
+  type Query {
+    ${Posts.Query}
+    ${Topic.Query}
+    ${User.Query}
+    ${Comment.Query}
+    ${UserNotification.Query}
+    ${Notification.Query}
+    ${Captcha.Query}
+    ${Account.Query}
+    ${Qiniu.Query}
+    ${Block.Query}
+    ${Countries.Query}
+    ${Follow.Query}
+    ${Like.Query}
+    ${Password.Query}
+    ${Phone.Query}
+    ${Forgot.Query}
+    ${Oauth.Query}
+    ${Report.Query}
+    ${UnlockToken.Query}
+  }
 
-# 查询API
-type Query {
-  ${Posts.Query}
-  ${Topic.Query}
-  ${User.Query}
-  ${Comment.Query}
-  ${UserNotification.Query}
-  ${Notification.Query}
-  ${Captcha.Query}
-  ${Account.Query}
-  ${Analysis.Query}
-  ${Qiniu.Query}
-}
+  # 增、删、改
+  type Mutation {
+    ${Posts.Mutation}
+    ${Topic.Mutation}
+    ${User.Mutation}
+    ${Comment.Mutation}
+    ${UserNotification.Mutation}
+    ${Notification.Mutation}
+    ${Captcha.Mutation}
+    ${Account.Mutation}
+    ${Qiniu.Mutation}
+    ${Block.Mutation}
+    ${Countries.Mutation}
+    ${Follow.Mutation}
+    ${Like.Mutation}
+    ${Password.Mutation}
+    ${Phone.Mutation}
+    ${Forgot.Mutation}
+    ${Oauth.Mutation}
+    ${Report.Mutation}
+    ${UnlockToken.Mutation}
+  }
 
-# 增、删、改API
-type Mutation {
-  ${Posts.Mutation}
-  ${Topic.Mutation}
-  ${User.Mutation}
-  ${Comment.Mutation}
-  ${UserNotification.Mutation}
-  ${Notification.Mutation}
-  ${Captcha.Mutation}
-  ${Account.Mutation}
-  ${Analysis.Mutation}
-  ${Qiniu.Mutation}
-}
-
-schema {
-  mutation: Mutation
-  query: Query
-}
+  schema {
+    mutation: Mutation
+    query: Query
+  }
 
 `];
 

@@ -1,8 +1,10 @@
 
-import Query from '../querys'
-import Updates from '../updates'
-const { querySchema } = Query({ model: 'user-notification' })
-const { updateSchema } = Updates({ model: 'user-notification' })
+// import Query from '../querys'
+// import Updates from '../updates'
+// const { querySchema } = Query({ model: 'user-notification' })
+// const { updateSchema } = Updates({ model: 'user-notification' })
+
+import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
@@ -28,11 +30,13 @@ type posts_id {
   title: String
   content_html: String
   _id: ID
+  content_trim: String
 }
 
 type un__comment {
   _id: ID
   content_html: String
+  content_trim: String
 }
 
 type un_comment {
@@ -41,6 +45,7 @@ type un_comment {
   posts_id: posts_id
   reply_id: un__comment
   parent_id: un__comment
+  content_trim: String
 }
 
 # 话题
@@ -62,8 +67,13 @@ type updateUserNotifaction {
 }
 
 # 用户通知计数
-type userNotificationsCount {
+type countUserNotifications {
   count: Int
+}
+
+# 获取未读的用户消息
+type fetchUnreadUserNotification {
+  ids: [String]
 }
 
 `
@@ -71,16 +81,19 @@ type userNotificationsCount {
 exports.Query = `
 
 # 查询用户通知
-userNotifications(${querySchema}): [userNotification]
+userNotifications(${getQuerySchema('user-notification')}): [userNotification]
 
 # 用户通知计数
-userNotificationsCount(${querySchema}): userNotificationsCount
+countUserNotifications(${getQuerySchema('user-notification')}): countUserNotifications
+
+# 获取未读的用户消息
+fetchUnreadUserNotification: fetchUnreadUserNotification
 
 `
 
 exports.Mutation = `
 
 # 更新用户的通知
-updateUserNotifaction(${updateSchema}): updateUserNotifaction
+updateUserNotifaction(${getUpdateSchema('user-notification')}): updateUserNotifaction
 
 `

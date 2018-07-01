@@ -1,7 +1,7 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
 /*
  * type:
@@ -15,7 +15,7 @@ var ObjectId = Schema.Types.ObjectId;
  * like-posts: xx 赞了你的 xx 帖子
  */
 
-var UserNotificationSchema = new Schema({
+const UserNotificationSchema = new Schema({
   type: { type: String },
   sender_id: { type: ObjectId, ref: 'User' },
   addressee_id: { type: ObjectId, ref: 'User' },
@@ -26,8 +26,10 @@ var UserNotificationSchema = new Schema({
   create_at: { type: Date, default: Date.now }
 });
 
-UserNotificationSchema.index({ addressee_id: 1 });
-UserNotificationSchema.index({ addressee_id: 1, create_at: -1, deleted: 1 });
+// UserNotificationSchema.index({ addressee_id: 1 });
+// UserNotificationSchema.index({ addressee_id: 1, create_at: -1, deleted: 1 });
+
+UserNotificationSchema.index({ type: 1, sender_id: 1, addressee_id: 1, posts_id: 1, comment_id:1 }, { unique: true });
 
 
 mongoose.model('UserNotification', UserNotificationSchema);

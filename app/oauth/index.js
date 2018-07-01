@@ -17,7 +17,7 @@ const OauthRouter = (csrfProtection) => {
     router.get('/weibo', weibo.show);
     router.get('/weibo-signin', weibo.signin);
   }
-  
+
   if (oauth.qq) {
     router.get('/qq', qq.show);
     router.get('/qq-signin', qq.signin);

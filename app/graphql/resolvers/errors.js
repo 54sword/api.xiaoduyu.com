@@ -16,7 +16,8 @@ export const RejectedError = createError('rejectedError', {
 
 export default ({ message, data = {} }) => {
   let error = createError('error', {
-    message
+    message,
+    data
   })
   return new error(data)
 }

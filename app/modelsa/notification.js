@@ -2,7 +2,7 @@
 import { Notification } from '../schemas'
 import baseMethod from './base-method'
 
-export default baseMethod(Notification)
+export default new baseMethod(Notification)
 
 /*
 var Notification = require('../schemas').Notification;

@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node --max-old-space-size=1700 ./bin/www",
     "dev": "supervisor node server.js",
-    "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db"
+    "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/data/db",
+    "generate-docs": "jsdoc -c jsdoc.json"
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",
@@ -47,9 +48,11 @@
     "request": "^2.69.0",
     "sendcloud-client": "^0.1.1",
     "serve-favicon": "^2.2.1",
-    "socket.io": "^2.0.3",
+    "socket.io": "^2.1.1",
     "trek-captcha": "^0.3.0",
     "xss": "^0.2.6"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "minami": "^1.2.3"
+  }
 }

@@ -1,6 +1,6 @@
 
-var mongoose = require('mongoose');
-var config = require('../../config');
+import mongoose from 'mongoose';
+import { db_url } from '../../config';
 
 
 // if (config.debug) {
@@ -19,9 +19,9 @@ mongoose.connect(config.db_url, {}, function (error) {
 
 // mongoose.Promise = global.Promise;
 
-mongoose.connect(config.db_url, {
+mongoose.connect(db_url, {
   // useMongoClient: true,
-})
+});
 
 // promise.then(function(db) {
 	// console.log('123123');

@@ -1,9 +1,9 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
-var TopicSchema = new Schema({
+const TopicSchema = new Schema({
   // 创建人
   user_id: { type: ObjectId, ref: 'User' },
   // 父级
@@ -31,7 +31,9 @@ var TopicSchema = new Schema({
   // 语言 0 -> 中文
   language: { type: Number, default: 0 },
   // 推荐节点
-  recommend: { type: Boolean, default: false }
+  recommend: { type: Boolean, default: false },
+  // 子
+  children: [{ type: ObjectId, ref: 'Topic' }]
 });
 
 mongoose.model('Topic', TopicSchema);

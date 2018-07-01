@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>graphql/index.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="AccountModel.html">AccountModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#count">count</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#find">find</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#findOne">findOne</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#populate">populate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#remove">remove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#save">save</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#update">update</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="AccountModel.html#verifyPassword">verifyPassword</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="OauthModel.html">OauthModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#count">count</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#fetchByUserIdAndSource">fetchByUserIdAndSource</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#find">find</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#findOne">findOne</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#populate">populate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#remove">remove</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#save">save</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="OauthModel.html#update">update</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">graphql/index.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import { formatError } from 'apollo-errors';
+import { makeExecutableSchema } from 'graphql-tools';
+import bodyParser from 'body-parser';
+
+import { debug, jwt_secret } from '../../config'
+
+import typeDefs from './schemas';
+import resolvers from './resolvers';
+
+import router from './router';
+import checkToken from './auto';
+
+let schema = makeExecutableSchema({ typeDefs, resolvers });
+
+
+/**
+ * 启动 graphql
+ * @param  {Object} app - express 的 app
+ */
+module.exports = (app) => {
+
+  app.use('/graphql', bodyParser.json(), async (req, res, next) => {
+
+    // 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
+    let token = req.headers.accesstoken || '';
+    let role = req.headers.role || '';
+
+    if (!token) return next();
+
+    let result = await checkToken({
+      token, role, jwtTokenSecret: jwt_secret
+    });
+
+    if (!result.user) {
+      // res.status(403);
+      res.send({
+        errors: [{
+          "message": "invalid token"
+        }]
+      });
+    } else {
+      req.user = result.user;
+      req.role = result.role;
+      next();
+    }
+
+  }, graphqlExpress(req => {
+
+    return {
+			// tracing: true,
+			debug,
+      schema,
+			rootValue: {},
+      context: {
+        user: req.user || null,
+        role: req.role || '',
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        jwtTokenSecret: jwt_secret
+      },
+			// formatParams: params =>{
+			// 	return params
+			// },
+			// formatResponse: e => e,
+			formatError
+    };
+
+  }));
+
+  // IDE
+  if (debug) app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+
+  app.use('/', router());
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 24 2018 21:26:35 GMT+0800 (CST) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

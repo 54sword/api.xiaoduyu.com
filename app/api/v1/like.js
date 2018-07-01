@@ -16,7 +16,7 @@ exports.add = function(req, res, next) {
   var mood = req.body.mood;
 
   async.waterfall([
-
+    
     // 判断目标对象是否存在
     function(callback) {
 
@@ -129,7 +129,7 @@ exports.add = function(req, res, next) {
     function(callback) {
 
       var model = null
-      
+
       if (type == 'comment' || type == 'reply') {
         model = Comment
       } else if (type == 'posts') {
