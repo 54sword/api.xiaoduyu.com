@@ -17,6 +17,8 @@ query.userNotifications = async (root, args, context, schema) => {
     throw CreateError({ message: '请求被拒绝' })
   }
 
+  // console.log(context.user);
+
   const { user, role } = context
   const { method } = args
   let select = {}, err, query, options, notificationList;
@@ -33,6 +35,9 @@ query.userNotifications = async (root, args, context, schema) => {
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
+  if (!admin) {
+    query.addressee_id = context.user._id;
+  }
 
   if (user.block_people_count > 0 && !admin) {
     query.sender_id = { '$nin': user.block_people }
@@ -70,7 +75,12 @@ query.userNotifications = async (root, args, context, schema) => {
     })
   };
 
+  // console.log(query);
+  // console.log(select);
+
   [ err, notificationList ] = await To(UserNotification.find({ query, select, options }));
+
+  // console.log(notificationList);
 
   options = [];
 
