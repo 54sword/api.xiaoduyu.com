@@ -53,10 +53,6 @@ var config = {
     url: ''
 	},
 
-	// https 用于域名的验证的路径（Let's encrypt）
-	// https://github.com/xdtianyu/scripts/blob/master/lets-encrypt/README-CN.md
-	sslPath: '',
-
 	jpush: {
 		// 是否是生产环境
 		production: false,

@@ -12,7 +12,7 @@ exports.Schema = `
     _id: ID
     nickname: String
     create_at: String
-    avatar: String
+    avatar_url: String
     fans_count: Int
     comment_count: Int
     posts_count: Int
@@ -20,6 +20,7 @@ exports.Schema = `
     follow_posts_count: Int
     follow_topic_count: Int
     follow: Boolean
+    brief: String
   }
 
   type follow_posts_id {
@@ -33,6 +34,7 @@ exports.Schema = `
     avatar: String
     name: String
     follow: Boolean
+    brief: String
   }
 
   # 关注

@@ -1,4 +1,5 @@
 
+
 var express = require('express');
 var http = require('http');
 var path = require('path');
@@ -57,16 +58,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Let's encrypt 用于域名的验证
 // https://github.com/xdtianyu/scripts/blob/master/lets-encrypt/README-CN.md
-if (config.sslPath) {
-	app.use(express.static(path.join(__dirname, config.sslPath)));
-}
+// if (config.sslPath) {
+	// app.use(express.static(path.join(__dirname, config.sslPath)));
+// }
 
 app.all('*',function (req, res, next) {
 
 	req.jwtTokenSecret = app.get('jwtTokenSecret');
 
   res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role');
+	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role, X-Requested-With');
 	// res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 

@@ -24,7 +24,7 @@ query.comments = async (root, args, context, schema) => {
   //===
 
   options.populate = [];
-
+  
   //======== 添加屏蔽条件
 
   if (Reflect.has(select, 'reply')) {
@@ -39,7 +39,6 @@ query.comments = async (root, args, context, schema) => {
           weaken: false,
         }]
       }
-
 
       if (user.block_comment_count > 0) {
         match['$or'][0]._id = { '$nin': user.block_comment }
@@ -68,9 +67,23 @@ query.comments = async (root, args, context, schema) => {
 
   }
 
-  if (user && !query._id) {
-    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
-    if (user.block_comment_count > 0) query._id = { '$nin': user.block_comment }
+  // if (user && !query._id) {
+  //   if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+  //   if (user.block_comment_count > 0) query._id = { '$nin': user.block_comment }
+  // }
+
+  if (user) {
+
+    if (!query._id && user.block_comment_count > 0) {
+      query._id = { '$nin': user.block_comment }
+    } else if (query._id && user.block_comment.indexOf(query._id) != -1) {
+      return [];
+    }
+
+    if (!query.user_id && user.block_people_count > 0) {
+      query.user_id = { '$nin': user.block_people }
+    }
+
   }
 
   //======== 添加屏蔽条件 end
@@ -233,10 +246,16 @@ query.countComments = async (root, args, context, schema) => {
 
   [ err, query ] = getQuery({ args, model: 'comment', role });
 
+  if (user) {
 
-  if (user && !query._id) {
-    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
-    if (user.block_comment_count > 0) query._id = { '$nin': user.block_comment }
+    if (!query._id && user.block_comment_count > 0) {
+      query._id = { '$nin': user.block_comment }
+    }
+
+    if (!query.user_id && user.block_people_count > 0) {
+      query.user_id = { '$nin': user.block_people }
+    }
+
   }
 
   [ err, count ] = await To(Comment.count({ query }));
@@ -265,6 +284,22 @@ mutation.updateComment = async (root, args, context, schema) => {
 
   [ err, update ] = getUpdateContent({ args, model: 'comment', role });
   if (err) throw CreateError({ message: err });
+
+  [ err, result ] = await To(Comment.findOne({ query }));
+
+  if (err || !result) {
+    throw CreateError({ message: '评论不存在' });
+  }
+
+  // 如果不是管理员，那么判断是否有权限编辑
+  if (role != 'admin') {
+
+    // console.log(result.user_id);
+    // console.log(user._id);
+    if (result.user_id + '' != user._id + '') {
+      throw CreateError({ message: '无权限编辑' });
+    }
+  }
 
   [ err, result ] = await To(Comment.update({ query, update }))
   if (err) {

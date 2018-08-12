@@ -54,11 +54,9 @@ mutation.like = async (root, args, context, schema) => {
     })
   }
 
-  /*
   if (target.user_id + '' == user._id + '') {
-    throw CreateError({ message: '不能自己点赞' });
+    throw CreateError({ message: '不能点赞自己的帖子或评论' });
   }
-  */
 
   [ err, result ] = await To(Like.findOne({
     query: {

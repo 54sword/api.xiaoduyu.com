@@ -1,6 +1,6 @@
 // var JPush = require("jpush-sdk/lib/JPush/JPush.js")
 import JPush from 'jpush-sdk/lib/JPush/JPush.js'
-import { jpush } from '../../config'
+import { debug, jpush } from '../../config'
 
 /*
 exports.pushPostsToSignInUser = function({ posts, user }) {
@@ -35,7 +35,7 @@ exports.pushPostsToSignInUser = function({ posts, user }) {
 
 exports.pushCommentToUser = function({ posts, comment, user }) {
 
-  if (!jpush.appKey || !jpush.masterSecret) return
+  if (!jpush.appKey || !jpush.masterSecret || debug) return
 
   var client = JPush.buildClient(jpush.appKey, jpush.masterSecret)
 
@@ -68,7 +68,7 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
 
 exports.pushReplyToUser = function({ comment, reply, user }) {
 
-  if (!jpush.appKey || !jpush.masterSecret) return;
+  if (!jpush.appKey || !jpush.masterSecret || debug) return;
 
   var client = JPush.buildClient(jpush.appKey, jpush.masterSecret);
 
@@ -78,7 +78,7 @@ exports.pushReplyToUser = function({ comment, reply, user }) {
 
   let title = user.nickname + ': ' + replyContent;
   if (title.length > 40) title = title.slice(0, 40) + '...';
-  
+
   client.push()
     .setPlatform(JPush.ALL)
     // 广播特定的用户

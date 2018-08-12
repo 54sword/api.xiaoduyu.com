@@ -27,7 +27,7 @@ query.findFollows = async (root, args, context, schema) => {
     options.populate.push({
       path: 'user_id',
       model: 'User',
-      select:{ _id: 1, nickname: 1, create_at: 1, avatar: 1, fans_count: 1, comment_count:1, follow_people_count: 1 }
+      select:{ _id: 1, nickname: 1, create_at: 1, avatar: 1, avatar_url: 1, fans_count: 1, comment_count:1, follow_people_count: 1, brief: 1 }
     });
   }
 
@@ -36,7 +36,7 @@ query.findFollows = async (root, args, context, schema) => {
     options.populate.push({
       path: 'people_id',
       model: 'User',
-      select:{ _id: 1, nickname: 1, create_at: 1, avatar: 1, fans_count: 1, comment_count:1, follow_people_count: 1 }
+      select:{ _id: 1, nickname: 1, create_at: 1, avatar: 1, avatar_url: 1, fans_count: 1, comment_count:1, follow_people_count: 1, brief: 1 }
     });
   }
 
@@ -45,7 +45,7 @@ query.findFollows = async (root, args, context, schema) => {
     options.populate.push({
       path: 'topic_id',
       model: 'Topic',
-      select:{ '_id': 1, 'avatar': 1, 'name': 1 }
+      select:{ '_id': 1, 'avatar': 1, 'name': 1, 'brief':1 }
     });
   }
 
@@ -256,6 +256,10 @@ mutation.addFollow = async (root, args, context, schema) => {
       })
     }
 
+    if (result._id + '' == user._id + '') {
+      throw CreateError({ message: '不能关注自己' });
+    }
+
   }
 
   // 如果存在用户，判断话题是否存在
@@ -271,9 +275,13 @@ mutation.addFollow = async (root, args, context, schema) => {
         message: err ? '查询失败' : '帖子不存在',
         data: { errorInfo: err ? err.message : '' }
       })
-    } else {
-      posts_user_id = result.user_id;
     }
+
+    if (result.user_id + '' == user._id) {
+      throw CreateError({ message: '不能关注自己的帖子' });
+    }
+
+    posts_user_id = result.user_id;
 
   }
 

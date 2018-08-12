@@ -36,10 +36,19 @@ query.posts = async (root, args, context, schema) => {
   // 增加屏蔽条件
   // 1、如果是登陆状态，那么增加屏蔽条件
   // 2、如果通过posts id查询，那么不增加屏蔽条件
-  if (user && !query._id) {
-    if (user.block_posts_count > 0) query._id = { '$nin': user.block_posts }
-    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+
+  if (user) {
+
+    if (!query._id && user.block_posts_count > 0) {
+      query._id = { '$nin': user.block_posts }
+    }
+
+    if (!query.user_id && user.block_people_count > 0) {
+      query.user_id = { '$nin': user.block_people }
+    }
+
   }
+
 
   // 用户关注
   if (user && method == 'user_follow') {
@@ -241,10 +250,17 @@ query.countPosts = async (root, args, context, schema) => {
    * 如果是登陆状态，那么增加屏蔽条件
    * 如果通过posts查询，那么不增加屏蔽条件
    */
-  if (user && !query._id) {
-    if (user.block_posts_count > 0) query._id = { '$nin': user.block_posts }
-    if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
-  }
+   if (user) {
+
+     if (!query._id && user.block_posts_count > 0) {
+       query._id = { '$nin': user.block_posts }
+     }
+
+     if (!query.user_id && user.block_people_count > 0) {
+       query.user_id = { '$nin': user.block_people }
+     }
+
+   }
 
   // 用户关注
   if (user && method == 'user_follow') {
@@ -378,11 +394,13 @@ mutation.addPosts = async (root, args, context, schema) => {
     })
   }
 
+  /*
   if (result) {
     throw CreateError({
       message: '一天仅能发布一次'
     })
   }
+  */
 
   // title
   title = xss(title, {
