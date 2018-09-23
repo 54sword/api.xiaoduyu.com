@@ -14,6 +14,7 @@ type _User {
 type _Topic {
   _id: String
   name: String
+  avatar: String
 }
 
 type _Comment {

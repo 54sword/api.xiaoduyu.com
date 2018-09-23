@@ -5,8 +5,12 @@ exports.Schema = `
 
   # 登录
   type signIn {
+    # 用户id
     user_id: ID
+    # 访问token
     access_token: String
+    # token有效日期
+    expires: String
   }
 
   # 绑定邮箱

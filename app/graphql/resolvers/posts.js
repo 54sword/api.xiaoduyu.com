@@ -129,7 +129,7 @@ query.posts = async (root, args, context, schema) => {
   if (select.topic_id) {
     options.populate.push({
       path: 'topic_id',
-      select: { '_id': 1, 'name': 1 }
+      select: { '_id': 1, 'name': 1, 'avatar':1 }
     })
   }
 
@@ -394,13 +394,11 @@ mutation.addPosts = async (root, args, context, schema) => {
     })
   }
 
-  /*
   if (result) {
     throw CreateError({
       message: '一天仅能发布一次'
     })
   }
-  */
 
   // title
   title = xss(title, {
@@ -410,11 +408,11 @@ mutation.addPosts = async (root, args, context, schema) => {
   })
 
   if (!title || title.replace(/(^\s*)|(\s*$)/g, "") == '') {
-    throw CreateError({ message: 'title 不能为空' });
+    throw CreateError({ message: '标题不能为空' });
   } else if (title.length > 120) {
-    throw CreateError({ message: 'title 不能大于120个字符' });
+    throw CreateError({ message: '标题不能大于120个字符' });
   }
-
+  
   // content
   content = xss(content, {
     whiteList: {},

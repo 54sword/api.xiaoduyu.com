@@ -24,7 +24,7 @@ query.comments = async (root, args, context, schema) => {
   //===
 
   options.populate = [];
-  
+
   //======== 添加屏蔽条件
 
   if (Reflect.has(select, 'reply')) {
@@ -346,7 +346,6 @@ mutation.addComment = async (root, args, context, schema) => {
     });
   }
 
-  /*
   // 一个用户只能评论一次
   if (posts_id && !parent_id && !reply_id) {
 
@@ -361,7 +360,17 @@ mutation.addComment = async (root, args, context, schema) => {
     }
 
   }
-  */
+
+  let _content_html = content_html || '';
+
+  _content_html = _content_html.replace(/<[^>]+>/g,"");
+  _content_html = _content_html.replace(/(^\s*)|(\s*$)/g, "");
+
+  if (!content_html || !_content_html) {
+    throw CreateError({
+      message: '提交内容不能为空'
+    });
+  }
 
   // posts_id
   if (posts_id) {

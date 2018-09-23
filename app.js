@@ -113,6 +113,17 @@ const handlePreflightRequest = (req, res) => {
 };
 
 var onlineUserCount = 0;
+/*
+var WebSocketServer = require('ws').Server;
+var wss = new WebSocketServer({
+	server: server,
+	path: 'socket'
+});
+
+wss.on('connection', function(ws) {
+	console.log(ws);
+});
+*/
 
 // var allowedOrigins = "*:*";
 var io = require("socket.io").listen(server);

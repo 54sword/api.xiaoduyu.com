@@ -20,7 +20,7 @@ exports.Schema = `
     people_id: sender_id
     posts_id: posts_id
   }
-  
+
   # 添加屏蔽
   type addBlock {
     success: Boolean

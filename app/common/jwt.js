@@ -5,8 +5,10 @@ var Token = require('../models').Token;
 
 exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 1000 * 60 * 60 * 24 * 30, options = {}) {
 
+  expires = new Date().getTime() + expires;
+
   let token = jwt.sign({
-    expires: new Date().getTime() + expires,
+    expires,
     // exp: Math.floor(Date.now() / 1000) + 30, //* 60 * 24,
     user_id: userId,
     options
@@ -24,7 +26,8 @@ exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 100
 
   return {
     user_id: userId,
-    access_token: token
+    access_token: token,
+    expires
   }
 
 }

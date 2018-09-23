@@ -31,9 +31,7 @@ module.exports = (app) => {
     let result = await checkToken({
       token, role, jwtTokenSecret: jwt_secret
     });
-
-    // console.log(result);
-
+    
     if (!result.user) {
       res.send({
         errors: [{
