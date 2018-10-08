@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node --max-old-space-size=1700 ./bin/www",
     "dev": "supervisor node server.js",
-    "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/data/db",
+    "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db",
     "generate-docs": "jsdoc -c jsdoc.json"
   },
   "dependencies": {
