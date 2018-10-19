@@ -54,10 +54,16 @@ exports.Schema = `
 `
 
 exports.Query = `
+
+  # 查询关注
   findFollows(${getQuerySchema('follow')}): [follow]
+
+  # 获取关注的累计
   countFindFollows(${getQuerySchema('follow')}): countFindFollows
 `
 
 exports.Mutation = `
+
+  # 添加关注
   addFollow(${getSaveSchema('follow')}): addFollow
 `

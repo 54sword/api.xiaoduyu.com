@@ -16,21 +16,32 @@ const update = {
   // 筛选参数
   filters: {
     phone: data => ({
-      name: 'phone', value: data, type: 'String', desc:'手机号'
+      name: 'phone',
+      value: data,
+      type: 'String',
+      desc:'手机号'
     }),
     email: data => ({
-      name: 'email', value: data, type: 'String', desc:'邮箱'
+      name: 'email',
+      value: data,
+      type: 'String',
+      desc:'邮箱'
     }),
     captcha: data => ({
-      name: 'captcha', value: data, type: 'String!', desc:'验证码'
+      name: 'captcha',
+      value: data,
+      type: 'String!',
+      desc:'验证码'
     }),
     new_password: data => ({
-      name: 'new_password', value: data, type: 'String!', desc:'新密码'
+      name: 'new_password',
+      value: data,
+      type: 'String!',
+      desc:'新密码'
     })
   },
   // 更新内容
   content: {
-
   }
 }
 

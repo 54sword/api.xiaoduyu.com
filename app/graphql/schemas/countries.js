@@ -1,6 +1,4 @@
 
-
-
 exports.Schema = `
 
   type countries {
@@ -16,7 +14,7 @@ exports.Schema = `
 
 exports.Query = `
 
-  # @TODO 获取国家
+  # 获取国家
   countries: [countries]
 
 `

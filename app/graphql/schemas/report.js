@@ -3,21 +3,21 @@ import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
-# 修改密码
-type addRepory {
-  # 结果
-  success: Boolean
-}
+  # 修改密码
+  type addRepory {
+    # 结果
+    success: Boolean
+  }
 
-type report {
-  id: Int
-  text: String
-}
+  type report {
+    id: Int
+    text: String
+  }
 
-type fetchReportTypes {
-  success: Boolean
-  data: [report]
-}
+  type fetchReportTypes {
+    success: Boolean
+    data: [report]
+  }
 
 `
 
@@ -27,7 +27,7 @@ exports.Query = `
 
 exports.Mutation = `
 
-# 修改密码
-addReport(${getSaveSchema('report')}): addRepory
+  # 修改密码
+  addReport(${getSaveSchema('report')}): addRepory
 
 `

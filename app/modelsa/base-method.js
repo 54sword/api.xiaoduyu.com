@@ -6,10 +6,33 @@
  * @class Model
  */
 
-class Model {
+export default class Model {
 
-  constructor(schema) {
+  constructor (schema) {
     this.schema = schema
+  }
+
+  /**
+   * 执行数据库操作后的回调方法
+   * @param  {Function}   resolve 成功
+   * @param  {Function}   reject  失败
+   * @return {Function}
+   */
+  callback (resolve, reject) {
+    return (err, res) => {
+
+      if (res && typeof res == 'object') {
+        // 这里转换的目的是将 _id 是 ObjectId 类型，需要转换成 String 类型，否则graphql获取_id会是null
+        try {
+          res = JSON.parse(JSON.stringify(res));
+        } catch (error) {
+          reject(error);
+          return;
+        }
+      }
+
+      err ? reject(err) : resolve(res);
+    }
   }
 
   /**
@@ -20,8 +43,8 @@ class Model {
   save ({ data }) {
     return new Promise((resolve, reject) => {
       if (!data) return reject('data is null');
-      new this.schema(data).save((err, res) => err ? reject(err) : resolve(res));
-    })
+      new this.schema(data).save(this.callback(resolve, reject));
+    });
   }
 
   /**
@@ -37,11 +60,8 @@ class Model {
       if (!query) return reject('query is null');
       let find = this.schema.findOne(query, select);
       for (let i in options) find[i](options[i]);
-      find.exec((err, res) => {
-        // if (err) console.log(err);
-        resolve(res);
-      })
-    })
+      find.exec(this.callback(resolve, reject));
+    });
   }
 
   /**
@@ -56,11 +76,8 @@ class Model {
       if (!query) return reject('query is null');
       let find = this.schema.find(query, select);
       for (let i in options) find[i](options[i]);
-      find.exec((err, res) => {
-        // if (err) console.log(err);
-        resolve(res);
-      })
-    })
+      find.exec(this.callback(resolve, reject));
+    });
   }
 
   /**
@@ -72,11 +89,8 @@ class Model {
   populate ({ collections, options = {} }) {
     return new Promise((resolve, reject) => {
       if (!collections) return reject('collections is null');
-      this.schema.populate(collections, options, (err, res) => {
-        // if (err) console.log(err);
-        resolve(res);
-      })
-    })
+      this.schema.populate(collections, options, this.callback(resolve, reject));
+    });
   }
 
   /**
@@ -90,10 +104,8 @@ class Model {
     return new Promise((resolve, reject) => {
       if (!query) return reject('query is null');
       if (!update) return reject('update is null');
-      this.schema.update(query, update, options, (err, res) => {
-        err ? reject(err) : resolve(res);
-      })
-    })
+      this.schema.update(query, update, options, this.callback(resolve, reject));
+    });
   }
 
   /**
@@ -104,8 +116,8 @@ class Model {
   remove ({ query }) {
     return new Promise((resolve, reject) => {
       if (!query) return reject('query is null');
-      this.schema.remove(query, (err, res) => err ? reject(err) : resolve(res));
-    })
+      this.schema.remove(query, this.callback(resolve, reject));
+    });
   }
 
   /**
@@ -115,13 +127,8 @@ class Model {
    */
   count ({ query = {} }) {
     return new Promise((resolve, reject) => {
-      this.schema.count(query, (err, res) => {
-        // if (err) console.log(err);
-        resolve(res);
-      })
-    })
+      this.schema.count(query, this.callback(resolve, reject));
+    });
   }
 
 }
-
-export default Model

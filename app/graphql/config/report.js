@@ -1,3 +1,4 @@
+import * as ParseParams from '../comment/parse-params';
 
 // 查询
 const query = {
@@ -12,24 +13,34 @@ const query = {
 // 储存
 const save = {
   posts_id: data => ({
-    name: 'posts_id', value: data,
-    type: 'ID', desc:'帖子id'
+    name: 'posts_id',
+    value: ParseParams.id(data),
+    type: 'ID',
+    desc:'帖子id'
   }),
   people_id: data => ({
-    name: 'people_id', value: data,
-    type: 'ID', desc:'用户id'
+    name: 'people_id',
+    value: ParseParams.id(data),
+    type: 'ID',
+    desc:'用户id'
   }),
   comment_id: data => ({
-    name: 'comment_id', value: data,
-    type: 'ID', desc:'评论id'
+    name: 'comment_id',
+    value: ParseParams.id(data),
+    type: 'ID',
+    desc:'评论id'
   }),
   report_id: data => ({
-    name: 'report_id', value: data,
-    type: 'ID', desc:'评论id'
+    name: 'report_id',
+    value: ParseParams.id(data),
+    type: 'ID',
+    desc:'评论id'
   }),
   detail: data => ({
-    name: 'detail', value: data,
-    type: 'String', desc:'详情'
+    name: 'detail',
+    value: data,
+    type: 'String',
+    desc:'详情'
   })
 }
 

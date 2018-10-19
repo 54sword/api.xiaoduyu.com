@@ -130,15 +130,20 @@ query.userNotifications = async (root, args, context, schema) => {
       }
     })
   }
-
+  
   _notices = new_notices;
 
   if (notificationList && notificationList.length && role != 'admin') {
     // 未读的通知设置成已读
     for (var i = 0, max = notificationList.length; i < max; i++) {
+
       if (notificationList[i].has_read == false) {
-        notificationList[i].has_read = true;
-        notificationList[i].save();
+        // notificationList[i].has_read = true;
+        // notificationList[i].save();
+        UserNotification.update({
+          query: { _id: notificationList[i]._id },
+          update: { has_read: true }
+        });
       }
     }
   }

@@ -11,6 +11,8 @@ import captchapng from 'captchapng'
 
 import CreateError from '../resolvers/errors'
 
+
+// 显示验证码图片
 exports.showImage = async (req, res, next) => {
 
   const id = req.params.id;

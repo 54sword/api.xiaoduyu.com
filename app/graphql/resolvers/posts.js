@@ -376,6 +376,7 @@ mutation.addPosts = async (root, args, context, schema) => {
     });
   }
 
+  /*
   // 一天仅能发布一次
   let date = new Date();
   [ err, result ] = await To(Posts.findOne({
@@ -399,6 +400,7 @@ mutation.addPosts = async (root, args, context, schema) => {
       message: '一天仅能发布一次'
     })
   }
+  */
 
   // title
   title = xss(title, {
@@ -412,7 +414,7 @@ mutation.addPosts = async (root, args, context, schema) => {
   } else if (title.length > 120) {
     throw CreateError({ message: '标题不能大于120个字符' });
   }
-  
+
   // content
   content = xss(content, {
     whiteList: {},

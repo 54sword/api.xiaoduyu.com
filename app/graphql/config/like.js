@@ -1,3 +1,4 @@
+import * as ParseParams from '../comment/parse-params';
 
 // 查询
 const query = {
@@ -11,16 +12,28 @@ const query = {
 // 储存
 const save = {
   type: data => ({
-    name: 'type', value: data, type: 'String', desc:'类型posts/comment/reply'
+    name: 'type',
+    value: data,
+    type: 'String',
+    desc:'类型posts/comment/reply'
   }),
   target_id: data => ({
-    name: 'target_id', value: data, type: 'String', desc:'目标类型的id'
+    name: 'target_id',
+    value: ParseParams.id(data),
+    type: 'String',
+    desc:'目标类型的id'
   }),
   mood: data => ({
-    name: 'mood', value: data, type: 'Int', desc:'心情：1是赞/2是踩'
+    name: 'mood',
+    value: data,
+    type: 'Int',
+    desc:'心情：1是赞/2是踩'
   }),
   status: data => ({
-    name: 'status', value: data, type: 'Boolean', desc:'状态'
+    name: 'status',
+    value: data,
+    type: 'Boolean',
+    desc:'状态'
   })
 }
 

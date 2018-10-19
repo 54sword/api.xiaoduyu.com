@@ -16,10 +16,22 @@ exports.sendSMS = function({ PhoneNumbers, SignName, TemplateCode, TemplateParam
       text: synthesis(yunpian.international.text, 'code', TemplateParam.code)
     }},
     function(err, httpResponse, body){
-      if (body && body.code && body.code == 0) {
-        callback(null)
-      } else {
-        callback('短信发送失败')
+      // console.log(typeof body);
+      // console.log(body);
+      if (body) {
+
+        try {
+          body = JSON.parse(body);
+          if (typeof body.code != 'undefined' && body.code == 0) {
+            callback(null)
+            return;
+          }
+        } catch (err) {
+
+        }
+
       }
+
+      callback('短信发送失败')
     })
 }

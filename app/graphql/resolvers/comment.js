@@ -114,10 +114,8 @@ query.comments = async (root, args, context, schema) => {
   }
 
   [ err, commentList ] = await To(Comment.find({ query, select, options }));
-
-  // console.log(commentList);
-
-  if (err) {
+  
+  if (err || !commentList) {
     throw CreateError({
       message: '查询失败',
       data: { errorInfo: err.message }
@@ -135,7 +133,7 @@ query.comments = async (root, args, context, schema) => {
     options.push({
       path: 'reply.reply_id',
       model: 'Comment',
-      select:{ '_id': 1, 'user_id': 1 }
+      select:{ '_id': 1, 'user_id': 1, 'content_html':1 }
     })
   }
 
@@ -234,6 +232,8 @@ query.comments = async (root, args, context, schema) => {
 
     return item;
   });
+
+  // console.log(commentList);
 
   return commentList
 }
@@ -346,6 +346,7 @@ mutation.addComment = async (root, args, context, schema) => {
     });
   }
 
+  /*
   // 一个用户只能评论一次
   if (posts_id && !parent_id && !reply_id) {
 
@@ -358,8 +359,8 @@ mutation.addComment = async (root, args, context, schema) => {
         message: '提交失败，每个帖子仅能评论一次'
       });
     }
-
   }
+  */
 
   let _content_html = content_html || '';
 

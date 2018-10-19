@@ -3,12 +3,12 @@ import { getQuerySchema, getUpdateSchema, getSaveSchema } from '../config';
 
 exports.Schema = `
 
-# 返回验证码结果
-type captcha {
-  success: Boolean
-  _id: String
-  url: String
-}
+  # 返回验证码结果
+  type captcha {
+    success: Boolean
+    _id: String
+    url: String
+  }
 
 `
 

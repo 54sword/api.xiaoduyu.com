@@ -17,13 +17,22 @@ const update = {
   // 筛选参数
   filters: {
     user_id: data => ({
-      name: 'user_id', value: data, type: 'ID!', desc:'用户id'
+      name: 'user_id',
+      value: data,
+      type: 'ID!',
+      desc:'用户id'
     }),
     current_password: data => ({
-      name: 'current_password', value: data, type: 'String!', desc:'当前密码'
+      name: 'current_password',
+      value: data,
+      type: 'String!',
+      desc:'当前密码'
     }),
     new_password: data => ({
-      name: 'new_password', value: data, type: 'String!', desc:'新密码'
+      name: 'new_password',
+      value: data,
+      type: 'String!',
+      desc:'新密码'
     })
   },
   // 更新内容

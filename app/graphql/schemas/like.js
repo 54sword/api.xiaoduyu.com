@@ -13,5 +13,6 @@ exports.Query = `
 `
 
 exports.Mutation = `
+  # 赞
   like(${getSaveSchema('like')}): like
 `
