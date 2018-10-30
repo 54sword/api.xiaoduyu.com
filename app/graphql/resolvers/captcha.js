@@ -51,10 +51,33 @@ mutation.addCaptcha = async (root, args, context, schema) => {
 
     if (err) throw CreateError({ message: err });
     if (!result) throw CreateError({ message: '未绑定手机' });
+    
+    phone = result.phone;
+    area_code = result.area_code;
+  }
+
+  // =========================
+  // 【找回密码】发送给手机账号
+  if (type == 'forgot' && phone) {
+    [ err, result ] = await To(Phone.findOne({ query: { phone } }));
+
+    if (err) throw CreateError({ message: err });
+    if (!result) throw CreateError({ message: '手机号码不存在' });
 
     phone = result.phone;
     area_code = result.area_code;
   }
+
+  // =========================
+  // 【找回密码】发送给手机账号
+  if (type == 'forgot' && email) {
+    [ err, result ] = await To(Account.findOne({ query: { email } }));
+
+    if (err) throw CreateError({ message: err });
+    if (!result) throw CreateError({ message: '邮箱不存在' });
+  }
+
+
 
   // =========================
   // 获取图片验证码地址和id
