@@ -1,4 +1,4 @@
-import { Comment, Like, Posts, User, UserNotification, Feed } from '../../modelsa';
+import { Comment, Like, Posts, User, UserNotification } from '../../modelsa';
 import xss from 'xss';
 
 import jpush from '../../common/jpush';
@@ -12,17 +12,11 @@ import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } 
 query.comments = async (root, args, context, schema) => {
 
   const { user, role, ip } = context
-  const { method } = args
   let select = {}, query, options, err, commentList = [], likeList = [];
   // let { query, options } = Querys({ args, model: 'comment', role })
 
   [ err, query ] = getQuery({ args, model: 'comment', role });
   [ err, options ] = getOption({ args, model: 'comment', role });
-
-  // 未登陆用户，不能使用method方式查询
-  if (!user && method) {
-    throw CreateError({ message: '请求被拒绝' })
-  }
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -31,90 +25,63 @@ query.comments = async (root, args, context, schema) => {
 
   options.populate = [];
 
-  // 用户关注
-  if (user && method == 'user_follow') {
-
-    let newQuery = { '$or': [] }
-
-    // 获取自己的评论
-    newQuery['$or'].push(Object.assign({}, query, {
-      user_id: user._id,
-      deleted: false
-    }, {}));
-
-    // 获取自己关注用户的评论
-    if (user.follow_people.length > 0) {
-
-      newQuery['$or'].push(Object.assign({}, query, {
-        user_id: {
-          '$in': user.follow_people,
-          // 过滤屏蔽用户
-          '$nin': user.block_people
-        },
-        deleted: false
-      }, {}))
-    }
-
-    query = newQuery;
-  }
-
-
   //======== 添加屏蔽条件
 
-  if (!method) {
+  if (Reflect.has(select, 'reply')) {
 
-    if (Reflect.has(select, 'reply')) {
+    // reply 添加屏蔽条件
 
-      // reply 添加屏蔽条件
+    if (user && !query._id) {
 
-      if (user && !query._id) {
-
-        let match = {
-          $or: [{
-            deleted: false,
-            weaken: false,
-          }]
-        }
-
-        if (user.block_comment_count > 0) {
-          match['$or'][0]._id = { '$nin': user.block_comment }
-        }
-
-        if (user.block_people_count > 0) {
-          match['$or'][0].user_id = { '$nin': user.block_people }
-        }
-        options.populate.push({
-          path: 'reply',
-          // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
-          match
-        });
-
-        // console.log(options.populate[0].match);
-
-      } else {
-        options.populate.push({
-          path: 'reply',
-          // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
-          match: { deleted: false, weaken: false }
-        });
+      let match = {
+        $or: [{
+          deleted: false,
+          weaken: false,
+        }]
       }
 
+      if (user.block_comment_count > 0) {
+        match['$or'][0]._id = { '$nin': user.block_comment }
+      }
+
+      if (user.block_people_count > 0) {
+        match['$or'][0].user_id = { '$nin': user.block_people }
+      }
+      options.populate.push({
+        path: 'reply',
+        // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 3 },
+        match
+      });
+
+      // console.log(options.populate[0].match);
+
+    } else {
+      options.populate.push({
+        path: 'reply',
+        // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 3 },
+        match: { deleted: false, weaken: false }
+      });
     }
 
-    if (user) {
+  }
 
-      if (!query._id && user.block_comment_count > 0) {
-        query._id = { '$nin': user.block_comment }
-      } else if (query._id && user.block_comment.indexOf(query._id) != -1) {
-        return [];
-      }
+  // if (user && !query._id) {
+  //   if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+  //   if (user.block_comment_count > 0) query._id = { '$nin': user.block_comment }
+  // }
 
-      if (!query.user_id && user.block_people_count > 0) {
-        query.user_id = { '$nin': user.block_people }
-      }
+  if (user) {
 
+    if (!query._id && user.block_comment_count > 0) {
+      query._id = { '$nin': user.block_comment }
+    } else if (query._id && user.block_comment.indexOf(query._id) != -1) {
+      return [];
+    }
+
+    if (!query.user_id && user.block_people_count > 0) {
+      query.user_id = { '$nin': user.block_people }
     }
 
   }
@@ -139,19 +106,15 @@ query.comments = async (root, args, context, schema) => {
     ])
   }
 
-  /*
   if (role != 'admin') {
     // 增加一些默认的筛选条件
     if (!Reflect.has(query, 'deleted')) {
       query.deleted = false;
     }
   }
-  */
-
-  // console.log(query);
 
   [ err, commentList ] = await To(Comment.find({ query, select, options }));
-
+  
   if (err || !commentList) {
     throw CreateError({
       message: '查询失败',
@@ -330,40 +293,21 @@ mutation.updateComment = async (root, args, context, schema) => {
 
   // 如果不是管理员，那么判断是否有权限编辑
   if (role != 'admin') {
+
+    // console.log(result.user_id);
+    // console.log(user._id);
     if (result.user_id + '' != user._id + '') {
       throw CreateError({ message: '无权限编辑' });
     }
   }
 
-  [ err, result ] = await To(Comment.update({ query, update }));
-
+  [ err, result ] = await To(Comment.update({ query, update }))
   if (err) {
     throw CreateError({
       message: '更新失败',
       data: { errorInfo: err.message }
     })
   }
-
-  // 更新feed中相关comment的delete状态
-  if (Reflect.has(update, 'deleted')) {
-
-    console.log('===');
-
-    [ err ] = await To(Feed.update({
-      query: { comment_id: query._id },
-      update: { deleted: update.deleted }
-    }));
-
-    if (err) {
-      throw CreateError({
-        message: 'Feed 更新失败',
-        data: { errorInfo: err.message }
-      });
-    }
-
-  }
-
-
 
   return { success: true }
 }
@@ -558,16 +502,6 @@ mutation.addComment = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     })
   }
-
-  // 添加到feed
-
-  Feed.save({
-    data: {
-      user_id: user._id,
-      posts_id,
-      comment_id: result._id
-    }
-  });
 
   // ==================================
   // 评论相关更新与通知

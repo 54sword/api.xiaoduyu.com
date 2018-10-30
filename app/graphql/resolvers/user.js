@@ -1,4 +1,4 @@
-import { User, Account, Oauth, Phone, Captcha, Follow } from '../../modelsa';
+import { User, Account, Oauth, Phone, Captcha, Follow, Feed } from '../../modelsa';
 
 import xss from 'xss';
 import uuid from 'node-uuid';
@@ -318,7 +318,7 @@ mutation.addUser = async (root, args, context, schema) => {
     }
 
   }
-  
+
   if (phone) {
     [ err, res ] = await To(Phone.save({
       data: { phone, user_id: res._id, area_code }
@@ -377,6 +377,34 @@ mutation.updateUser = async (root, args, context, schema) => {
       message: '更新失败',
       data: { errorInfo: err.message }
     })
+  }
+
+  if (Reflect.has(update, 'blocked')) {
+
+    // 更新feed中相关posts的delete状态
+    let err, feedList;
+
+    [ err, feedList ] = await To(Feed.find({
+      query: { user_id: query._id }
+    }));
+
+    let ids = [];
+
+    feedList.map(feed=>ids.push(feed._id));
+
+    [ err ] = await To(Feed.update({
+      query: { _id: { '$in': ids } },
+      update: { deleted: update.blocked },
+      options: { multi: true }
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: 'Feed 更新失败',
+        data: { errorInfo: err.message }
+      });
+    }
+
   }
 
   return { success: true }

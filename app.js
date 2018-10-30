@@ -12,7 +12,7 @@ var compress = require('compression');
 
 var config = require('./config');
 
-var API_V1 = require('./app/api-v1');
+// var API_V1 = require('./app/api-v1');
 var graphql = require('./app/graphql');
 
 
@@ -154,10 +154,10 @@ io.on('connection', function(socket){
 });
 global.io = io
 
-graphql(app, bodyParser);
+graphql(app);
 
 app.use('/oauth', OauthRouter());
-app.use('/api/v1', API_V1());
+// app.use('/api/v1', API_V1());
 
 /*
 app.use(function (req, res, next) {

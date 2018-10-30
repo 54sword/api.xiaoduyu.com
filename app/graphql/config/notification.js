@@ -1,4 +1,4 @@
-import * as ParseParams from '../comment/parse-params';
+import * as ParseParams from '../common/parse-params';
 
 // 查询
 const query = {
@@ -36,13 +36,13 @@ const query = {
     }),
     end_create_at: data => ({
       name: 'create_at',
-      value: { '$lte': data },
+      value: { '$lte': parseInt(data) },
       type: 'String',
       desc:'结束日期'
     }),
     start_create_at: data => ({
       name: 'create_at',
-      value: { '$gte': data },
+      value: { '$gte': parseInt(data) },
       type: 'String',
       desc:'开始日期'
     })

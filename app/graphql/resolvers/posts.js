@@ -1,4 +1,4 @@
-import { Posts, User, Follow, Like, Topic } from '../../modelsa';
+import { Posts, User, Follow, Like, Topic, Feed } from '../../modelsa';
 
 import CreateError from './errors';
 import To from '../../common/to';
@@ -536,11 +536,40 @@ mutation.updatePosts = async (root, args, context, schema) => {
 
   // 更新
   [ err, result ] = await To(Posts.update({ query, update: content }));
+
   if (err) {
     throw CreateError({
       message: '更新失败',
       data: { errorInfo: err.message }
     });
+  }
+
+  if (Reflect.has(content, 'deleted')) {
+
+    // 更新feed中相关posts的delete状态
+    let err, feedList;
+
+    [ err, feedList ] = await To(Feed.find({
+      query: { posts_id: query._id }
+    }));
+
+    let ids = [];
+
+    feedList.map(feed=>ids.push(feed._id));
+
+    [ err ] = await To(Feed.update({
+      query: { _id: { '$in': ids } },
+      update: { deleted: content.deleted },
+      options: { multi: true }
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: 'Feed 更新失败',
+        data: { errorInfo: err.message }
+      });
+    }
+
   }
 
   return { success: true }

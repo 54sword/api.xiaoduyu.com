@@ -72,7 +72,7 @@ exports.Schema = `
     # 排序
     sort_by_date: String
     # 评论
-    comment: [_Comment],
+    comment: [_Comment]
     # 关注（登陆用户）
     follow: Boolean,
     # 赞（登陆用户）

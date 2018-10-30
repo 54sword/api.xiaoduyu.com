@@ -49,6 +49,7 @@ require('./token');
 require('./phone');
 require('./report');
 require('./block');
+require('./feed');
 
 exports.User = mongoose.model('User');
 exports.Account = mongoose.model('Account');
@@ -65,3 +66,4 @@ exports.Like = mongoose.model('Like');
 exports.Notification = mongoose.model('Notification');
 exports.UserNotification = mongoose.model('UserNotification');
 exports.Block = mongoose.model('Block');
+exports.Feed = mongoose.model('Feed');

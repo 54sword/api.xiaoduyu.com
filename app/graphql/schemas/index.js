@@ -18,6 +18,7 @@ import Oauth from './oauth';
 import Report from './report';
 import UnlockToken from './unlock-token';
 import Token from './token';
+import Feed from './feed';
 
 const typeDefs = [ `
 
@@ -41,6 +42,7 @@ const typeDefs = [ `
   ${Report.Schema}
   ${UnlockToken.Schema}
   ${Token.Schema}
+  ${Feed.Schema}
 
   # 查询
   type Query {
@@ -64,6 +66,7 @@ const typeDefs = [ `
     ${Report.Query}
     ${UnlockToken.Query}
     ${Token.Query}
+    ${Feed.Query}
   }
 
   # 增、删、改
@@ -88,6 +91,7 @@ const typeDefs = [ `
     ${Report.Mutation}
     ${UnlockToken.Mutation}
     ${Token.Mutation}
+    ${Feed.Mutation}
   }
 
   schema {
