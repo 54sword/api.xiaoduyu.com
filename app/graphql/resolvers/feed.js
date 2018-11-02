@@ -116,7 +116,7 @@ query.feed = async (root, args, context, schema) => {
     // { path: 'comment_id.user_id', model: 'User' },
     { path: 'comment_id.reply_id', model: 'Comment', match: { 'deleted': false } },
     // { path: 'comment_id.posts_id', model: 'Posts' },
-    // { path: 'posts_id.user_id', model: 'User' },
+    { path: 'posts_id.user_id', model: 'User' },
     { path: 'posts_id.topic_id', model: 'Topic', select: { '_id': 1, 'name': 1, 'avatar':1 } }
     // { path: 'posts_id.comment', model: 'Comment', options: { limit: 5 } }
   ];
