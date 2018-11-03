@@ -43,7 +43,7 @@ const query = {
     }),
     type: data => ({
       name: 'type',
-      value: data,
+      value: { '$in': (data+'').split(',') },
       type: 'String',
       desc:'类型'
     }),
