@@ -490,8 +490,8 @@ mutation.addPosts = async (root, args, context, schema) => {
     })
   }
 
-  result.create_at = new Date(result.create_at).getTime();
-  global.io.sockets.emit('new-posts', result.create_at - 1);
+  // result.create_at = new Date(result.create_at).getTime();
+  // global.io.sockets.emit('new-posts', result.create_at - 1);
 
   return {
     success: true,

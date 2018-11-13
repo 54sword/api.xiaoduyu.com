@@ -64,6 +64,8 @@ exports.Schema = `
     area_code: String
     find_notification_at: String
     last_find_posts_at: String
+    last_find_feed_at: String
+    has_password: Boolean
   }
 
   # 更新用户返回

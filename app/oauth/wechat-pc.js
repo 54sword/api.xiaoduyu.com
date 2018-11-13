@@ -23,15 +23,17 @@ if (config.oauth.wechatPC) {
 }
 
 var goToNoticePage = function(req, res, string) {
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
-  res.redirect(landingPage+'/notice?source=oauth_qq&notice='+string)
+  // var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
+  var landingPageDomain = req.cookies['landing_page_domain']
+  res.redirect(landingPageDomain+'/notice?source=oauth_qq&notice='+string)
 }
 
 var goToAutoSignin = function(req, res, jwtTokenSecret, userId, accessToken) {
-  var ip = Tools.getIP(req);
-  var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip);
-  var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
-  res.redirect(landingPage+'/oauth?access_token='+result.access_token+'&expires='+result.expires)
+  var ip = Tools.getIP(req)
+  var result = JWT.encode(jwtTokenSecret, userId, accessToken, ip)
+  var landingPage = req.cookies['landing_page']
+  var landingPageDomain = req.cookies['landing_page_domain']
+  res.redirect(landingPageDomain+'/oauth?access_token='+result.access_token+'&expires='+result.expires+'&landing_page='+landingPage)
 }
 
 // 打开QQ登录接入页面
@@ -43,9 +45,27 @@ exports.show = function(req, res, next) {
     path: '/',
     maxAge: 1000 * 60 * 5
   };
-  res.cookie('csrf', csrf, opts);
-  res.cookie('access_token', req.query.access_token || '', opts);
-  res.cookie('landing_page', req.query.landing_page || '', opts);
+
+  // 设置登录成后的着陆页面
+  let landingPage = config.oauth.landingPage
+  if (req.headers && req.headers.referer) {
+    landingPage = req.headers.referer
+  }
+
+  let domain = []
+
+  let _arr = landingPage.split('/')
+
+  domain.push(_arr[0])
+  domain.push(_arr[1])
+  domain.push(_arr[2])
+
+  domain = domain.join('/')
+
+  res.cookie('csrf', csrf, opts)
+  res.cookie('access_token', req.query.access_token || '', opts)
+  res.cookie('landing_page_domain', domain, opts)
+  res.cookie('landing_page', landingPage, opts)
 
   // var url = 'https://open.weixin.qq.com/connect/oauth2/authorize'+
   // '?appid='+appConfig.appid+

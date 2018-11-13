@@ -68,6 +68,9 @@ const UserSchema = new Schema({
 
   // 最后一次查询关注帖子的日期
   last_find_posts_at: { type: Date },
+  
+  // 最近一次查询自己关注的feed的日期，用于有新的feed，与它比较是否有新的feed，显示小红点
+  last_find_feed_at: { type: Date },
 
   // 访问令牌
   access_token: { type: String },

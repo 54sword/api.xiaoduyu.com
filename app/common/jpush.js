@@ -1,5 +1,3 @@
-
-
 // https://github.com/jpush/jpush-api-nodejs-client/blob/master/doc/api.md
 import JPush from 'jpush-sdk/lib/JPush/JPush.js'
 import { debug, jpush } from '../../config'
@@ -37,7 +35,7 @@ exports.pushPostsToSignInUser = function({ posts, user }) {
 
 exports.pushCommentToUser = function({ posts, comment, user }) {
 
-  if (!jpush.appKey || !jpush.masterSecret) return;
+  if (!jpush.appKey || !jpush.masterSecret || debug) return;
 
   var client = JPush.buildClient(jpush.appKey, jpush.masterSecret);
 
@@ -66,7 +64,7 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
       })
     )
     // 开启正式环境的推送
-    .setOptions(null, null, null, debug ? false : true)
+    .setOptions(null, null, null, true)
     .send(function(err, res) {
       if (err) console.log(err.message)
     })
@@ -75,7 +73,7 @@ exports.pushCommentToUser = function({ posts, comment, user }) {
 
 exports.pushReplyToUser = function({ comment, reply, user }) {
 
-  if (!jpush.appKey || !jpush.masterSecret) return;
+  if (!jpush.appKey || !jpush.masterSecret || debug) return;
 
   var client = JPush.buildClient(jpush.appKey, jpush.masterSecret);
 
@@ -104,7 +102,7 @@ exports.pushReplyToUser = function({ comment, reply, user }) {
       })
     )
     // 开启正式环境的推送
-    .setOptions(null, null, null, debug ? false : true)
+    .setOptions(null, null, null, true)
     .send(function(err, res) {
       if (err) console.log(err.message)
     })

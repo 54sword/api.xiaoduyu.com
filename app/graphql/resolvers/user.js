@@ -84,6 +84,8 @@ query.selfInfo = async (root, args, context, schema) => {
   user.phone = result ? changeString(result.phone + '') : '';
   user.area_code = result ? result.area_code : '';
 
+  user.has_password = user.password ? true : false;
+  
   return user;
 
 }

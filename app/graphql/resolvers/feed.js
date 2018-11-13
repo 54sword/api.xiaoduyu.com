@@ -1,5 +1,5 @@
 
-import { Feed, Posts, Comment, Follow, Like } from '../../modelsa';
+import { Feed, Posts, Comment, Follow, Like, User } from '../../modelsa';
 // import { domain } from '../../../config';
 
 let query = {};
@@ -27,7 +27,10 @@ Posts.find({
         create_at: item.create_at
       }
     })
-  })
+  });
+
+  console.log('posts 完成');
+
 });
 
 
@@ -48,8 +51,11 @@ Comment.find({
     })
   })
 
+  console.log('comment 完成');
+
 });
 */
+
 
 query.feed = async (root, args, context, schema) => {
 
@@ -59,50 +65,52 @@ query.feed = async (root, args, context, schema) => {
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
-  [ err, query ] = getQuery({ args, model:'posts', role });
-  [ err, options ] = getOption({ args, model:'posts', role });
+  [ err, query ] = getQuery({ args, model:'feed', role });
+  [ err, options ] = getOption({ args, model:'feed', role });
 
-  // 未登陆用户，不能使用method方式查询
-  if (!user) {
-    throw CreateError({ message: '请求被拒绝' })
+  if (!options.limit || options.limit > 50) {
+    options.limit = 50
   }
 
-  // 如果没有关注，那么则返回空
-  // if (user.follow_people.length == 0 && user.follow_topic.length == 0) {
-    // return [];
-  // }
+  let limit = options.limit;
+  
+  if (!query.user_id) {
 
-  // select
-  // schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
+    // 未登陆用户，不能使用method方式查询
+    if (!user) {
+      throw CreateError({ message: '请求被拒绝' })
+    }
 
-  let _query = { '$or': [] };
+    let _query = { '$or': [] };
 
-  // 获取与自己相关的帖子和评论
-  _query['$or'].push({
-    user_id: user._id,
-    posts_id: { '$nin': user.block_posts },
-    deleted: false
-  });
-
-  // 关注的用户的评论与帖子
-  if (user.follow_people.length > 0) {
+    // 获取与自己相关的帖子和评论
     _query['$or'].push(Object.assign({}, query, {
-      user_id: { '$in': user.follow_people, '$nin': user.block_people },
+      user_id: user._id,
       posts_id: { '$nin': user.block_posts },
       deleted: false
-    }, {}));
-  }
+    }));
+  
+    // 关注的用户的评论与帖子
+    if (user.follow_people.length > 0) {
+      _query['$or'].push(Object.assign({}, query, {
+        user_id: { '$in': user.follow_people, '$nin': user.block_people },
+        posts_id: { '$nin': user.block_posts },
+        deleted: false
+      }, {}));
+    }
+  
+    // 关注的话题的评论与帖子
+    if (user.follow_topic.length > 0) {
+      _query['$or'].push(Object.assign({}, query, {
+        topic_id: {'$in': user.follow_topic },
+        posts_id: { '$nin': user.block_posts },
+        deleted: false
+      }, {}));
+    }
+  
+    query = _query;
 
-  // 关注的话题的评论与帖子
-  if (user.follow_topic.length > 0) {
-    _query['$or'].push(Object.assign({}, query, {
-      topic_id: {'$in': user.follow_topic },
-      posts_id: { '$nin': user.block_posts },
-      deleted: false
-    }, {}));
   }
-
-  query = _query;
 
   options.populate = [
     { path: 'user_id', select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 } },
@@ -113,19 +121,14 @@ query.feed = async (root, args, context, schema) => {
   [ err, list ] = await To(Feed.find({ query, select: {}, options }));
 
   options = [
-    // { path: 'comment_id.user_id', model: 'User' },
     { path: 'comment_id.reply_id', model: 'Comment', match: { 'deleted': false } },
-    // { path: 'comment_id.posts_id', model: 'Posts' },
     { path: 'posts_id.user_id', model: 'User' },
     { path: 'posts_id.topic_id', model: 'Topic', select: { '_id': 1, 'name': 1, 'avatar':1 } }
-    // { path: 'posts_id.comment', model: 'Comment', options: { limit: 5 } }
   ];
 
   [ err, list ] = await To(Feed.populate({ collections: list, options }));
 
   options = [
-    // { path: 'posts_id.comment.user_id', model: 'User' },
-    // { path: 'comment_id.posts_id.user_id', model: 'User' },
     {
       path: 'comment_id.reply_id.user_id',
       model: 'User',
@@ -135,6 +138,15 @@ query.feed = async (root, args, context, schema) => {
   ];
 
   [ err, list ] = await To(Feed.populate({ collections: list, options }));
+  
+  if (err) {
+    throw CreateError({ message: err });
+  }
+
+  if (!list) return [];
+
+  // 未登陆的用户，直接返回
+  if (!user) return list;
 
   // 获取follow和like
 
@@ -164,7 +176,7 @@ query.feed = async (root, args, context, schema) => {
       query: { user_id: user._id, type: { "$in": ['reply','comment'] }, target_id: { "$in": commentIds }, deleted: false },
       select: { _id: 0, target_id: 1 }
     })
-  ]).then(values=>{
+  ]).then(async values => {
 
     const [ followPosts, likePosts, likeComment ] = values;
 
@@ -197,6 +209,14 @@ query.feed = async (root, args, context, schema) => {
         item.comment_id.like = true;
       }
     });
+
+    // 更新用户最后一次查询feed日期
+    if (!query.user_id && user && limit != 1 && list && list.length > 0) {
+      await User.update({
+        query: { _id: user._id },
+        update: { last_find_feed_at: new Date() }
+      });
+    }
 
     return list;
 

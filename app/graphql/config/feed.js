@@ -4,16 +4,22 @@ import * as ParseParams from '../common/parse-params';
 const query = {
   // 筛选条件
   filters: {
+    user_id: data => ({
+      name: 'user_id',
+      value: ParseParams.id(data),
+      type: 'ID',
+      desc:'ID'
+    }),
     // 因为int类型长度大于11位，graphql 会认为格式不是int
     start_create_at: data => ({
       name: 'create_at',
-      value: { '$gte': parseInt(data) },
+      value: { '$gte': data },
       type: 'String',
       desc:'开始日期'
     }),
     end_create_at: data => ({
       name: 'create_at',
-      value: { '$lte': parseInt(data) },
+      value: { '$lte': data },
       type: 'String',
       desc:'结束日期'
     })

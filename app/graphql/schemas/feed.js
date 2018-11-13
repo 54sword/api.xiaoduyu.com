@@ -76,6 +76,7 @@ exports.Schema = `
     user_id: _Feed_User
     posts_id: Posts
     comment_id: _Feed_Comment_A
+    create_at: String
   }
 
   type countFeed {
