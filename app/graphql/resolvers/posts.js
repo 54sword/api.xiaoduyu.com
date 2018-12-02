@@ -472,12 +472,20 @@ mutation.addPosts = async (root, args, context, schema) => {
     }
   }));
 
+  // 添加到feed
+  Feed.save({
+    data: {
+      user_id: user._id,
+      posts_id: result._id
+    }
+  });
+
   // 更新
   await To(Topic.update({
     query: { _id: topic_id },
     update: { $inc: { 'posts_count': 1 } }
   }));
-
+  
   await To(User.update({
     query: { _id: user._id },
     update: { $inc: { 'posts_count': 1 } }

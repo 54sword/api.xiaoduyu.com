@@ -10,6 +10,18 @@ const query = {
       type: 'ID',
       desc:'ID'
     }),
+    posts_id: data => ({
+      name: 'posts_id',
+      value: ParseParams.id(data),
+      type: 'ID',
+      desc:'帖子ID'
+    }),
+    comment_id: data => ({
+      name: 'comment_id',
+      value: ParseParams.id(data),
+      type: 'ID',
+      desc:'评论ID'
+    }),
     // 因为int类型长度大于11位，graphql 会认为格式不是int
     start_create_at: data => ({
       name: 'create_at',
@@ -22,6 +34,12 @@ const query = {
       value: { '$lte': data },
       type: 'String',
       desc:'结束日期'
+    }),
+    preference: data => ({
+      name: '',
+      value: '',
+      type: 'Boolean',
+      desc:'偏好(登陆用户首页的信息流)'
     })
   },
   // 排序，page size，page number

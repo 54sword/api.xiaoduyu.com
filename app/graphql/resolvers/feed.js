@@ -65,6 +65,8 @@ query.feed = async (root, args, context, schema) => {
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
+  // console.log(args);
+
   [ err, query ] = getQuery({ args, model:'feed', role });
   [ err, options ] = getOption({ args, model:'feed', role });
 
@@ -73,13 +75,16 @@ query.feed = async (root, args, context, schema) => {
   }
 
   let limit = options.limit;
-  
-  if (!query.user_id) {
+
+  console.log(query);
+
+
+  if (args.preference && user) {
 
     // 未登陆用户，不能使用method方式查询
-    if (!user) {
-      throw CreateError({ message: '请求被拒绝' })
-    }
+    // if (!user) {
+      // throw CreateError({ message: '请求被拒绝' })
+    // }
 
     let _query = { '$or': [] };
 
@@ -109,6 +114,8 @@ query.feed = async (root, args, context, schema) => {
     }
   
     query = _query;
+
+    console.log(query);
 
   }
 

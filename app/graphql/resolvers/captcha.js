@@ -83,6 +83,10 @@ mutation.addCaptcha = async (root, args, context, schema) => {
   // 获取图片验证码地址和id
   if (!email && !phone && !area_code) {
 
+    if (type != 'sign-in') {
+      throw CreateError({ message: 'type 错误' });
+    }
+
     [ err, result ] = await To(Captcha.findOne({
       query: { ip },
       select: { _id: 1 },
@@ -91,16 +95,12 @@ mutation.addCaptcha = async (root, args, context, schema) => {
 
     if (!result) return { success: true, _id: '', url: '' };
 
-    if (type != 'sign-in') {
-      throw CreateError({ message: 'type 错误' });
-    }
-
     [ err, result ] = await To(Captcha.create({ ip, type }));
 
     return { success: true, _id: result._id, url: domain + '/captcha/' + result._id }
 
   }
-
+  
   // =========================
   // 发送验证码到邮箱
   if (email && type) {

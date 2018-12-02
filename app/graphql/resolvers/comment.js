@@ -558,7 +558,7 @@ mutation.addComment = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     })
   }
-
+  
   // 添加到feed
 
   Feed.save({

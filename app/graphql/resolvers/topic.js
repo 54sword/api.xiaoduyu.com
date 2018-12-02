@@ -35,12 +35,13 @@ query.topics = async (root, args, context, schema) => {
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
 
   // === 设置一些默认值
-
+  /*
   if (!Reflect.has(options, 'sort_by')) {
     options.sort = {
       sort: -1
     }
   }
+  */
 
   //===
 
