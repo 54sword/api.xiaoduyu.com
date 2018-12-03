@@ -1,6 +1,6 @@
 
 import { Captcha, Account, Phone } from '../../modelsa';
-import config , { domain } from '../../../config';
+import config , { domain, debug } from '../../../config';
 
 // tools
 import To from '../../common/to';
@@ -15,6 +15,26 @@ import Countries from '../../data/countries';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];
+
+
+// 通过id获取验证码「单元测试环境使用」
+query.getCaptcha = async (root, args, context, schema) => {
+
+  if (!config.debug) {
+    throw CreateError({ message: '此API仅测试环境有效' });
+  }
+
+  let [ err, res ] = await To(Captcha.findOne({
+    query: args,
+    options: { sort:{ create_at: -1 } }
+  }));
+
+  if (err) {
+    throw CreateError({ message: err });
+  } else {
+    return res;
+  }
+}
 
 mutation.addCaptcha = async (root, args, context, schema) => {
 
@@ -392,6 +412,12 @@ const sendSMS = ({ user, area_code = '', phone, type }) => {
     if (area_code != '+86') {
       serviceProvider = yunpian
       _area_code = area_code
+    }
+
+    // 测试环境不发送短信
+    if (debug) {
+      resolve();
+      return;
     }
 
     serviceProvider.sendSMS({

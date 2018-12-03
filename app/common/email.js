@@ -14,6 +14,12 @@ if (sendCloudConfig.from) {
 
 exports.send = function(options, callback){
 
+  // 测试环境不发送邮件
+  if (config.debug) {
+    callback(true);
+    return;
+  }
+
   if (sendCloudConfig.from) {
     var options = {
       to: [options.to],

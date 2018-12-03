@@ -113,15 +113,13 @@ export default class Model {
    * @param {Object} query 移除条件
    * @return {Object} promise
    */
-  /*
   remove ({ query }) {
     return new Promise((resolve, reject) => {
       if (!query) return reject('query is null');
       this.schema.remove(query, this.callback(resolve, reject));
     });
   }
-  */
-
+  
   /**
    * 计数查询
    * @param {Object} query 查询条件
