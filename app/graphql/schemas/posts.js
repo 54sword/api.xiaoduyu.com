@@ -9,6 +9,10 @@ exports.Schema = `
     brief: String
     avatar: String
     avatar_url: String
+    posts_count: Int
+    comment_count: Int
+    fans_count: Int
+    follow: Boolean
   }
 
   type _Topic {

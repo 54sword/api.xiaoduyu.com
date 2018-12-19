@@ -61,7 +61,7 @@ query.feed = async (root, args, context, schema) => {
 
   const { user, role } = context;
   let err, query, options, select = {}, list, followList;
-
+  
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
@@ -76,24 +76,23 @@ query.feed = async (root, args, context, schema) => {
 
   let limit = options.limit;
 
-  console.log(query);
-
+  // 偏好模式（用户关注），如果用户未登陆，则拒绝请求    
+  if (args.preference && !user) {
+    throw CreateError({ message: '请求被拒绝，用户未登陆' });
+  }
 
   if (args.preference && user) {
-
-    // 未登陆用户，不能使用method方式查询
-    // if (!user) {
-      // throw CreateError({ message: '请求被拒绝' })
-    // }
 
     let _query = { '$or': [] };
 
     // 获取与自己相关的帖子和评论
+    /*
     _query['$or'].push(Object.assign({}, query, {
       user_id: user._id,
       posts_id: { '$nin': user.block_posts },
       deleted: false
     }));
+    */
   
     // 关注的用户的评论与帖子
     if (user.follow_people.length > 0) {
@@ -115,7 +114,7 @@ query.feed = async (root, args, context, schema) => {
   
     query = _query;
 
-    console.log(query);
+    // console.log(query);
 
   }
 

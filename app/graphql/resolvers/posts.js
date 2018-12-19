@@ -104,8 +104,21 @@ query.posts = async (root, args, context, schema) => {
 
   if (select.user_id) {
     options.populate.push({
-      path: 'user_id',
-      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
+      path: 'user_id'
+      // select: {
+      //   '_id': 1,
+      //   'avatar': 1,
+      //   'nickname': 1,
+      //   'brief': 1,
+      //   posts_count: 1,
+      //   comment_count: 1,
+      //   fans_count: 1,
+      //   follow_people_count: 1,
+      //   follow_topic_count: 1,
+      //   follow_posts_count: 1,
+      //   block_people_count: 1,
+      //   block_posts_count: 1
+      // }
     })
   }
 
@@ -145,7 +158,7 @@ query.posts = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     })
   }
-
+  
   if (select.comment && postList.length > 0) {
 
     options = [
@@ -167,9 +180,80 @@ query.posts = async (root, args, context, schema) => {
 
   }
 
-
   // 如果未登陆，直接返回
   if (!user || postList.length == 0) return postList;
+
+  let peopleIds = [], postsIds = [];
+  
+  postList.map(item=>{
+
+    postsIds.push(item._id);
+
+    if (!item.user_id || !item.user_id._id) return;
+
+    if (peopleIds.indexOf(item.user_id._id) == -1) {
+      peopleIds.push(item.user_id._id);
+    }
+
+  });
+
+  let promises = [
+    // 关注用户
+    Follow.find({
+      query: { user_id: user._id, people_id: { "$in": peopleIds }, deleted: false },
+      select: { _id: 0, people_id: 1 }
+    }),
+    // 关注帖子
+    Follow.find({
+      query: { user_id: user._id, posts_id: { "$in": postsIds }, deleted: false },
+      select: { _id: 0, posts_id: 1 }
+    }),
+    // 赞的帖子
+    Like.find({
+      query: { user_id: user._id, type: 'posts', target_id: { "$in": postsIds }, deleted: false },
+      select: { _id: 0, target_id: 1 }
+    })
+  ];
+
+  if (method == 'user_follow' && limit != 1) {
+    promises.push([
+      User.update({
+        query: { _id: user._id },
+        update: { last_find_posts_at: new Date() }
+      })
+    ]);
+  }
+
+  return Promise.all(promises).then(([ followPeopleList, followPostsList, likePostsList ])=>{
+
+    let ids = {};
+
+    followPeopleList.map(item=>{ ids[item.people_id] = 1; });
+    followPeopleList = ids;
+
+    ids = {};
+
+    followPostsList.map(item=>{ ids[item._id] = 1; });
+    followPostsList = ids;
+
+    ids = {};
+
+    likePostsList.map(item=>{ ids[item.target_id] = 1; });
+    likePostsList = ids;
+
+    postList.map(item => {
+      item.follow = followPostsList[item._id] ? true : false;
+      item.like = likePostsList[item._id] ? true : false;
+      if (item.user_id) {
+        item.user_id.follow = followPeopleList[item.user_id._id] ? true : false;
+      }
+    });
+
+    return postList;
+  });
+
+  /*
+  // console.log(user);
 
   // find follow status
   ids = [];
@@ -214,7 +298,12 @@ query.posts = async (root, args, context, schema) => {
 
   }
 
+  // console.log(postList);
+
+  console.log(new Date().getTime() - now);
+
   return postList
+  */
 }
 
 
