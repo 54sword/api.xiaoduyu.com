@@ -30,13 +30,13 @@ const query = {
     }),
     end_create_at: data => ({
       name: 'create_at',
-      value: { '$lte': data },
+      value: { '$lt': data },
       type: 'String',
       desc:'结束日期'
     }),
     start_create_at: data => ({
       name: 'create_at',
-      value: { '$gte': data },
+      value: { '$gt': data },
       type: 'String',
       desc:'开始日期'
     }),

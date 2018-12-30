@@ -26,6 +26,8 @@ const PostsSchema = new Schema({
   comment: [{ type: ObjectId, ref: 'Comment' }],
   // 评论累积
   comment_count: { type: Number, default: 0 },
+  // 回复累计
+  reply_count: { type: Number, default: 0 },
   // 浏览次数
   view_count: { type: Number, default: 0 },
   // 关注累计

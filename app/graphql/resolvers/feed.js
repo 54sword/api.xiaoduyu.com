@@ -11,6 +11,7 @@ import CreateError from './errors';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 
+
 /*
 Posts.find({
   query: {}
@@ -32,6 +33,7 @@ Posts.find({
   console.log('posts 完成');
 
 });
+
 
 
 Comment.find({
@@ -61,7 +63,7 @@ query.feed = async (root, args, context, schema) => {
 
   const { user, role } = context;
   let err, query, options, select = {}, list, followList;
-  
+
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
@@ -76,7 +78,7 @@ query.feed = async (root, args, context, schema) => {
 
   let limit = options.limit;
 
-  // 偏好模式（用户关注），如果用户未登陆，则拒绝请求    
+  // 偏好模式（用户关注），如果用户未登陆，则拒绝请求
   if (args.preference && !user) {
     throw CreateError({ message: '请求被拒绝，用户未登陆' });
   }
@@ -93,7 +95,7 @@ query.feed = async (root, args, context, schema) => {
       deleted: false
     }));
     */
-  
+
     // 关注的用户的评论与帖子
     if (user.follow_people.length > 0) {
       _query['$or'].push(Object.assign({}, query, {
@@ -102,29 +104,37 @@ query.feed = async (root, args, context, schema) => {
         deleted: false
       }, {}));
     }
-  
+
     // 关注的话题的评论与帖子
     if (user.follow_topic.length > 0) {
       _query['$or'].push(Object.assign({}, query, {
+        user_id: { '$nin': user.block_people },
         topic_id: {'$in': user.follow_topic },
         posts_id: { '$nin': user.block_posts },
         deleted: false
       }, {}));
     }
-  
+
     query = _query;
-
-    // console.log(query);
-
   }
 
   options.populate = [
     { path: 'user_id', select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 } },
-    { path: 'comment_id' },
-    { path: 'posts_id' }
+    { path: 'comment_id', match: { weaken: false, deleted: false } },
+    { path: 'posts_id', match: { weaken: false, deleted: false } }
   ];
 
   [ err, list ] = await To(Feed.find({ query, select: {}, options }));
+
+  if (!list || list.length == 0) {
+
+    // 更新用户最后一次查询feed日期
+    if (!query.user_id && user && limit != 1) {
+      updateLastFindFeedDate(user._id);
+    }
+
+    return [];
+  }
 
   options = [
     { path: 'comment_id.reply_id', model: 'Comment', match: { 'deleted': false } },
@@ -144,12 +154,12 @@ query.feed = async (root, args, context, schema) => {
   ];
 
   [ err, list ] = await To(Feed.populate({ collections: list, options }));
-  
+
   if (err) {
     throw CreateError({ message: err });
   }
 
-  if (!list) return [];
+  // if (!list) return [];
 
   // 未登陆的用户，直接返回
   if (!user) return list;
@@ -218,14 +228,25 @@ query.feed = async (root, args, context, schema) => {
 
     // 更新用户最后一次查询feed日期
     if (!query.user_id && user && limit != 1 && list && list.length > 0) {
-      await User.update({
-        query: { _id: user._id },
-        update: { last_find_feed_at: new Date() }
-      });
+      // await User.update({
+      //   query: { _id: user._id },
+      //   update: { last_find_feed_at: new Date() }
+      // });
+      updateLastFindFeedDate(user._id);
     }
 
     return list;
 
+  });
+
+}
+
+// 更新用户最后一次查询feed的日期
+const updateLastFindFeedDate = (userId) => {
+
+  User.update({
+    query: { _id: userId },
+    update: { last_find_feed_at: new Date() }
   });
 
 }

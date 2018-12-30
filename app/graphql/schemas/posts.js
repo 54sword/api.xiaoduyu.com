@@ -55,6 +55,8 @@ exports.Schema = `
     last_comment_at: String
     # 评论的累计数
     comment_count: Int
+    # 回复累计数
+    reply_count: Int
     # 浏览的累计数
     view_count: Int
     # 关注的累计数

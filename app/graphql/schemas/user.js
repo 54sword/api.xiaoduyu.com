@@ -65,6 +65,8 @@ exports.Schema = `
     find_notification_at: String
     last_find_posts_at: String
     last_find_feed_at: String
+    last_find_subscribe_at: String
+    last_find_excellent_at: String
     has_password: Boolean
   }
 

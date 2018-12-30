@@ -314,7 +314,7 @@ mutation.updateComment = async (root, args, context, schema) => {
 
   if (!user) throw CreateError({ message: '请求被拒绝' });
 
-  let err, query, update, result;
+  let err, query, update, result, comment;
 
   [ err, query ] = getUpdateQuery({ args, model: 'comment', role });
   if (err) throw CreateError({ message: err });
@@ -322,15 +322,15 @@ mutation.updateComment = async (root, args, context, schema) => {
   [ err, update ] = getUpdateContent({ args, model: 'comment', role });
   if (err) throw CreateError({ message: err });
 
-  [ err, result ] = await To(Comment.findOne({ query }));
+  [ err, comment ] = await To(Comment.findOne({ query }));
 
-  if (err || !result) {
+  if (err || !comment) {
     throw CreateError({ message: '评论不存在' });
   }
 
   // 如果不是管理员，那么判断是否有权限编辑
   if (role != 'admin') {
-    if (result.user_id + '' != user._id + '') {
+    if (comment.user_id + '' != user._id + '') {
       throw CreateError({ message: '无权限编辑' });
     }
   }
@@ -346,8 +346,16 @@ mutation.updateComment = async (root, args, context, schema) => {
 
   // 更新feed中相关comment的delete状态
   if (Reflect.has(update, 'deleted')) {
+    
+    if (!comment.parent_id) {
+      // 评论
+      updatePostsCommentCount(comment.posts_id);
+      updateUserCommentCount(comment.user_id);
+    } else if (comment.parent_id) {
+      // 回复
+      updateCommentReplyCount(comment.parent_id, comment.posts_id);
+    }
 
-    console.log('===');
 
     [ err ] = await To(Feed.update({
       query: { comment_id: query._id },
@@ -362,8 +370,6 @@ mutation.updateComment = async (root, args, context, schema) => {
     }
 
   }
-
-
 
   return { success: true }
 }
@@ -444,7 +450,6 @@ mutation.addComment = async (root, args, context, schema) => {
         message: 'posts_id 不存在'
       })
     }
-
   }
 
   // parent_id
@@ -534,7 +539,6 @@ mutation.addComment = async (root, args, context, schema) => {
     })
   }
 
-
   // 储存
   let data = {
     user_id: user._id,
@@ -558,7 +562,7 @@ mutation.addComment = async (root, args, context, schema) => {
       data: { errorInfo: err.message }
     })
   }
-  
+
   // 添加到feed
 
   Feed.save({
@@ -582,10 +586,20 @@ mutation.addComment = async (root, args, context, schema) => {
       await To(Posts.update({
         query: { _id: posts_id },
         update: {
-          sort_by_date: new Date()
+          sort_by_date: new Date(),
+          last_comment_at: result.create_at
         }
       }));
 
+    } else {
+
+      await To(Posts.update({
+        query: { _id: posts_id },
+        update: {
+          last_comment_at: result.create_at
+        }
+      }));
+      
     }
 
     if (user._id + '' != posts.user_id + '') {
@@ -675,21 +689,26 @@ async function updatePostsCommentCount(posts_id) {
       parent_id: { $exists: false },
       deleted: false
     },
-    select: { _id: 1 }
+    select: { _id: 1, reply_count: 1 }
   }));
 
   var ids = [];
-  result.map(item =>{ ids.push(item._id) });
+  let replyCount = 0;
+  result.map(item =>{
+    ids.push(item._id);
+    replyCount += item.reply_count;
+  });
 
   // 更新评论通知
   let update = {
     comment_count: ids.length,
-    commenr: ids
+    comment: ids,
+    reply_count: replyCount
   }
 
   // 如果帖子创建日期，小于30天，置顶帖子
   // if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 30) {
-  //   update.sort_by_date = new Date();
+    // update.sort_by_date = new Date();
   // }
 
   await To(Posts.update({ query: { _id: posts_id }, update }));
@@ -735,3 +754,18 @@ async function updateCommentReplyCount(comment_id, posts_id) {
   await To(Comment.update({ query: { _id: comment_id }, update }));
 
 };
+
+/*
+Posts.find({
+  query: {},
+  select: { _id:1 }
+}).then(res=>{
+
+  res.map(i=>{
+    updatePostsCommentCount(i._id);
+  });
+
+
+  console.log('更新成功');
+});
+*/
