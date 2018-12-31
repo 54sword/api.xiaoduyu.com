@@ -61,7 +61,7 @@ module.exports = (app) => {
 
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
     // introspection: debug,
-    // playground: true
+    playground: true
     // introspection: true
   });
 
