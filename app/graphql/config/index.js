@@ -14,6 +14,7 @@ import phone from './phone';
 import forgot from './forgot';
 import report from './report';
 import block from './block';
+import feed from './feed';
 
 let list = {
   posts,
@@ -30,7 +31,8 @@ let list = {
   phone,
   forgot,
   report,
-  block
+  block,
+  feed
 }
 
 let s = {

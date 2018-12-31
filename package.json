@@ -48,6 +48,7 @@
     "mongoose": "^5.0.3",
     "morgan": "^1.5.3",
     "node-uuid": "^1.4.7",
+    "nodejieba": "^2.3.0",
     "nodemailer": "^0.7.1",
     "qiniu": "^6.1.13",
     "react": "^15.6.1",

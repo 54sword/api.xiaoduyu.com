@@ -1,4 +1,4 @@
-import { Posts, User, Follow, Like, Topic } from '../../modelsa';
+import { Posts, User, Follow, Like, Topic, Feed } from '../../modelsa';
 
 import CreateError from './errors';
 import To from '../../common/to';
@@ -29,7 +29,12 @@ query.posts = async (root, args, context, schema) => {
   let limit = options.limit;
 
   // select
-  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
+
+  // 用户隐私信息，仅对管理员可以返回
+  if (!role || role != 'admin') {
+    if (select.ip) delete select.ip;
+  }
 
   if (!options.populate) options.populate = []
 
@@ -51,6 +56,7 @@ query.posts = async (root, args, context, schema) => {
 
 
   // 用户关注
+  /*
   if (user && method == 'user_follow') {
 
     let newQuery = { '$or': [] }
@@ -90,7 +96,7 @@ query.posts = async (root, args, context, schema) => {
     // 帖子
     if (user.follow_posts.length > 0) {
       newQuery['$or'].push(Object.assign({}, query, {
-        posts_id: {
+        _id: {
           '$in': user.follow_posts,
           // 过滤屏蔽的帖子
           '$nin': user.block_posts
@@ -100,12 +106,41 @@ query.posts = async (root, args, context, schema) => {
     }
 
     query = newQuery;
+  } else
+  */
+
+  if (user && method == 'subscribe') {
+
+    if (user.follow_posts.length == 0 && user.block_posts.length == 0) {
+      return [];
+    }
+
+    // 用户订阅的帖子
+    query._id = {
+      '$in': user.follow_posts,
+      // 过滤屏蔽的帖子
+      '$nin': user.block_posts
+    }
+
   }
 
   if (select.user_id) {
     options.populate.push({
-      path: 'user_id',
-      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }
+      path: 'user_id'
+      // select: {
+      //   '_id': 1,
+      //   'avatar': 1,
+      //   'nickname': 1,
+      //   'brief': 1,
+      //   posts_count: 1,
+      //   comment_count: 1,
+      //   fans_count: 1,
+      //   follow_people_count: 1,
+      //   follow_topic_count: 1,
+      //   follow_posts_count: 1,
+      //   block_people_count: 1,
+      //   block_posts_count: 1
+      // }
     })
   }
 
@@ -113,16 +148,20 @@ query.posts = async (root, args, context, schema) => {
     options.populate.push({
       path: 'comment',
       match: {
+        deleted: false,
+        weaken: false
+        /*
         $or: [
           { deleted: false, weaken: false, like_count: { $gte: 2 } },
           { deleted: false, weaken: false, reply_count: { $gte: 1 } }
         ]
+        */
       },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1,
         'like_count': 1, 'user_id': 1, 'posts_id': 1
       },
-      options: { limit: 1 }
+      options: { limit: 5, sort: { create_at: -1 } }
     })
   }
 
@@ -167,54 +206,92 @@ query.posts = async (root, args, context, schema) => {
 
   }
 
-
   // 如果未登陆，直接返回
   if (!user || postList.length == 0) return postList;
 
-  // find follow status
-  ids = [];
+  let peopleIds = [], postsIds = [];
 
-  postList.map(item=>ids.push(item._id));
+  postList.map(item=>{
 
-  [ err, followList ] = await To(Follow.find({
-    query: { user_id: user._id, posts_id: { "$in": ids }, deleted: false },
-    select: { posts_id: 1 }
-  }));
+    postsIds.push(item._id);
 
+    if (!item.user_id || !item.user_id._id) return;
 
-  ids = {};
+    if (peopleIds.indexOf(item.user_id._id) == -1) {
+      peopleIds.push(item.user_id._id);
+    }
 
-  followList.map(item=>ids[item.posts_id] = 1);
-  postList.map(item => item.follow = ids[item._id] ? true : false);
+  });
 
+  let promises = [
+    // 关注用户
+    Follow.find({
+      query: { user_id: user._id, people_id: { "$in": peopleIds }, deleted: false },
+      select: { _id: 0, people_id: 1 }
+    }),
+    // 关注帖子
+    Follow.find({
+      query: { user_id: user._id, posts_id: { "$in": postsIds }, deleted: false },
+      select: { _id: 0, posts_id: 1 }
+    }),
+    // 赞的帖子
+    Like.find({
+      query: { user_id: user._id, type: 'posts', target_id: { "$in": postsIds }, deleted: false },
+      select: { _id: 0, target_id: 1 }
+    })
+  ];
 
-  // find like status
-  ids = [];
-
-  postList.map(item=>ids.push(item._id));
-
-  [ err, likeList ] = await To(Like.find({
-    query: { user_id: user._id, type: 'posts', target_id: { "$in": ids }, deleted: false },
-    select: { _id: 0, target_id: 1 }
-  }));
-
-  ids = {};
-
-  likeList.map(item=>ids[item.target_id] = 1);
-  postList.map(item => item.like = ids[item._id] ? true : false);
-
-  // 更新最近查询关注的帖子
-
-  if (user && method == 'user_follow' && limit != 1) {
-
-    await User.update({
-      query: { _id: user._id },
-      update: { last_find_posts_at: new Date() }
-    });
-
+  if (method == 'user_follow' && limit != 1) {
+    promises.push([
+      User.update({
+        query: { _id: user._id },
+        update: { last_find_posts_at: new Date() }
+      })
+    ]);
+  } else if (method == 'subscribe' && limit != 1) {
+    promises.push([
+      User.update({
+        query: { _id: user._id },
+        update: { last_find_subscribe_at: new Date() }
+      })
+    ]);
+  } else if (query.recommend && limit != 1) {
+    promises.push([
+      User.update({
+        query: { _id: user._id },
+        update: { last_find_excellent_at: new Date() }
+      })
+    ]);
   }
 
-  return postList
+  return Promise.all(promises).then(([ followPeopleList, followPostsList, likePostsList ])=>{
+
+    let ids = {};
+
+    followPeopleList.map(item=>{ ids[item.people_id] = 1; });
+    followPeopleList = ids;
+
+    ids = {};
+
+    followPostsList.map(item=>{ ids[item._id] = 1; });
+    followPostsList = ids;
+
+    ids = {};
+
+    likePostsList.map(item=>{ ids[item.target_id] = 1; });
+    likePostsList = ids;
+
+    postList.map(item => {
+      item.follow = followPostsList[item._id] ? true : false;
+      item.like = likePostsList[item._id] ? true : false;
+      if (item.user_id) {
+        item.user_id.follow = followPeopleList[item.user_id._id] ? true : false;
+      }
+    });
+
+    return postList;
+  });
+
 }
 
 
@@ -242,7 +319,7 @@ query.countPosts = async (root, args, context, schema) => {
   }
 
   // select
-  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
+  schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
 
   /**
    * 增加屏蔽条件
@@ -472,6 +549,14 @@ mutation.addPosts = async (root, args, context, schema) => {
     }
   }));
 
+  // 添加到feed
+  Feed.save({
+    data: {
+      user_id: user._id,
+      posts_id: result._id
+    }
+  });
+
   // 更新
   await To(Topic.update({
     query: { _id: topic_id },
@@ -490,8 +575,8 @@ mutation.addPosts = async (root, args, context, schema) => {
     })
   }
 
-  result.create_at = new Date(result.create_at).getTime();
-  global.io.sockets.emit('new-posts', result.create_at - 1);
+  // result.create_at = new Date(result.create_at).getTime();
+  // global.io.sockets.emit('new-posts', result.create_at - 1);
 
   return {
     success: true,
@@ -536,11 +621,44 @@ mutation.updatePosts = async (root, args, context, schema) => {
 
   // 更新
   [ err, result ] = await To(Posts.update({ query, update: content }));
+
   if (err) {
     throw CreateError({
       message: '更新失败',
       data: { errorInfo: err.message }
     });
+  }
+
+  if (Reflect.has(content, 'deleted')) {
+
+    // 更新feed中相关posts的delete状态
+    let err, feedList;
+
+    [ err, feedList ] = await To(Feed.find({
+      query: { posts_id: query._id }
+    }));
+
+    let ids = [];
+
+    feedList.map(feed=>ids.push(feed._id));
+
+    [ err ] = await To(Feed.update({
+      query: { _id: { '$in': ids } },
+      update: { deleted: content.deleted },
+      options: { multi: true }
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: 'Feed 更新失败',
+        data: { errorInfo: err.message }
+      });
+    }
+
+  }
+
+  if (Reflect.has(content, 'recommend')) {
+    global.io.sockets.emit('recommend-posts', query._id);
   }
 
   return { success: true }

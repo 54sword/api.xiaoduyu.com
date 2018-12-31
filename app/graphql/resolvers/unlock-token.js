@@ -57,7 +57,10 @@ query.getUnlockToken = async (root, args, context, schema) => {
   }
 
   // 验证验证码
-  [ err, res ] = await To(Captcha.findOne({ query }));
+  [ err, res ] = await To(Captcha.findOne({
+    query,
+    options: { sort:{ create_at: -1 } }
+  }));
 
   if (err) throw CreateError({ message: '查询失败' });
   if (!res || res.captcha != captcha) throw CreateError({ message: '无效的验证码' });

@@ -22,12 +22,18 @@ const update = {
       type: 'ID!',
       desc:'用户id'
     }),
-    current_password: data => ({
-      name: 'current_password',
+    unlock_token: data => ({
+      name: 'unlock_token',
       value: data,
-      type: 'String!',
-      desc:'当前密码'
+      type: 'String',
+      desc:'解锁令牌（getUnlockToken），解锁身份后获得，用于修改已绑定的邮箱地址'
     }),
+    // current_password: data => ({
+    //   name: 'current_password',
+    //   value: data,
+    //   type: 'String!',
+    //   desc:'当前密码'
+    // }),
     new_password: data => ({
       name: 'new_password',
       value: data,

@@ -1,4 +1,4 @@
-import * as ParseParams from '../comment/parse-params';
+import * as ParseParams from '../common/parse-params';
 
 // 查询
 const query = {
@@ -30,13 +30,13 @@ const query = {
     }),
     end_create_at: data => ({
       name: 'create_at',
-      value: { '$lte': data },
+      value: { '$lt': data },
       type: 'String',
       desc:'结束日期'
     }),
     start_create_at: data => ({
       name: 'create_at',
-      value: { '$gte': data },
+      value: { '$gt': data },
       type: 'String',
       desc:'开始日期'
     }),
@@ -57,6 +57,12 @@ const query = {
       value: ParseParams.id(data),
       type: 'ID',
       desc:'父评论id，id、ids、exists、not-exists'
+    }),
+    method: data => ({
+      name: '',
+      value: '',
+      type: 'String',
+      desc:'模式(user_follow)'
     })
   },
   // 排序，page size，page number

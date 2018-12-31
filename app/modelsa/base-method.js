@@ -119,7 +119,7 @@ export default class Model {
       this.schema.remove(query, this.callback(resolve, reject));
     });
   }
-
+  
   /**
    * 计数查询
    * @param {Object} query 查询条件

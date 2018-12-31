@@ -1,4 +1,4 @@
-import { Comment, Like, Posts, User, UserNotification, Feed } from '../../modelsa';
+import { Comment, Like, Posts, User, UserNotification } from '../../modelsa';
 import xss from 'xss';
 
 import jpush from '../../common/jpush';
@@ -12,17 +12,11 @@ import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } 
 query.comments = async (root, args, context, schema) => {
 
   const { user, role, ip } = context
-  const { method } = args
   let select = {}, query, options, err, commentList = [], likeList = [];
   // let { query, options } = Querys({ args, model: 'comment', role })
 
   [ err, query ] = getQuery({ args, model: 'comment', role });
   [ err, options ] = getOption({ args, model: 'comment', role });
-
-  // 未登陆用户，不能使用method方式查询
-  if (!user && method) {
-    throw CreateError({ message: '请求被拒绝' })
-  }
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1)
@@ -31,90 +25,63 @@ query.comments = async (root, args, context, schema) => {
 
   options.populate = [];
 
-  // 用户关注
-  if (user && method == 'user_follow') {
-
-    let newQuery = { '$or': [] }
-
-    // 获取自己的评论
-    newQuery['$or'].push(Object.assign({}, query, {
-      user_id: user._id,
-      deleted: false
-    }, {}));
-
-    // 获取自己关注用户的评论
-    if (user.follow_people.length > 0) {
-
-      newQuery['$or'].push(Object.assign({}, query, {
-        user_id: {
-          '$in': user.follow_people,
-          // 过滤屏蔽用户
-          '$nin': user.block_people
-        },
-        deleted: false
-      }, {}))
-    }
-
-    query = newQuery;
-  }
-
-
   //======== 添加屏蔽条件
 
-  if (!method) {
+  if (Reflect.has(select, 'reply')) {
 
-    if (Reflect.has(select, 'reply')) {
+    // reply 添加屏蔽条件
 
-      // reply 添加屏蔽条件
+    if (user && !query._id) {
 
-      if (user && !query._id) {
-
-        let match = {
-          $or: [{
-            deleted: false,
-            weaken: false,
-          }]
-        }
-
-        if (user.block_comment_count > 0) {
-          match['$or'][0]._id = { '$nin': user.block_comment }
-        }
-
-        if (user.block_people_count > 0) {
-          match['$or'][0].user_id = { '$nin': user.block_people }
-        }
-        options.populate.push({
-          path: 'reply',
-          // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
-          match
-        });
-
-        // console.log(options.populate[0].match);
-
-      } else {
-        options.populate.push({
-          path: 'reply',
-          // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
-          match: { deleted: false, weaken: false }
-        });
+      let match = {
+        $or: [{
+          deleted: false,
+          weaken: false,
+        }]
       }
 
+      if (user.block_comment_count > 0) {
+        match['$or'][0]._id = { '$nin': user.block_comment }
+      }
+
+      if (user.block_people_count > 0) {
+        match['$or'][0].user_id = { '$nin': user.block_people }
+      }
+      options.populate.push({
+        path: 'reply',
+        // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 3 },
+        match
+      });
+
+      // console.log(options.populate[0].match);
+
+    } else {
+      options.populate.push({
+        path: 'reply',
+        // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
+        options: { limit: 3 },
+        match: { deleted: false, weaken: false }
+      });
     }
 
-    if (user) {
+  }
 
-      if (!query._id && user.block_comment_count > 0) {
-        query._id = { '$nin': user.block_comment }
-      } else if (query._id && user.block_comment.indexOf(query._id) != -1) {
-        return [];
-      }
+  // if (user && !query._id) {
+  //   if (user.block_people_count > 0) query.user_id = { '$nin': user.block_people }
+  //   if (user.block_comment_count > 0) query._id = { '$nin': user.block_comment }
+  // }
 
-      if (!query.user_id && user.block_people_count > 0) {
-        query.user_id = { '$nin': user.block_people }
-      }
+  if (user) {
 
+    if (!query._id && user.block_comment_count > 0) {
+      query._id = { '$nin': user.block_comment }
+    } else if (query._id && user.block_comment.indexOf(query._id) != -1) {
+      return [];
+    }
+
+    if (!query.user_id && user.block_people_count > 0) {
+      query.user_id = { '$nin': user.block_people }
     }
 
   }
@@ -139,19 +106,15 @@ query.comments = async (root, args, context, schema) => {
     ])
   }
 
-  /*
   if (role != 'admin') {
     // 增加一些默认的筛选条件
     if (!Reflect.has(query, 'deleted')) {
       query.deleted = false;
     }
   }
-  */
-
-  // console.log(query);
 
   [ err, commentList ] = await To(Comment.find({ query, select, options }));
-
+  
   if (err || !commentList) {
     throw CreateError({
       message: '查询失败',
@@ -314,7 +277,7 @@ mutation.updateComment = async (root, args, context, schema) => {
 
   if (!user) throw CreateError({ message: '请求被拒绝' });
 
-  let err, query, update, result, comment;
+  let err, query, update, result;
 
   [ err, query ] = getUpdateQuery({ args, model: 'comment', role });
   if (err) throw CreateError({ message: err });
@@ -322,53 +285,28 @@ mutation.updateComment = async (root, args, context, schema) => {
   [ err, update ] = getUpdateContent({ args, model: 'comment', role });
   if (err) throw CreateError({ message: err });
 
-  [ err, comment ] = await To(Comment.findOne({ query }));
+  [ err, result ] = await To(Comment.findOne({ query }));
 
-  if (err || !comment) {
+  if (err || !result) {
     throw CreateError({ message: '评论不存在' });
   }
 
   // 如果不是管理员，那么判断是否有权限编辑
   if (role != 'admin') {
-    if (comment.user_id + '' != user._id + '') {
+
+    // console.log(result.user_id);
+    // console.log(user._id);
+    if (result.user_id + '' != user._id + '') {
       throw CreateError({ message: '无权限编辑' });
     }
   }
 
-  [ err, result ] = await To(Comment.update({ query, update }));
-
+  [ err, result ] = await To(Comment.update({ query, update }))
   if (err) {
     throw CreateError({
       message: '更新失败',
       data: { errorInfo: err.message }
     })
-  }
-
-  // 更新feed中相关comment的delete状态
-  if (Reflect.has(update, 'deleted')) {
-    
-    if (!comment.parent_id) {
-      // 评论
-      updatePostsCommentCount(comment.posts_id);
-      updateUserCommentCount(comment.user_id);
-    } else if (comment.parent_id) {
-      // 回复
-      updateCommentReplyCount(comment.parent_id, comment.posts_id);
-    }
-
-
-    [ err ] = await To(Feed.update({
-      query: { comment_id: query._id },
-      update: { deleted: update.deleted }
-    }));
-
-    if (err) {
-      throw CreateError({
-        message: 'Feed 更新失败',
-        data: { errorInfo: err.message }
-      });
-    }
-
   }
 
   return { success: true }
@@ -450,6 +388,7 @@ mutation.addComment = async (root, args, context, schema) => {
         message: 'posts_id 不存在'
       })
     }
+
   }
 
   // parent_id
@@ -539,6 +478,7 @@ mutation.addComment = async (root, args, context, schema) => {
     })
   }
 
+
   // 储存
   let data = {
     user_id: user._id,
@@ -563,16 +503,6 @@ mutation.addComment = async (root, args, context, schema) => {
     })
   }
 
-  // 添加到feed
-
-  Feed.save({
-    data: {
-      user_id: user._id,
-      posts_id,
-      comment_id: result._id
-    }
-  });
-
   // ==================================
   // 评论相关更新与通知
   if (posts_id && !parent_id && !reply_id) {
@@ -586,20 +516,10 @@ mutation.addComment = async (root, args, context, schema) => {
       await To(Posts.update({
         query: { _id: posts_id },
         update: {
-          sort_by_date: new Date(),
-          last_comment_at: result.create_at
+          sort_by_date: new Date()
         }
       }));
 
-    } else {
-
-      await To(Posts.update({
-        query: { _id: posts_id },
-        update: {
-          last_comment_at: result.create_at
-        }
-      }));
-      
     }
 
     if (user._id + '' != posts.user_id + '') {
@@ -689,26 +609,21 @@ async function updatePostsCommentCount(posts_id) {
       parent_id: { $exists: false },
       deleted: false
     },
-    select: { _id: 1, reply_count: 1 }
+    select: { _id: 1 }
   }));
 
   var ids = [];
-  let replyCount = 0;
-  result.map(item =>{
-    ids.push(item._id);
-    replyCount += item.reply_count;
-  });
+  result.map(item =>{ ids.push(item._id) });
 
   // 更新评论通知
   let update = {
     comment_count: ids.length,
-    comment: ids,
-    reply_count: replyCount
+    commenr: ids
   }
 
   // 如果帖子创建日期，小于30天，置顶帖子
   // if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 30) {
-    // update.sort_by_date = new Date();
+  //   update.sort_by_date = new Date();
   // }
 
   await To(Posts.update({ query: { _id: posts_id }, update }));
@@ -754,18 +669,3 @@ async function updateCommentReplyCount(comment_id, posts_id) {
   await To(Comment.update({ query: { _id: comment_id }, update }));
 
 };
-
-/*
-Posts.find({
-  query: {},
-  select: { _id:1 }
-}).then(res=>{
-
-  res.map(i=>{
-    updatePostsCommentCount(i._id);
-  });
-
-
-  console.log('更新成功');
-});
-*/

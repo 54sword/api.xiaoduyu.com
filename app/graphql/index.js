@@ -1,7 +1,7 @@
 import { ApolloServer, gql } from 'apollo-server-express';
 import { formatError } from 'apollo-errors';
 import { makeExecutableSchema } from 'graphql-tools';
-import bodyParser from 'body-parser';
+// import bodyParser from 'body-parser';
 
 import { debug, jwt_secret } from '../../config'
 
@@ -19,6 +19,7 @@ const schema = makeExecutableSchema({ typeDefs, resolvers });
  */
 module.exports = (app) => {
 
+
   const server = new ApolloServer({
     schema,
     formatError,
@@ -26,10 +27,19 @@ module.exports = (app) => {
       // jwt_secret
     // },
     context: ({req}) => {
+
+      let ip;
+
+      if (req.headers['x-forwarded-for']) {
+        ip = req.headers['x-forwarded-for'].toString().split(",")[0];
+      } else {
+        ip = req.connection.remoteAddress;
+      }
+
       return {
         user: req.user || null,
         role: req.role || '',
-        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        ip,
         jwtTokenSecret: jwt_secret
       }
     },
@@ -50,8 +60,9 @@ module.exports = (app) => {
     // tracing: debug,
 
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
-    introspection: debug,
-    playground: debug
+    // introspection: debug,
+    playground: true
+    // introspection: true
   });
 
   app.all('*', async (req, res, next)=>{

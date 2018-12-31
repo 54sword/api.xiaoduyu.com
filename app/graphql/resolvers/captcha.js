@@ -1,6 +1,6 @@
 
 import { Captcha, Account, Phone } from '../../modelsa';
-import config , { domain } from '../../../config';
+import config , { domain, debug } from '../../../config';
 
 // tools
 import To from '../../common/to';
@@ -15,6 +15,26 @@ import Countries from '../../data/countries';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];
+
+
+// 通过id获取验证码「单元测试环境使用」
+query.getCaptcha = async (root, args, context, schema) => {
+
+  if (!config.debug) {
+    throw CreateError({ message: '此API仅测试环境有效' });
+  }
+
+  let [ err, res ] = await To(Captcha.findOne({
+    query: args,
+    options: { sort:{ create_at: -1 } }
+  }));
+
+  if (err) {
+    throw CreateError({ message: err });
+  } else {
+    return res;
+  }
+}
 
 mutation.addCaptcha = async (root, args, context, schema) => {
 
@@ -51,14 +71,41 @@ mutation.addCaptcha = async (root, args, context, schema) => {
 
     if (err) throw CreateError({ message: err });
     if (!result) throw CreateError({ message: '未绑定手机' });
+    
+    phone = result.phone;
+    area_code = result.area_code;
+  }
+
+  // =========================
+  // 【找回密码】发送给手机账号
+  if (type == 'forgot' && phone) {
+    [ err, result ] = await To(Phone.findOne({ query: { phone } }));
+
+    if (err) throw CreateError({ message: err });
+    if (!result) throw CreateError({ message: '手机号码不存在' });
 
     phone = result.phone;
     area_code = result.area_code;
   }
 
   // =========================
+  // 【找回密码】发送给手机账号
+  if (type == 'forgot' && email) {
+    [ err, result ] = await To(Account.findOne({ query: { email } }));
+
+    if (err) throw CreateError({ message: err });
+    if (!result) throw CreateError({ message: '邮箱不存在' });
+  }
+
+
+
+  // =========================
   // 获取图片验证码地址和id
   if (!email && !phone && !area_code) {
+
+    if (type != 'sign-in') {
+      throw CreateError({ message: 'type 错误' });
+    }
 
     [ err, result ] = await To(Captcha.findOne({
       query: { ip },
@@ -68,16 +115,12 @@ mutation.addCaptcha = async (root, args, context, schema) => {
 
     if (!result) return { success: true, _id: '', url: '' };
 
-    if (type != 'sign-in') {
-      throw CreateError({ message: 'type 错误' });
-    }
-
     [ err, result ] = await To(Captcha.create({ ip, type }));
 
     return { success: true, _id: result._id, url: domain + '/captcha/' + result._id }
 
   }
-
+  
   // =========================
   // 发送验证码到邮箱
   if (email && type) {
@@ -369,6 +412,12 @@ const sendSMS = ({ user, area_code = '', phone, type }) => {
     if (area_code != '+86') {
       serviceProvider = yunpian
       _area_code = area_code
+    }
+
+    // 测试环境不发送短信
+    if (debug) {
+      resolve();
+      return;
     }
 
     serviceProvider.sendSMS({

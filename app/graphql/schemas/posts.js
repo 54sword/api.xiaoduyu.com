@@ -9,6 +9,10 @@ exports.Schema = `
     brief: String
     avatar: String
     avatar_url: String
+    posts_count: Int
+    comment_count: Int
+    fans_count: Int
+    follow: Boolean
   }
 
   type _Topic {
@@ -51,6 +55,8 @@ exports.Schema = `
     last_comment_at: String
     # 评论的累计数
     comment_count: Int
+    # 回复累计数
+    reply_count: Int
     # 浏览的累计数
     view_count: Int
     # 关注的累计数
@@ -72,7 +78,7 @@ exports.Schema = `
     # 排序
     sort_by_date: String
     # 评论
-    comment: [_Comment],
+    comment: [_Comment]
     # 关注（登陆用户）
     follow: Boolean,
     # 赞（登陆用户）

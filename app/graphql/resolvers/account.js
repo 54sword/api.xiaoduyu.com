@@ -116,7 +116,7 @@ query.signIn = async (root, args, context, schema) => {
   // 生产 access token -----------------------
 
   result = JWT.encode(jwtTokenSecret, account.user_id._id, account.user_id.access_token, ip);
-
+  
   return {
     user_id: result.user_id,
     access_token: result.access_token,
@@ -213,7 +213,7 @@ mutation.addEmail = async (root, args, context, schema) => {
   }));
 
   return { success: true }
-  
+
 }
 
 exports.query = query

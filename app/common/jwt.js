@@ -1,6 +1,6 @@
 
 var jwt = require('jsonwebtoken');
-var Token = require('../models').Token;
+var Token = require('../modelsa').Token;
 
 
 exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 1000 * 60 * 60 * 24 * 30, options = {}) {
@@ -14,14 +14,14 @@ exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 100
     options
     // access_token: accessToken
   }, jwtTokenSecret);
-
+  
   // 储存token记录
   Token.save({
-    user_id: userId,
-    token: token,
-    ip
-  }, (err)=>{
-    if (err) console.log(err)
+    data: {
+      user_id: userId,
+      token: token,
+      ip
+    }
   });
 
   return {

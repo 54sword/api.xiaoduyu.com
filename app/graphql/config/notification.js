@@ -1,4 +1,4 @@
-import * as ParseParams from '../comment/parse-params';
+import * as ParseParams from '../common/parse-params';
 
 // 查询
 const query = {

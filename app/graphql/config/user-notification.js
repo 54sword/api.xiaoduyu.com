@@ -1,4 +1,4 @@
-import * as ParseParams from '../comment/parse-params';
+import * as ParseParams from '../common/parse-params';
 
 // 查询
 const query = {
@@ -43,7 +43,7 @@ const query = {
     }),
     type: data => ({
       name: 'type',
-      value: data,
+      value: { '$in': (data+'').split(',') },
       type: 'String',
       desc:'类型'
     }),
