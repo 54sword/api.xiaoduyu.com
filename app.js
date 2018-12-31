@@ -181,9 +181,9 @@ app.use(function (req, res, next) {
 });
 */
 
-// app.use('/', function(req, res){
-// 	res.send('运行中');
-// });
+app.use('/', function(req, res){
+	res.send('小度鱼API服务运行中');
+});
 
 app.use(function(req, res, next) {
 	res.status(404);
