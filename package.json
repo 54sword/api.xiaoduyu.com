@@ -3,16 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-<<<<<<< HEAD
     "dev": "NODE_ENV=development supervisor node server.js",
     "pro": "NODE_ENV=production node server.js",
     "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/data/db"
-=======
-    "start": "node --max-old-space-size=1700 ./bin/www",
-    "dev": "supervisor node server.js",
-    "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db",
-    "generate-docs": "jsdoc -c jsdoc.json"
->>>>>>> bf95645ab1d99f405865bbfa2b852f313e1ddebd
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",
