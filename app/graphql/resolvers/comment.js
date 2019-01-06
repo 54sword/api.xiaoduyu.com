@@ -577,8 +577,8 @@ mutation.addComment = async (root, args, context, schema) => {
   // 评论相关更新与通知
   if (posts_id && !parent_id && !reply_id) {
 
-    updatePostsCommentCount(posts_id);
-    updateUserCommentCount(user._id);
+    await updatePostsCommentCount(posts_id);
+    await updateUserCommentCount(user._id);
 
     // 如果帖子创建日期，小于30天，置顶帖子
     if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 30) {
@@ -617,11 +617,12 @@ mutation.addComment = async (root, args, context, schema) => {
     }
 
   }
-
+  
   // 回复累计更新以及通知
   if (posts_id && parent_id) {
 
-    updateCommentReplyCount(parent_id, posts_id);
+    await updateCommentReplyCount(parent_id, posts_id);
+    await updatePostsCommentCount(posts_id);
 
     // 发送通知
     if (reply.user_id + '' != user._id + '') {
@@ -681,77 +682,94 @@ exports.resolvers = resolvers;
 
 
 // 更新帖子的评论数量，以及评论id
-async function updatePostsCommentCount(posts_id) {
+function updatePostsCommentCount(posts_id) {
+  return new Promise(async resplve=>{
 
-  let [ err, result ] = await To(Comment.find({
-    query: {
-      posts_id,
-      parent_id: { $exists: false },
-      deleted: false
-    },
-    select: { _id: 1, reply_count: 1 }
-  }));
+    let [ err, result ] = await To(Comment.find({
+      query: {
+        posts_id,
+        parent_id: { $exists: false },
+        deleted: false
+      },
+      select: { _id: 1, reply_count: 1 }
+    }));
 
-  var ids = [];
-  let replyCount = 0;
-  result.map(item =>{
-    ids.push(item._id);
-    replyCount += item.reply_count;
+    var ids = [];
+    let replyCount = 0;
+    result.map(item =>{
+      ids.push(item._id);
+      replyCount += item.reply_count;
+    });
+
+    // 更新评论通知
+    let update = {
+      comment_count: ids.length,
+      comment: ids,
+      reply_count: replyCount
+    }
+
+    // 如果帖子创建日期，小于30天，置顶帖子
+    // if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 30) {
+      // update.sort_by_date = new Date();
+    // }
+
+    await To(Posts.update({ query: { _id: posts_id }, update }));
+
+    resplve();
+
   });
 
-  // 更新评论通知
-  let update = {
-    comment_count: ids.length,
-    comment: ids,
-    reply_count: replyCount
-  }
-
-  // 如果帖子创建日期，小于30天，置顶帖子
-  // if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 30) {
-    // update.sort_by_date = new Date();
-  // }
-
-  await To(Posts.update({ query: { _id: posts_id }, update }));
-
 };
 
 // 更新帖子的评论数量，以及评论id
-async function updateUserCommentCount(user_id) {
+function updateUserCommentCount(user_id) {
 
-  let [ err, total ] = await To(Comment.count({
-    query: { user_id: user_id, deleted: false, parent_id: { $exists: false } }
-  }));
+  return new Promise(async resplve=>{
 
-  await To(User.update({
-    query: { _id: user_id },
-    update: { comment_count: total }
-  }));
+    let [ err, total ] = await To(Comment.count({
+      query: { user_id: user_id, deleted: false, parent_id: { $exists: false } }
+    }));
+
+    await To(User.update({
+      query: { _id: user_id },
+      update: { comment_count: total }
+    }));
+
+    resplve();
+
+  });
 
 };
 
 
 // 更新帖子的评论数量，以及评论id
-async function updateCommentReplyCount(comment_id, posts_id) {
+function updateCommentReplyCount(comment_id, posts_id) {
 
-  let [ err, result ] = await To(Comment.find({
-    query: {
-      posts_id,
-      parent_id: comment_id,
-      deleted: false
-    },
-    select: { _id: 1 }
-  }));
+  return new Promise(async resplve=>{
 
-  var ids = [];
-  result.map(item =>{ ids.push(item._id) });
+    let [ err, result ] = await To(Comment.find({
+      query: {
+        posts_id,
+        parent_id: comment_id,
+        deleted: false
+      },
+      select: { _id: 1 }
+    }));
 
-  // 更新评论通知
-  let update = {
-    reply_count: ids.length,
-    reply: ids
-  }
+    var ids = [];
+    result.map(item =>{ ids.push(item._id) });
 
-  await To(Comment.update({ query: { _id: comment_id }, update }));
+    // 更新评论通知
+    let update = {
+      reply_count: ids.length,
+      reply: ids
+    }
+
+    await To(Comment.update({ query: { _id: comment_id }, update }));
+
+    resplve();
+
+  });
 
 };
 

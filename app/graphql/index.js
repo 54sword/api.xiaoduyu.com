@@ -60,7 +60,7 @@ module.exports = (app) => {
     // tracing: debug,
 
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
-    // introspection: debug,
+    introspection: true,
     playground: true
     // introspection: true
   });
