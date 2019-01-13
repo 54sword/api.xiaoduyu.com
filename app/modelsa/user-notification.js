@@ -24,7 +24,8 @@ class Model extends baseMethod {
       }
 
       // 触发消息，通知该用户查询新通知
-      global.io.sockets.emit('notiaction', [data.addressee_id]);
+      global.io.sockets.emit(data.addressee_id, JSON.stringify({ type:'notification' }));
+      // global.io.sockets.emit('notiaction', [data.addressee_id]);
     });
   }
 }

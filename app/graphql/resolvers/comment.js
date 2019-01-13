@@ -563,19 +563,18 @@ mutation.addComment = async (root, args, context, schema) => {
     })
   }
 
-  // 添加到feed
-
-  Feed.save({
-    data: {
-      user_id: user._id,
-      posts_id,
-      comment_id: result._id
-    }
-  });
-
   // ==================================
   // 评论相关更新与通知
   if (posts_id && !parent_id && !reply_id) {
+
+    // 添加到feed
+    Feed.save({
+      data: {
+        user_id: user._id,
+        posts_id,
+        comment_id: result._id
+      }
+    });
 
     await updatePostsCommentCount(posts_id);
     await updateUserCommentCount(user._id);

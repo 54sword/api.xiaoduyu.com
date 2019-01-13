@@ -3,7 +3,7 @@ import { formatError } from 'apollo-errors';
 import { makeExecutableSchema } from 'graphql-tools';
 // import bodyParser from 'body-parser';
 
-import { debug, jwt_secret } from '../../config'
+import { debug, jwt_secret } from '../../config';
 
 import typeDefs from './schemas';
 import resolvers from './resolvers';
@@ -60,9 +60,9 @@ module.exports = (app) => {
     // tracing: debug,
 
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
-    introspection: true,
-    playground: true
-    // introspection: true
+    introspection: debug,
+    playground: debug
+    // introspection: false
   });
 
   app.all('*', async (req, res, next)=>{

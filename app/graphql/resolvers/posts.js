@@ -658,7 +658,10 @@ mutation.updatePosts = async (root, args, context, schema) => {
   }
 
   if (Reflect.has(content, 'recommend')) {
-    global.io.sockets.emit('recommend-posts', query._id);
+    global.io.sockets.emit('member', JSON.stringify({
+      type: 'recommend-posts'
+    }));
+    // global.io.sockets.emit('recommend-posts', query._id);
   }
 
   return { success: true }

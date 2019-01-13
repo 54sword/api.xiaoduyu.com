@@ -17,7 +17,11 @@ const Feed = new Schema({
 Feed.pre('save', function(next) {
   
   if (global.io && global.io.sockets) {
-    global.io.sockets.emit('new-feed', this);
+    // global.io.sockets.emit('new-feed', this);
+    global.io.sockets.emit('member', JSON.stringify({
+      type: 'new-feed'
+    }));
+
   }
 
   next();
