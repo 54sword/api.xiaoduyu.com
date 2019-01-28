@@ -1,6 +1,11 @@
 
-var Posts = require('../schemas').Posts;
+// var Posts = require('../schemas').Posts;
+import { Posts } from '../schemas'
+import baseMethod from './base-method'
 
+export default new baseMethod(Posts)
+
+/*
 exports.add = function(info, callback) {
 
   new Posts(info).save(function(err, feed){
@@ -24,13 +29,6 @@ exports.add = function(info, callback) {
   });
 };
 
-exports.find = function(query, select, options, callback) {
-  var find = Posts.find(query, select)
-  for (var i in options) {
-    find[i](options[i])
-  }
-  find.exec(callback)
-}
 
 exports.findOne = function(query, select, callback) {
   Posts.findOne(query, select).exec(callback)
@@ -40,16 +38,16 @@ exports.populate = function(questions, opts, callback) {
   Posts.populate(questions, opts, callback);
 }
 
-exports.update = function(condition, contents, callback) {
-  Posts.update(condition, contents, callback);
+
+exports.find = async ({ query = {}, select = {}, options = {}, callback = ()=>{} }) => {
+  let find = Posts.find(query, select)
+  for (var i in options) find[i](options[i])
+  return await find.exec((err, result)=>{})
 }
 
-/*
-Posts.find({}, {}).exec(function(err, posts){
-  for (var i = 0, max = posts.length; i < max; i++) {
-    Posts.update({ _id: posts[i]._id }, { weaken: false }, function(err){
-      if (err) console.log(err);
-    })
-  }
-})
+
+exports.update = async ({ conditions = {}, update = {}, options = {}, callback = ()=>{} }) => {
+  return await Posts.update(conditions, update, options, callback)
+}
+
 */

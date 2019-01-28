@@ -2,6 +2,6 @@
 import { Phone } from '../schemas'
 import baseMethod from './base-method'
 
-let Schemas = baseMethod(Phone)
+let Schemas = new baseMethod(Phone)
 
 module.exports = Schemas;

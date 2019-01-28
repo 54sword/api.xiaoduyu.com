@@ -1,50 +1,33 @@
 
+
+import { Topic } from '../schemas'
+import baseMethod from './base-method'
+
+export default new baseMethod(Topic)
+
+/*
 var Topic = require('../schemas').Topic;
 
 // 创建账号
 exports.add = function(node, callback) {
-
   new Topic(node).save(callback);
-
-  /*
-  var _node = new Topics();
-
-  if (node.parent_id) {
-    _node.parent_id = node.parent_id;
-  }
-
-  _node.name = node.name;
-  _node.brief = node.brief;
-  _node.avatar = node.avatar;
-  _node.description = node.description;
-  _node.user_id = node.user_id;
-  _node.save(callback);
-  */
 }
 
-exports.update = function(condition, contents, callback) {
-  Topic.update(condition, contents, callback);
+exports.update = ({ query = {}, update = {} }) => {
+  return Topic.update(query, update)
 }
 
-exports.fetch = function(query, select, options, callback) {
+
+exports.find = ({ query = {}, select = {}, options = {} }) => {
   var find = Topic.find(query, select)
   for (var i in options) {
     find[i](options[i])
   }
-  find.exec(callback)
+  return find.exec()
 }
 
-/*
-exports.fetchById = function(id, callback) {
-  Topics.findOne({ _id: id })
-  .populate([
-    { path: 'parent_id', select: { _id: 1, name: 1 } },
-    { path: 'children', select: { _id: 1, name: 1 } }
-  ])
-  .exec(callback);
-};
 
-*/
+
 exports.updateChildren = function(id, callback) {
 
   var find = Topics.find({ parent_id: id }, { _id: 1 })
@@ -91,17 +74,5 @@ exports.minusAnswerCount = function(id, callback) {
 exports.updateFollowCount = function(id, total, callback) {
   Topic.update({ _id: id }, { $set: { 'follow_count': total } })
   .exec(callback);
-};
-
-/*
-exports.fetchAll = function(callback) {
-  Topics.find({ parent_id: { $exists : false } })
-  .populate([
-    { path: 'children', select: {} }
-  ])
-  .exec(function(err, nodes){
-    if (err) console.log(err);
-    callback(nodes);
-  });
 };
 */

@@ -1,4 +1,10 @@
 
+import { Comment } from '../schemas'
+import baseMethod from './base-method'
+
+export default new baseMethod(Comment)
+
+/*
 var Comment = require('../schemas').Comment;
 
 exports.fetchById = function(id, callback) {
@@ -46,13 +52,12 @@ exports.fetch = function(query, select, options, callback) {
   find.exec(callback)
 }
 
-exports.find = function(query, select, options, callback) {
+exports.find = ({ query = {}, select = {}, options = {}, callback = ()=>{} }) => {
   var find = Comment.find(query, select)
-  for (var i in options) {
-    find[i](options[i])
-  }
-  find.exec(callback)
+  for (var i in options) find[i](options[i])
+  return find.exec(callback)
 }
+
 
 exports.findOne = function(query, select, callback) {
   Comment.findOne(query, select).exec(callback)
@@ -62,20 +67,12 @@ exports.count = function(data, callback) {
   Comment.count(data).exec(callback);
 };
 
-exports.populate = function(collections, options, callback) {
-  Comment.populate(collections, options, callback)
+exports.populate = ({ collections = {}, options = {}, callback = ()=>{} }) => {
+  return Comment.populate(collections, options, callback)
 }
 
 exports.update = function(condition, contents, callback) {
   Comment.update(condition, contents, callback);
 }
 
-/*
-Comment.find({}, {}).exec(function(err, posts){
-  for (var i = 0, max = posts.length; i < max; i++) {
-    Comment.update({ _id: posts[i]._id }, { weaken: false }, function(err){
-      if (err) console.log(err);
-    })
-  }
-})
 */

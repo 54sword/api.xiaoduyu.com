@@ -1,7 +1,7 @@
 
 import JWT from '../../common/jwt';
-import Token from '../../modelsa/token';
-import User from '../../modelsa/user';
+import Token from '../../models/token';
+import User from '../../models/user';
 import To from '../../common/to';
 
 export default async ({ token = '', role = '', jwtTokenSecret = '' }) => {

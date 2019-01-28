@@ -1,5 +1,5 @@
 
-import { Feed, Posts, Comment, Follow, Like, User } from '../../modelsa';
+import { Feed, Posts, Comment, Follow, Like, User } from '../../models';
 // import { domain } from '../../../config';
 
 let query = {};
@@ -7,7 +7,7 @@ let mutation = {};
 let resolvers = {};
 
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 
@@ -259,11 +259,53 @@ query.countFeed = async (root, args, context, schema) => {
   [ err, query ] = getQuery({ args, model:'posts', role });
   [ err, options ] = getOption({ args, model:'posts', role });
 
-  // 未登陆用户，不能使用method方式查询
-  if (!user) {
-    throw CreateError({ message: '请求被拒绝' })
+  // 偏好模式（用户关注），如果用户未登陆，则拒绝请求
+  if (args.preference && !user) {
+    throw CreateError({ message: '请求被拒绝，用户未登陆' });
   }
 
+  if (args.preference && user) {
+
+    let _query = { '$or': [] };
+
+    // 获取与自己相关的帖子和评论
+    /*
+    _query['$or'].push(Object.assign({}, query, {
+      user_id: user._id,
+      posts_id: { '$nin': user.block_posts },
+      deleted: false
+    }));
+    */
+
+    // 关注的用户的评论与帖子
+    if (user.follow_people.length > 0) {
+      _query['$or'].push(Object.assign({}, query, {
+        user_id: { '$in': user.follow_people, '$nin': user.block_people },
+        posts_id: { '$nin': user.block_posts },
+        deleted: false
+      }, {}));
+    }
+
+    // 关注的话题的评论与帖子
+    if (user.follow_topic.length > 0) {
+      _query['$or'].push(Object.assign({}, query, {
+        user_id: { '$nin': user.block_people },
+        topic_id: {'$in': user.follow_topic },
+        posts_id: { '$nin': user.block_posts },
+        deleted: false
+      }, {}));
+    }
+    
+    query = _query;
+  };
+
+  [ err, count ] = await To(Feed.count({ query }));
+
+  return {
+    count
+  }
+
+  /*
   // select
   schema.fieldNodes[0].selectionSet.selections.map(item=>select[item.name.value] = 1);
 
@@ -298,6 +340,7 @@ query.countFeed = async (root, args, context, schema) => {
   return {
     count
   }
+  */
 
 }
 

@@ -1,9 +1,9 @@
 
-import { Block, Comment, Posts, User } from '../../modelsa';
+import { Block, Comment, Posts, User } from '../../models';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 
 let [query, mutation, resolvers] = [{}, {}, {}];
 

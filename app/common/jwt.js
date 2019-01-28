@@ -1,6 +1,7 @@
 
 var jwt = require('jsonwebtoken');
-var Token = require('../modelsa').Token;
+var Token = require('../models').Token;
+import { jwt_secret } from '../../config';
 
 
 exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 1000 * 60 * 60 * 24 * 30, options = {}) {
@@ -13,7 +14,7 @@ exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 100
     user_id: userId,
     options
     // access_token: accessToken
-  }, jwtTokenSecret);
+  }, jwt_secret);
   
   // 储存token记录
   Token.save({
@@ -32,9 +33,9 @@ exports.encode = function(jwtTokenSecret, userId, accessToken, ip, expires = 100
 
 }
 
-exports.decode = function(token, jwtTokenSecret) {
+exports.decode = function(token) {
   try {
-    return jwt.verify(token, jwtTokenSecret)
+    return jwt.verify(token, jwt_secret)
   } catch (e) {
     return null
   }

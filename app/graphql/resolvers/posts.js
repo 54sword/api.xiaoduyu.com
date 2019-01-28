@@ -1,6 +1,6 @@
-import { Posts, User, Follow, Like, Topic, Feed } from '../../modelsa';
+import { Posts, User, Follow, Like, Topic, Feed, Phone } from '../../models';
 
-import CreateError from './errors';
+import CreateError from '../common/errors';
 import To from '../../common/to';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
@@ -53,61 +53,6 @@ query.posts = async (root, args, context, schema) => {
     }
 
   }
-
-
-  // 用户关注
-  /*
-  if (user && method == 'user_follow') {
-
-    let newQuery = { '$or': [] }
-
-    if (query.user_id) delete query.user_id;
-    if (query.topic_id) delete query.topic_id;
-    if (query.posts_id) delete query.posts_id;
-    if (query._id) delete query._id;
-
-    newQuery['$or'].push(Object.assign({}, query, {
-      user_id: user._id,
-      deleted: false
-    }, {}));
-
-    // 用户
-    if (user.follow_people.length > 0) {
-
-      newQuery['$or'].push(Object.assign({}, query, {
-        user_id: {
-          '$in': user.follow_people,
-          // 过滤屏蔽用户
-          '$nin': user.block_people
-        },
-        deleted: false
-      }, {}))
-    }
-
-    // 话题
-    if (user.follow_topic.length > 0) {
-      newQuery['$or'].push(Object.assign({}, query, {
-        topic_id: {'$in': user.follow_topic },
-        deleted: false,
-        weaken: false
-      }, {}))
-    }
-
-    // 帖子
-    if (user.follow_posts.length > 0) {
-      newQuery['$or'].push(Object.assign({}, query, {
-        _id: {
-          '$in': user.follow_posts,
-          // 过滤屏蔽的帖子
-          '$nin': user.block_posts
-        },
-        deleted: false
-      }, {}))
-    }
-
-    query = newQuery;
-  } else
-  */
 
   if (user && method == 'subscribe') {
 
@@ -339,6 +284,22 @@ query.countPosts = async (root, args, context, schema) => {
 
    }
 
+   if (user && method == 'subscribe') {
+
+    if (user.follow_posts.length == 0 && user.block_posts.length == 0) {
+      return [];
+    }
+
+    // 用户订阅的帖子
+    query._id = {
+      '$in': user.follow_posts,
+      // 过滤屏蔽的帖子
+      '$nin': user.block_posts
+    }
+
+  }
+
+  /*
   // 用户关注
   if (user && method == 'user_follow') {
 
@@ -389,6 +350,7 @@ query.countPosts = async (root, args, context, schema) => {
 
     query = newQuery;
   }
+  */
 
   [ err, count ] = await To(Posts.count({ query }))
 
@@ -453,31 +415,38 @@ mutation.addPosts = async (root, args, context, schema) => {
     });
   }
 
-  /*
-  // 一天仅能发布一次
-  let date = new Date();
-  [ err, result ] = await To(Posts.findOne({
-    query: {
-      user_id: user._id,
-      create_at: {
-        '$gte': new Date(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate())
-      }
-    }
+  // phone
+  [ err, result ] = await To(Phone.findOne({
+    query: { user_id: user._id }
   }));
 
-  if (err) {
-    throw CreateError({
-      message: '添加失败',
-      data: { errorInfo: err.message }
-    })
-  }
+  if (!result) {
 
-  if (result) {
-    throw CreateError({
-      message: '一天仅能发布一次'
-    })
+    // 一天仅能发布一次
+    let date = new Date();
+    [ err, result ] = await To(Posts.findOne({
+      query: {
+        user_id: user._id,
+        create_at: {
+          '$gte': new Date(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate())
+        }
+      }
+    }));
+
+    if (err) {
+      throw CreateError({
+        message: '添加失败',
+        data: { errorInfo: err.message }
+      })
+    }
+
+    if (result) {
+      throw CreateError({
+        message: '一天仅能发布一次帖子，绑定手机号后解除限制'
+      })
+    }
+    
   }
-  */
 
   // title
   title = xss(title, {
@@ -493,19 +462,19 @@ mutation.addPosts = async (root, args, context, schema) => {
   }
 
   // content
-  content = xss(content, {
-    whiteList: {},
-    stripIgnoreTag: true,
-    onTagAttr: (tag, name, value, isWhiteAttr) => ''
-  });
-
+  // content = xss(content, {
+  //   whiteList: {},
+  //   stripIgnoreTag: true,
+  //   onTagAttr: (tag, name, value, isWhiteAttr) => ''
+  // });
+  
   content_html = xss(content_html, {
     whiteList: {
       a: ['href', 'title', 'target', 'rel'],
       img: ['src', 'alt'],
       p: [], div: [], br: [], blockquote: [], li: [], ol: [], ul: [],
       strong: [], em: [], u: [], pre: [], b: [], h1: [], h2: [], h3: [],
-      h4: [], h5: [], h6: [], h7: []
+      h4: [], h5: [], h6: [], h7: [], video: []
     },
     stripIgnoreTag: true,
     onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
@@ -618,6 +587,15 @@ mutation.updatePosts = async (root, args, context, schema) => {
   if (role != 'admin' && user._id + '' != result.user_id + '') {
     throw CreateError({ message: '无权修改' });
   }
+
+  if (role != 'admin') {
+    // 帖子超过48小时，则不能被修改
+    if (new Date().getTime() - new Date(result.create_at).getTime() > 1000*60*60*24) {
+      throw CreateError({ message: '帖子超过24小时后，不能被修改' });
+    }
+  }
+  
+  content.update_at = new Date();
 
   // 更新
   [ err, result ] = await To(Posts.update({ query, update: content }));

@@ -8,10 +8,12 @@ import { debug, jwt_secret } from '../../config';
 import typeDefs from './schemas';
 import resolvers from './resolvers';
 
-import router from './router';
+// import router from './router';
 import checkToken from './auto';
 
 const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+// var logger = require('log4js').getLogger("index");
 
 /**
  * 启动 graphql
@@ -155,5 +157,5 @@ module.exports = (app) => {
   }));
 
   */
-  app.use('/', router());
+  // app.use('/', router());
 }

@@ -1,69 +1,70 @@
 
-var express = require('express');
-var http = require('http');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var compress = require('compression');
-// var jwt = require('jwt-simple');
+import express from 'express';
+import http from 'http';
+import path from 'path';
+import logger from 'morgan';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
 
-var config = require('./config');
+// 启动 gzip 压缩
+import compress from 'compression';
 
-// var API_V1 = require('./app/api-v1');
-var graphql = require('./app/graphql');
+// 日志记录
+import log4js from './app/log4js';
+
+// 抵御一些比较常见的安全web安全隐患
+// https://cnodejs.org/topic/56f3b0e8dd3dade17726fe85
+import helmet from 'helmet';
 
 
-import OauthRouter from './app/oauth'
-import outputError from './config/error'
+// 安全机制限制客户端api请求频率
+import rateLimit from 'express-rate-limit';
+import MongoStore from 'rate-limit-mongo';
 
+// import CreateError from './app/graphql/common/errors';
+
+
+
+import config from './config';
+
+import graphql from './app/graphql';
+import router from './app/router';
+import socket from './app/socket';
 
 var app = express();
 var server = http.createServer(app);
 
-// var graphqlHTTP = require('express-graphql');
 
-require('./app/common/log4js')(app);
+// 限制每个ip，一小时最多1500次请求
+const limiter = rateLimit({
+  store: new MongoStore({
+		uri: config.db_url,
+		expireTimeMs: 60 * 60 * 1000
+  }),
+  windowMs: 60 * 60 * 1000,
+	max: 1500
+});
 
 
-// 抵御一些比较常见的安全web安全隐患
-// https://cnodejs.org/topic/56f3b0e8dd3dade17726fe85
-var helmet = require('helmet');
+// 启动日志
+log4js(app);
 app.use(helmet());
-
-// var csrfProtection = csrf({ cookie: true });
-// var parseForm = bodyParser.urlencoded({ extended: false });
-
-app.set('jwtTokenSecret', config.jwt_secret);
-
-// view engine setup
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'jade');
-
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
-app.use(logger('dev'));
+if (config.debug) app.use(logger('dev'));
 // http://www.cnblogs.com/vipstone/p/4865079.html
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser(config.cookie_secret));
+// 可以支持X-Forwarded-Proto(协议代理) X-Forwarded-For(ip代理), X-Forwarded-Host(主机代理)
 app.set('trust proxy', 1);
-app.use(compress()); // gzip
+app.use(compress()); 
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Let's encrypt 用于域名的验证
-// https://github.com/xdtianyu/scripts/blob/master/lets-encrypt/README-CN.md
-// if (config.sslPath) {
-	// app.use(express.static(path.join(__dirname, config.sslPath)));
-// }
+app.use(limiter);
 
 app.all('*',function (req, res, next) {
 
-	req.jwtTokenSecret = app.get('jwtTokenSecret');
+	// req.jwtTokenSecret = app.get('jwtTokenSecret');
 
   res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role, X-Requested-With');
@@ -104,90 +105,18 @@ if (config.oauth.wechatToken) {
 
 }
 
-const handlePreflightRequest = (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-fc-token');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.end();
-};
+socket(server);
 
-var onlineUserCount = 0;
-/*
-var WebSocketServer = require('ws').Server;
-var wss = new WebSocketServer({
-	server: server,
-	path: 'socket'
-});
-
-wss.on('connection', function(ws) {
-	console.log(ws);
-});
-*/
-
-// var allowedOrigins = "*:*";
-var io = require("socket.io").listen(server);
-// io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);
-// io.origins(['*','*:*']);
-// io.set('origins', 'www.acgnz.com:* http://127.0.0.1:4000');
-io.on('connection', function(socket){
-
-	// console.log(socket.server);
-
-	// console.log(socket.handshake.query);
-
-	onlineUserCount += 1
-	io.sockets.emit("online-user-count", onlineUserCount);
-
-  socket.on('disconnect', function(){
-		// console.log('-------断开--');
-		onlineUserCount -= 1
-		io.sockets.emit("online-user-count", onlineUserCount);
-	});
-
-	// socket.on('heartbeat', function(){
-		// console.log('心跳...');
-		// onlineUserCount -= 1
-		// io.sockets.emit("online-user-count", onlineUserCount);
-	// });
-
-});
-global.io = io
+// 设置路由
+app.use('/', router());
 
 graphql(app);
 
-app.use('/oauth', OauthRouter());
-// app.use('/api/v1', API_V1());
-
-/*
-app.use(function (req, res, next) {
-  // 计算页面加载完成花费的时间
-  // var exec_start_at = Date.now();
-  var _send = res.send;
-  res.send = function () {
-
-		// 如果返回结果中，包含错误代码，则装换成普通语言提示
-		// if (arguments[0] && typeof arguments[0].success != 'undefined' && !arguments[0].success && arguments[0].error) {
-		// 	// arguments[0].error = '错误提醒测试'
-		// 	console.log(arguments[0]);
-		// 	arguments[0] = outputError(arguments[0])
-		// }
-
-    // 发送Header
-    // res.set('X-Execution-Time', String(Date.now() - exec_start_at) + ' ms');
-    // 调用原始处理函数
-    return _send.apply(res, arguments);
-  };
-  next();
-});
-*/
-
-app.use('/', function(req, res){
-	res.send('小度鱼API服务运行中');
-});
-
 app.use(function(req, res, next) {
 	res.status(404);
-	res.send('404 NOT FOUND');
+	res.send('404 not found');
 });
 
 server.listen(config.port);
+
+console.log('server started on port ' + config.port);

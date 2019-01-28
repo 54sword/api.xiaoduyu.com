@@ -1,5 +1,5 @@
 
-import { Token } from '../../modelsa';
+import { Token } from '../../models';
 
 let query = {},
     mutation = {},
@@ -7,7 +7,7 @@ let query = {},
 
 import JWT from '../../common/jwt';
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 
 
 mutation.exchangeNewToken = async (root, args, context, schema) => {

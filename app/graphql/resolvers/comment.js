@@ -1,9 +1,9 @@
-import { Comment, Like, Posts, User, UserNotification, Feed } from '../../modelsa';
+import { Comment, Like, Posts, User, UserNotification, Feed, Phone } from '../../models';
 import xss from 'xss';
 
 import jpush from '../../common/jpush';
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 
 let [ query, mutation, resolvers ] = [{},{},{}];
 
@@ -327,13 +327,22 @@ mutation.updateComment = async (root, args, context, schema) => {
   if (err || !comment) {
     throw CreateError({ message: '评论不存在' });
   }
-
+  
   // 如果不是管理员，那么判断是否有权限编辑
   if (role != 'admin') {
     if (comment.user_id + '' != user._id + '') {
       throw CreateError({ message: '无权限编辑' });
     }
   }
+
+  if (role != 'admin') {
+    // 帖子超过48小时，则不能被修改
+    if (new Date().getTime() - new Date(comment.create_at).getTime() > 1000*60*60*1) {
+      throw CreateError({ message: '评论或回复，超过1小时后，不能被修改' });
+    }
+  }
+
+  update.update_at = new Date();
 
   [ err, result ] = await To(Comment.update({ query, update }));
 
@@ -408,21 +417,28 @@ mutation.addComment = async (root, args, context, schema) => {
     });
   }
 
-  /*
-  // 一个用户只能评论一次
-  if (posts_id && !parent_id && !reply_id) {
+  // phone
+  [ err, result ] = await To(Phone.findOne({
+    query: { user_id: user._id }
+  }));
 
-    [ err, result ] = await To(Comment.findOne({
-      query: { user_id: user._id, posts_id, parent_id: { $exists : false } }
-    }));
+  if (!result) {
 
-    if (result) {
-      throw CreateError({
-        message: '提交失败，每个帖子仅能评论一次'
-      });
+    // 一个用户只能评论一次
+    if (posts_id && !parent_id && !reply_id) {
+
+      [ err, result ] = await To(Comment.findOne({
+        query: { user_id: user._id, posts_id, parent_id: { $exists : false } }
+      }));
+      
+      if (result) {
+        throw CreateError({
+          message: '每个帖子仅能评论一次，绑定手机号后解除限制'
+        });
+      }
     }
+
   }
-  */
 
   let _content_html = content_html || '';
 
@@ -488,13 +504,6 @@ mutation.addComment = async (root, args, context, schema) => {
       throw CreateError({ message: '查询失败', data: { errorInfo: err.message } })
     }
   }
-
-  // content and conrent_html
-  content = xss(content, {
-    whiteList: {},
-    stripIgnoreTag: true,
-    onTagAttr: (tag, name, value, isWhiteAttr) => ''
-  });
 
   content_html = xss(content_html, {
     whiteList: {
@@ -580,7 +589,7 @@ mutation.addComment = async (root, args, context, schema) => {
     await updateUserCommentCount(user._id);
 
     // 如果帖子创建日期，小于30天，置顶帖子
-    if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 30) {
+    if (new Date().getTime() - new Date(posts.create_at).getTime() < 1000 * 60 * 60 * 24 * 90) {
 
       await To(Posts.update({
         query: { _id: posts_id },

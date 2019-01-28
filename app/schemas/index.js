@@ -50,6 +50,7 @@ require('./phone');
 require('./report');
 require('./block');
 require('./feed');
+require('./message');
 
 exports.User = mongoose.model('User');
 exports.Account = mongoose.model('Account');
@@ -67,3 +68,4 @@ exports.Notification = mongoose.model('Notification');
 exports.UserNotification = mongoose.model('UserNotification');
 exports.Block = mongoose.model('Block');
 exports.Feed = mongoose.model('Feed');
+exports.Message = mongoose.model('Message');

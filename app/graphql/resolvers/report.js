@@ -1,11 +1,11 @@
 
-import { Report, Phone, User, Captcha, Posts, Comment } from '../../modelsa';
+import { Report, Phone, User, Captcha, Posts, Comment } from '../../models';
 
 // tools
-import Countries from '../../data/countries';
+// import Countries from '../../data/countries';
 
 import To from '../../common/to'
-import CreateError from './errors'
+import CreateError from '../common/errors';
 
 // graphql
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';

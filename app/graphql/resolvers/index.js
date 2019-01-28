@@ -19,6 +19,7 @@ import report from './report';
 import unlockToken from './unlock-token';
 import Token from './token';
 import Feed from './feed';
+import Message from './message';
 
 let Query = {};
 let Mutation = {};
@@ -40,6 +41,7 @@ Object.assign(Query, report.query);
 Object.assign(Query, unlockToken.query);
 Object.assign(Query, Token.query);
 Object.assign(Query, Feed.query);
+Object.assign(Query, Message.query);
 
 Object.assign(Mutation, posts.mutation);
 Object.assign(Mutation, topic.mutation);
@@ -62,6 +64,7 @@ Object.assign(Mutation, report.mutation);
 Object.assign(Mutation, unlockToken.mutation);
 Object.assign(Mutation, Token.mutation);
 Object.assign(Mutation, Feed.mutation);
+Object.assign(Mutation, Message.mutation);
 
 var resolvers = {
   Query,
@@ -89,5 +92,6 @@ Object.assign(resolvers, report.resolvers);
 Object.assign(resolvers, unlockToken.resolvers);
 Object.assign(resolvers, Token.resolvers);
 Object.assign(resolvers, Feed.resolvers);
+Object.assign(resolvers, Message.resolvers);
 
 export default resolvers

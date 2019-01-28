@@ -1,14 +1,14 @@
 
-import { Oauth } from '../../modelsa';
-import { domain } from '../../../config';
+import { Oauth } from '../../models';
+// import { domain } from '../../../config';
 
 let query = {};
 let mutation = {};
 let resolvers = {};
 
 import To from '../../common/to';
-import CreateError from './errors';
-import { getSaveFields } from '../config';
+import CreateError from '../common/errors';
+// import { getSaveFields } from '../config';
 
 // 还缺少通知
 mutation.oAuthUnbinding = async (root, args, context, schema) => {

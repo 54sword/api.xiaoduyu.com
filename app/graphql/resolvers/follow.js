@@ -1,9 +1,9 @@
 
-import { Follow, Topic, User, Posts, UserNotification } from '../../modelsa';
+import { Follow, Topic, User, Posts, UserNotification } from '../../models';
 
 import To from '../../common/to';
-import CreateError from './errors';
-import xss from 'xss';
+import CreateError from '../common/errors';
+// import xss from 'xss';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];

@@ -1,5 +1,5 @@
 
-import { Topic, Posts, UserNotification, Comment, Like } from '../../modelsa';
+import { Topic, Posts, UserNotification, Comment, Like } from '../../models';
 import { domain } from '../../../config';
 
 let query = {};
@@ -7,7 +7,7 @@ let mutation = {};
 let resolvers = {};
 
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 import { getSaveFields } from '../config';
 
 // 还缺少通知

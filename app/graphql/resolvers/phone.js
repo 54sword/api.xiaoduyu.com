@@ -1,10 +1,10 @@
 
-import { Phone, User, Captcha } from '../../modelsa';
+import { Phone, User, Captcha } from '../../models';
 
 // tools
 import Countries from '../../data/countries';
 import To from '../../common/to'
-import CreateError from './errors';
+import CreateError from '../common/errors';
 import JWT from '../../common/jwt';
 
 // graphql

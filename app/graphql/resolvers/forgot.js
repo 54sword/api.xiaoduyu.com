@@ -1,9 +1,9 @@
 
-import { Account, Captcha, User, Phone } from '../../modelsa';
+import { Account, Captcha, User, Phone } from '../../models';
 
 // tools
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 
 // graphql
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';

@@ -1,8 +1,8 @@
-import { Topic } from '../../modelsa'
+import { Topic } from '../../models'
 
 // tools
 import To from '../../common/to'
-import CreateError from './errors'
+import CreateError from '../common/errors';
 // import Querys from '../querys'
 // import Updates from '../updates'
 // import Saves from '../saves'

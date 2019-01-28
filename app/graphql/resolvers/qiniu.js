@@ -1,9 +1,12 @@
 
 import qiniu from 'qiniu';
 import fs from 'fs';
+import uuid from 'node-uuid';
+
 import tools from '../../common/tools';
 import config from '../../../config';
-import uuid from 'node-uuid';
+
+import { User } from '../../models';
 
 //需要填写你的 Access Key 和 Secret Key
 qiniu.conf.ACCESS_KEY = config.qiniu.accessKey;
@@ -23,7 +26,7 @@ let mutation = {}
 let resolvers = {}
 
 import To from '../../common/to'
-import CreateError from './errors'
+import CreateError from '../common/errors';
 
 query.qiniuToken = async (root, args, context, schema) => {
 
@@ -98,4 +101,50 @@ exports.downloadImgAndUploadToQiniu = function (imgUrl) {
     });
 
   });
+}
+
+exports.uploadImage = function(imgUrl, userId, callback) {
+
+  Tools.download(imgUrl, 'public/', userId+".jpg", function(){
+    
+    var token = uptoken(bucket)
+
+    //构造上传函数
+    function uploadFile(uptoken, key, localFile, callback) {
+      var extra = new qiniu.io.PutExtra();
+      qiniu.io.putFile(uptoken, key, localFile, extra, callback);
+    }
+
+    //调用uploadFile上传
+    uploadFile(token, '', 'public/'+userId+'.jpg', async function(err, ret){
+      if(!err) {
+
+        [ err, res ] = await To(User.update({
+          query: { _id: userId },
+          update: { avatar: config.qiniu.url + '/' + ret.key }
+        }));
+
+        if (err) console.log(err);
+        // 删除源文件
+        fs.unlink('public/'+userId+'.jpg', function(){
+          callback(true)
+        });
+
+        /*
+        User.update({ _id: userId }, { avatar: config.qiniu.url + '/' + ret.key + '?imageMogr2/auto-orient/thumbnail/!200' }, function(err){
+          if (err) console.log(err);
+          // 删除源文件
+          fs.unlink('public/'+userId+'.jpg', function(){
+            callback(true)
+          })
+        })
+        */
+      } else {
+        // 上传失败， 处理返回代码
+        callback(false)
+      }
+    });
+
+  });
+
 }

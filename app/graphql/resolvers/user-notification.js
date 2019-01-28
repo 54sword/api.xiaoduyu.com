@@ -1,7 +1,7 @@
-import { UserNotification, Notification, User } from '../../modelsa'
+import { UserNotification, Notification, User } from '../../models'
 
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';

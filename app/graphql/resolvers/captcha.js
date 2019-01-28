@@ -1,10 +1,10 @@
 
-import { Captcha, Account, Phone } from '../../modelsa';
+import { Captcha, Account, Phone } from '../../models';
 import config , { domain, debug } from '../../../config';
 
 // tools
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 import Validate from '../../common/validate';
 import Email from '../../common/email';
 import alicloud from '../../common/alicloud';

@@ -1,4 +1,4 @@
-import { User, Account, Oauth, Phone, Captcha, Follow, Feed } from '../../modelsa';
+import { User, Account, Oauth, Phone, Captcha, Follow, Feed } from '../../models';
 
 import xss from 'xss';
 import uuid from 'node-uuid';
@@ -7,7 +7,7 @@ import Countries from '../../data/countries';
 import Validate from '../../common/validate';
 
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 
 import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
 let [ query, mutation, resolvers ] = [{},{},{}];

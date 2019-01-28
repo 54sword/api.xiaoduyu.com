@@ -1,4 +1,4 @@
-import { User } from '../../modelsa';
+import { User } from '../../models';
 
 // 依赖
 import bcrypt from 'bcryptjs';
@@ -6,7 +6,7 @@ import uuid from 'node-uuid';
 
 // tools
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 import Validate from '../../common/validate';
 import JWT from '../../common/jwt';
 

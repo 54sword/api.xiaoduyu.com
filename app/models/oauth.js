@@ -1,4 +1,46 @@
 
+import { Oauth } from '../schemas'
+import baseMethod from './base-method'
+
+const sources = {
+  'qq': 0,
+  'weibo': 1,
+  'github': 2,
+  'wechat': 3
+};
+
+/**
+ * Oauth 查询类
+ * @extends Model
+ */
+
+class OauthModel extends baseMethod {
+
+  /**
+   * 通过用户id和来源条件查询用户
+   * @param  {String} userId  用户的id
+   * @param  {Int} _source 来源id
+   * @return {Object} Promise
+   */
+  fetchByUserIdAndSource(userId, _source) {
+    return this.findOne({
+      query: { user_id: userId, source: sources[_source] }
+    })
+  }
+
+  fetchByOpenIdAndSource(openid, _source) {
+    return this.findOne({
+      query: { openid, source: sources[_source] }
+    })
+  }
+
+}
+
+
+module.exports = new OauthModel(Oauth);
+
+
+/*
 var Oauth = require('../schemas').Oauth;
 
 var sources = {
@@ -7,16 +49,6 @@ var sources = {
   'github': 2,
   'wechat': 3
 };
-
-/*
-exports.fetchByOpenId = function(id, callback) {
-
-  Oauth.find({ openid: id })
-
-  .exec(callback)
-
-}
-*/
 
 // 通过用户的id获取
 exports.fetchByUserId = function(userId, callback) {
@@ -91,3 +123,4 @@ exports.updateDeleteStatus = function(id, bl, callback) {
   Oauth.update({ _id: id },{ $set: { 'deleted': bl }}).exec(callback);
   // Oauth.remove({ _id: id }).exec(callback);
 };
+*/

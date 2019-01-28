@@ -1,9 +1,9 @@
 
-import { Account, Phone, User, Captcha } from '../../modelsa';
+import { Account, Phone, User, Captcha } from '../../models';
 
 // tools
 import To from '../../common/to';
-import CreateError from './errors';
+import CreateError from '../common/errors';
 import JWT from '../../common/jwt';
 
 // graphql
