@@ -25,8 +25,7 @@ build/Release
 node_modules
 
 dist
-config.js
-config/index.js
-config/index_*.js
+config/index.ts
+config/index_*.ts
 *.DS_Store
 logs/*
