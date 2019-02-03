@@ -1,10 +1,10 @@
 {
-  "name": "xiaoduyu_api",
+  "name": "xiaoduyu-api",
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "start": "NODE_ENV=development supervisor node ./dist/app/index.js",
-    "pro": "NODE_ENV=production node ./dist/app/server.js",
+    "start": "NODE_ENV=development supervisor node ./dist/index.js",
+    "pro": "NODE_ENV=production node ./dist/index.js",
     "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
     "body-parser": "^1.18.3",
     "captchapng": "^0.0.1",
     "cookie-parser": "^1.4.3",
+    "crypto": "^1.0.1",
     "crypto-js": "^3.1.9-1",
     "express": "^4.16.4",
     "express-rate-limit": "^3.3.2",
