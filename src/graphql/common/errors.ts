@@ -15,7 +15,7 @@ export const RejectedError = createError('rejectedError', {
 });
 */
 
-export default ({ message, data = {} }) => {
+export default ({ message, data = {} }: any) => {
   let error = createError('error', {
     message,
     data

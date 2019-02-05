@@ -92,7 +92,7 @@ var validate = {
     var regex = /^(\d{4})\-(\d{2})\-(\d{2})$/;
 
     var year = new Date(date).getFullYear();
-    var month = new Date(date).getMonth() + 1;
+    var month: any = new Date(date).getMonth() + 1;
     var day = new Date(year).getDate();
     var days = new Date(year, parseInt(month, 10), 0).getDate();
 

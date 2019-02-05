@@ -1,9 +1,8 @@
 
 // 大鱼短信sdk
-const SMSClient = require('@alicloud/sms-sdk');
-// import { alicloud } from '../../config'
-import config from '../config';
-const { alicloud } = config;
+import SMSClient from '@alicloud/sms-sdk'
+import config from '../config'
+const { alicloud } = config
  
 if (alicloud.sms && alicloud.sms.accessKeyId && alicloud.sms.secretAccessKey) {
   var smsClient = new SMSClient({
@@ -12,33 +11,37 @@ if (alicloud.sms && alicloud.sms.accessKeyId && alicloud.sms.secretAccessKey) {
   })
 }
 
-exports.sendSMS = function({ PhoneNumbers, SignName, TemplateCode, TemplateParam }, callback){
-
-  if (!smsClient) {
-    return callback('未配置阿里云SMS');
+interface Param{
+  PhoneNumbers: string
+  TemplateParam: {
+    code: number
   }
+}
 
-  smsClient.sendSMS({
-    PhoneNumbers,
-    SignName: alicloud.sms.signName,
-    TemplateCode: alicloud.sms.templateCode,
-    TemplateParam: JSON.stringify(TemplateParam)
-  }).then(function (res) {
-    let { Code } = res
-    if (Code === 'OK') {
-      //处理返回参数
-      callback(null)
-    }
-  }, function (err) {
+export const sendSMS = ({ PhoneNumbers, TemplateParam }:Param): Promise<object> => {
+  return new Promise((resolve, reject)=>{
 
-    // console.log(err);
-
-    if (err && err.code == 'isv.MOBILE_NUMBER_ILLEGAL') {
-      callback('无效的手机号')
-    } else {
-      callback('短信发送失败')
-    }
+    if (!smsClient) return reject('未配置阿里云SMS');
+  
+    smsClient.sendSMS({
+      PhoneNumbers,
+      SignName: alicloud.sms.signName,
+      TemplateCode: alicloud.sms.templateCode,
+      TemplateParam: JSON.stringify(TemplateParam)
+    }).then(function (res: any) {
+      let { Code } = res
+      if (Code === 'OK') {
+        //处理返回参数
+        resolve()
+      }
+    }, function (err: any) {
+      if (err && err.code == 'isv.MOBILE_NUMBER_ILLEGAL') {
+        reject('无效的手机号')
+      } else {
+        reject('短信发送失败')
+      }
+  
+    })
 
   })
-
 }

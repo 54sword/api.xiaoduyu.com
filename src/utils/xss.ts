@@ -28,7 +28,7 @@ export default (content_html: string) => {
       video: []
     },
     stripIgnoreTag: true,
-    onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
+    onIgnoreTagAttr: function (tag: string, name: string, value: string, isWhiteAttr: any) {
       if (tag == 'div' && name.substr(0, 5) === 'data-') {
         // 通过内置的escapeAttrValue函数来对属性值进行转义
         return name + '="' + xss.escapeAttrValue(value) + '"';

@@ -35,7 +35,7 @@ exports.pushPostsToSignInUser = function({ posts, user }) {
 */
 
 
-export const pushCommentToUser = function({ posts, comment, user }) {
+export const pushCommentToUser = function({ posts, comment, user }: any) {
 
   if (!jpush.appKey || !jpush.masterSecret || debug) return;
 
@@ -67,13 +67,13 @@ export const pushCommentToUser = function({ posts, comment, user }) {
     )
     // 开启正式环境的推送
     .setOptions(null, null, null, true)
-    .send(function(err, res) {
+    .send(function(err: any, res: any) {
       if (err) console.log(err.message)
     })
 
 }
 
-export const pushReplyToUser = function({ comment, reply, user }) {
+export const pushReplyToUser = function({ comment, reply, user }: any) {
 
   if (!jpush.appKey || !jpush.masterSecret || debug) return;
 
@@ -105,7 +105,7 @@ export const pushReplyToUser = function({ comment, reply, user }) {
     )
     // 开启正式环境的推送
     .setOptions(null, null, null, true)
-    .send(function(err, res) {
+    .send(function(err: any, res: any) {
       if (err) console.log(err.message)
     })
 

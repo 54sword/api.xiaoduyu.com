@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
+import { emit } from '../socket'
+
 // 动态流
 const Feed = new Schema({
   user_id: { type: ObjectId, ref: 'User' },
@@ -14,16 +16,8 @@ const Feed = new Schema({
   create_at: { type: Date, default: Date.now }
 });
 
-Feed.pre('save', function(next) {
-  
-  if (global.io && global.io.sockets) {
-    // global.io.sockets.emit('new-feed', this);
-    global.io.sockets.emit('member', JSON.stringify({
-      type: 'new-feed'
-    }));
-
-  }
-
+Feed.pre('save', function(next: any) {
+  emit('member', { type: 'new-feed' });
   next();
 });
 

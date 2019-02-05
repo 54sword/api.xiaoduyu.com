@@ -1,38 +1,47 @@
 
-import config from '../config';
-import SendCloud from 'sendcloud-client';
+import config from '../config'
+import SendCloud from 'sendcloud-client'
 
-var sendCloudConfig = config.email.sendCloud;
+let sendCloudConfig = config.email.sendCloud
 
-if (sendCloudConfig.from) {
-  var client = SendCloud.create({
+let client: any
+
+if (sendCloudConfig) {
+  client = SendCloud.create({
     from: config.name+' <'+sendCloudConfig.from+'>',
     apiUser: sendCloudConfig.apiUser,
     apiKey: sendCloudConfig.apiKey
   });
 }
 
-exports.send = function(options, callback){
+interface Param {
+  to: string
+  subject: string
+  text: string
+  html: string
+}
 
-  // 测试环境不发送邮件
-  if (config.debug) {
-    callback(true);
-    return;
-  }
+export const send = (param: Param): Promise<any> => {
+  return new Promise((resolve, reject)=>{
+    
+    if (!client) {
+      return reject('没有配置SendCloud')
+    }
 
-  if (sendCloudConfig.from) {
-    var options = {
-      to: [options.to],
-      subject: options.subject,
-      html: options.html || options.text
-    };
-    var res = client.send(options);
-    callback(res);
-  } else {
-    callback(false);
-  }
+    let res = client.send({
+      to: [param.to],
+      subject: param.subject,
+      html: param.html || param.text
+    });
 
-};
+    if (res.message == 'success') {
+      resolve();
+    } else {
+      reject(JSON.stringify(res));
+    }
+
+  })
+}
 
 /*
 var nodemailer = require("nodemailer");

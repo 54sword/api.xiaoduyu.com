@@ -6,19 +6,18 @@ import config from '../config'
 
 const { debug } = config
 
-import typeDefs from './schemas'
-import resolvers from './resolvers'
-
 import checkToken from './auto'
 
-const schema = makeExecutableSchema({ typeDefs, resolvers })
+import * as Models from './models/index'
+
+const schema = makeExecutableSchema(Models)
 
 
 /**
  * 启动 graphql
  * @param  {Object} app - express 的 app
  */
-module.exports = (app: any) => {
+export default (app: any): void => {
 
   const server = new ApolloServer({
     schema,

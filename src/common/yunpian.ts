@@ -1,37 +1,45 @@
 
 import request from 'request'
-import { yunpian } from '../config'
+import config from '../config'
+import synthesis from '../utils/synthesis'
 
-let synthesis = (string, key, value) => {
-  return string.replace(new RegExp("({"+key+"})","g"), value)
+const { yunpian } = config
+
+interface Param{
+  PhoneNumbers: string
+  TemplateParam: {
+    code: number
+  }
 }
 
-exports.sendSMS = function({ PhoneNumbers, SignName, TemplateCode, TemplateParam }, callback) {
+export const sendSMS = ({ PhoneNumbers, TemplateParam }: Param): Promise<object> => {
+  return new Promise((resolve, reject)=>{
 
-  request.post({
-    url:'https://sms.yunpian.com/v2/sms/single_send.json',
-    form: {
-      apikey: yunpian.international.apikey,
-      mobile: PhoneNumbers,
-      text: synthesis(yunpian.international.text, 'code', TemplateParam.code)
-    }},
-    function(err, httpResponse, body){
-      // console.log(typeof body);
-      // console.log(body);
-      if (body) {
+    request.post({
+      url:'https://sms.yunpian.com/v2/sms/single_send.json',
+      form: {
+        apikey: yunpian.international.apikey,
+        mobile: PhoneNumbers,
+        text: synthesis(yunpian.international.text, { code: TemplateParam.code })
+      }},
+      function(err: any, httpResponse: any, body: any){
 
-        try {
-          body = JSON.parse(body);
-          if (typeof body.code != 'undefined' && body.code == 0) {
-            callback(null)
-            return;
+        if (body) {
+          try {
+            body = JSON.parse(body);
+            if (typeof body.code != 'undefined' && body.code == 0) {
+              resolve()
+            } else {
+              reject(body.detail || body.http_status_code)
+            }
+          } catch (err) {
+            reject('短信发送失败')
           }
-        } catch (err) {
-
+          return;
         }
 
-      }
+        reject('短信发送失败')
+      })
 
-      callback('短信发送失败')
-    })
+  })
 }

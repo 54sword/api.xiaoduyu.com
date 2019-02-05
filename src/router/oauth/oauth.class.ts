@@ -7,7 +7,7 @@ import To from '../../utils/to'
 import * as JWT from '../../utils/jwt'
 import social from '../../config/social'
 
-import { downloadImgAndUploadToQiniu } from '../../graphql/resolvers/qiniu';
+import { downloadImgAndUploadToQiniu } from '../../graphql/models/qiniu/resolvers';
 
 interface Data {
   name: string
@@ -21,7 +21,7 @@ interface Data {
 
 interface SocialInfo {
   nickname: string
-  avatar?: number
+  avatar?: string
   gender?: number
   source?: number
 }
@@ -262,7 +262,7 @@ export default class OAuthClass {
       ip = req.connection.remoteAddress;
     }
 
-    var result = await Token.create({ userId, ip })
+    var result: any = await Token.create({ userId, ip })
     var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
     var landingPageDomain = req.cookies['landing_page_domain'] || config.oauth.landingPage;
 

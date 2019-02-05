@@ -15,11 +15,10 @@ export interface Config {
 		qq: { appid: number, appkey: string },
 		github: { appid: string, appkey: string },
 		wechatPC: { appid: string, appkey: string },
-		wechat: { appid: string, appkey: string },
+		wechat: { token: string, appid: string, appkey: string }
 		landingPage: string
   },
 	qiniu: object,
-	sslPath: string,
 	jpush: object,
 	alicloud: object,
 	yunpian: object
@@ -63,7 +62,7 @@ const config:Config = {
 		qq: { appid: 0, appkey: '' },
 		github: { appid: '', appkey: '' },
 		wechatPC: { appid: '', appkey: '' },
-		wechat: { appid: '', appkey: '' },
+		wechat: { token: '', appid: '', appkey: '' },
 		// 授权成功后跳转到着陆网站，注意是绝对地址
 		landingPage: 'https://www.xiaoduyu.com'
 	},

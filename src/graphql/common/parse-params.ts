@@ -12,7 +12,7 @@
  *
  * @example id('5bc1b01cd6c9bd03c79e5ee0,5bc1b017d6c9bd03c79e5ede')
  */
-export const id = function(ids) {
+export const id = function(ids: string): any {
 
   let data;
 
@@ -37,9 +37,9 @@ export const id = function(ids) {
  *
  * @example sortBy('create_at:1,comment_count:-1,like_count:1')
  */
-export const sortBy = function(data) {
+export const sortBy = function(data: string): any {
 
-  let value = {};
+  let value: any = {};
 
   (data+'').split(',').map(item=>{
     if (!item) return;
@@ -63,7 +63,7 @@ export const sortBy = function(data) {
  * @param  {String} str 关键词
  * @return {Object} mongoose 查询语法
  */
-export const search = function(str) {
+export const search = function(str: string): any {
   let s = (str+'').split(' ');
   return { $regex: RegExp("("+s.join('|')+")","i") }
 }

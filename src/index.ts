@@ -1,5 +1,4 @@
 import express from 'express'
-// import http from 'http'
 import path from 'path'
 import logger from 'morgan'
 import cookieParser from 'cookie-parser'
@@ -69,19 +68,23 @@ app.all('*',function (req, res, next) {
 		// 第一步：发送预请求 OPTIONS 请求。此时 服务器端需要对于OPTIONS请求作出响应 一般使用202响应即可 不用返回任何内容信息。
 		// res.status(200);
 		res.sendStatus(204);
+
 	} else if (req.method === 'GET') {
 
-		if (!config.oauth.wechatToken) {
+		if (!config.oauth.wechat.token) {
 			next()
 			return
 		}
 		
 		// 微信验证
+		// https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421135319
+		// https://mp.weixin.qq.com/debug/cgi-bin/sandbox?t=jsapisign
+
 		const { signature, timestamp, nonce, echostr } = req.query
 		
 		if (signature && timestamp && nonce) {
 			let sha1 = crypto.createHash('sha1'),
-					sha1Str = sha1.update([config.oauth.wechatToken, timestamp, nonce].sort().join('')).digest('hex');
+					sha1Str = sha1.update([config.oauth.wechat.token, timestamp, nonce].sort().join('')).digest('hex');
 					res.send((sha1Str === signature) ? echostr : '');
 					return
 		} else {
@@ -89,6 +92,7 @@ app.all('*',function (req, res, next) {
 		}
 
   } else {
+		
     next();
   }
 

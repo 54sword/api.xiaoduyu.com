@@ -78,11 +78,10 @@ export default (server: object) => {
     });
 
   });
-
-  global.io = io;
-
 }
 
-export const getSocket = () => {
-  return io;
+export const emit = (target: string, params: object): void => {
+  if (io) {
+    io.sockets.emit(target, JSON.stringify(params))
+  } 
 }
