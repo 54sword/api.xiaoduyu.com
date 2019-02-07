@@ -30,19 +30,24 @@ npm install
 ```
 cp ./src/config/index.default.ts ./src/config/index.ts
 ```
+
+6、创建日志文件夹  
+```
+mkdir ./logs
+```
    
-6、运行TypeScript编译器   
+7、运行TypeScript编译器   
 注意，如修改src里面的文件.ts文件，都需要重新执行一下编译一下   
 ```
 npm run dist-ts
 ```
    
-7、启动项目  
+8、启动项目  
 ```
 node ./dist/index.js
 ```
 
-8、浏览器中打开 http://localhost:3000
+9、浏览器中打开 http://localhost:3000
 
 
 ### 小度鱼相关开源项目
