@@ -14,9 +14,6 @@ import * as yunpian from '../../../common/yunpian';
 // data
 import Countries from '../../../config/countries';
 
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-// let [ query, mutation, resolvers ] = [{},{},{}];
-
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
 
@@ -51,8 +48,6 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
   // 参数声明
   let err, result, fields;
-
-  // [ err, fields ] = getSaveFields({ args, model:'captcha', role });
 
   [ err, fields ] = getSave({ args, model:Model.addCaptcha, role });
 

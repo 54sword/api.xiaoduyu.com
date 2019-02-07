@@ -3,7 +3,6 @@ import captchapng from 'captchapng'
 
 import { Captcha } from '../models'
 import To from '../utils/to'
-import CreateError from '../graphql/common/errors'
 
 
 // 显示验证码图片
@@ -16,11 +15,9 @@ export const showImage = async (req: any, res: any, next: any) => {
   }))
 
   if (err || !result) {
-
-    throw CreateError({
-      message: '验证码不存在',
-      data: { errorInfo: err ? err.message : '' }
-    })
+    res.status(404);
+    res.send('404 not found');
+    return
   }
 
   var p = new captchapng(80,30,result.captcha); // width,height,numeric captcha

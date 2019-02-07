@@ -8,34 +8,17 @@ import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
 
 
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-// let [ query, mutation, resolvers ] = [{},{},{}];
-
-
 const topics = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context
   const { method } = args
   let select: any = {}, err, res, query = {}, options: any = {}, topicList;
-  // let { query, options } = Querys({ args, model: 'topic', role });
 
   [ err, query ] = getQuery({ args, model: Model.topics, role });
   [ err, options ] = getOption({ args, model: Model.topics, role });
-
-  // [ err, query ] = getQuery({ args, model:'topic', role });
-  // [ err, options ] = getOption({ args, model:'topic', role });
   
   // select
   schema.fieldNodes[0].selectionSet.selections.map((item: any)=>select[item.name.value] = 1);
-
-  // === 设置一些默认值
-  /*
-  if (!Reflect.has(options, 'sort_by')) {
-    options.sort = {
-      sort: -1
-    }
-  }
-  */
 
   //===
 
@@ -97,7 +80,6 @@ const countTopics = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context
   let err, select = {}, query, options, count;
-  // let { query, options } = Querys({ args, model: 'topic', role })
 
   [ err, query ] = getQuery({ args, model:'topic', role });
   [ err, options ] = getOption({ args, model:'topic', role });
@@ -112,7 +94,7 @@ const countTopics = async (root: any, args: any, context: any, schema: any) => {
       data: { errorInfo: err.message }
     });
   }
-
+  
   return { count }
 }
 
@@ -120,10 +102,7 @@ const addTopic = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context;
   let err, result, save;
-  // [ err, save ] = getSaveFields({ args, model: 'topic', role });
   [ err, save ] = getSave({ args, model: Model.addTopic, role });
-
-
 
   if (!user || role != 'admin') {
     throw CreateError({
@@ -211,9 +190,6 @@ const updateTopic = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context;
   let err, query, update, topic, result;
-
-  // [ err, query ] = getUpdateQuery({ args, model: 'topic', role });
-  // [ err, update ] = getUpdateContent({ args, model: 'topic', role });
 
   [ err, query ] = getQuery({ args, model: Model.updateTopic, role });
   [ err, update ] = getSave({ args, model: Model.updateTopic, role });
@@ -338,5 +314,5 @@ const uploadTopicChildren = async (topicId: string) => {
 
 }
 
-export const query = { topics }
+export const query = { topics, countTopics }
 export const mutation = { addTopic, updateTopic }

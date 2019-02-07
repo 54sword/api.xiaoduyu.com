@@ -8,7 +8,7 @@ import OauthClass from './oauth.class'
 class GithubClass extends OauthClass {
   signInCallback() {
     return async (req: any, res: any, next: any)=>{
-
+      
       var user = null;
       var code = req.query.code;
       var state = req.query.state;
@@ -22,10 +22,11 @@ class GithubClass extends OauthClass {
       
       if (user_access_token) {
         user = await this.checkAccessToken(user_access_token);
+
         if (!user) {
           this.goToNoticePage(req, res, 'wrong_token');
           return;
-        } 
+        }
       }
 
       let err, result, userinfo, userId;

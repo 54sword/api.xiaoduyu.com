@@ -3,15 +3,14 @@ import socketIO from 'socket.io';
 import * as JWT from '../utils/jwt';
 
 // 总连接数
-let connectCount = 0;
-// 在线用户id
-let onlineMember: Array<string> = [];
-// 在线游客
-let onlineVisitor: Array<string> = [];
+let connectCount = 0,
+    // 在线用户id
+    onlineMember: Array<string> = [],
+    // 在线游客
+    onlineVisitor: Array<string> = [],
+    io: any;
 
-let io: any;
-
-export default (server: object) => {
+export default (server: any) => {
 
   io = socketIO.listen(server);
   // io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);

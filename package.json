@@ -3,8 +3,10 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "start": "NODE_ENV=development supervisor node ./dist/index.js",
-    "pro": "NODE_ENV=production node ./dist/index.js",
+    "start": "supervisor node ./dist/index.js",
+    "dist-ts": "tsc",
+    "watch-ts": "tsc -w",
+    "pro": "node ./dist/index.js",
     "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db"
   },
   "dependencies": {

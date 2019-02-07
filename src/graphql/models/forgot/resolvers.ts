@@ -5,10 +5,6 @@ import { Account, Captcha, User, Phone } from '../../../models';
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
 
-// graphql
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';
-// let [ query, mutation, resolvers ] = [{},{},{}];
-
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
 
@@ -22,8 +18,6 @@ const forgot = async (root: any, args: any, context: any, schema: any) => {
 
   [ err, query ] = getQuery({ args, model: Model.forgot, role });
   [ err, fields ] = getSave({ args, model: Model.forgot, role });
-
-  // [ err, fields ] = getUpdateQuery({ args, model:'forgot', role });
 
   const { phone, email, captcha } = query;
   const { new_password } = fields;

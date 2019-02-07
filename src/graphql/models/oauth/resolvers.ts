@@ -1,10 +1,8 @@
 
 import { Oauth } from '../../../models';
-// import { domain } from '../../../config';
 
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
-// import { getSaveFields } from '../config';
 
 // 还缺少通知
 const oAuthUnbinding = async (root: any, args: any, context: any, schema: any) => {

@@ -5,26 +5,33 @@ import * as jpush from '../../../common/jpush';
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
 
-// let [ query, mutation, resolvers ] = [{},{},{}];
-
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
+
+/*
+Posts.find({
+  query: {},
+  select: { _id:1 }
+}).then(res=>{
+
+  res.map(i=>{
+    updatePostsCommentCount(i._id);
+  });
+
+
+  console.log('更新成功');
+});
+*/
+
 
 const comments = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role, ip } = context
   const { method } = args
   let select: any = {}, query, options, err, commentList: any = [], likeList: any = [];
-  // let { query, options } = Querys({ args, model: 'comment', role })
-
 
   [ err, query ] = getQuery({ args, model:Model.comments, role });
   [ err, options ] = getOption({ args, model:Model.comments, role });
-
-  // [ err, query ] = getQuery({ args, model: 'comment', role });
-  // [ err, options ] = getOption({ args, model: 'comment', role });
   
   // 未登陆用户，不能使用method方式查询
   if (!user && method) {
@@ -97,8 +104,6 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
           match
         });
 
-        // console.log(options.populate[0].match);
-
       } else {
         options.populate.push({
           path: 'reply',
@@ -130,19 +135,19 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
 
   if (Reflect.has(select, 'user_id') && select.user_id) {
     options.populate.push([
-      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 } }
+      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }, justOne: true }
     ])
   }
 
   if (Reflect.has(select, 'reply_id') && select.reply_id) {
     options.populate.push([
-      { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 } }
+      { path: 'reply_id', select:{ 'user_id': 1, '_id': 0 }, justOne: true }
     ])
   }
 
   if (Reflect.has(select, 'posts_id') && select.posts_id) {
     options.populate.push([
-      { path: 'posts_id', select: { _id:1, title:1, content_html:1 } }
+      { path: 'posts_id', select: { _id:1, title:1, content_html:1 }, justOne: true }
     ])
   }
 
@@ -155,11 +160,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
   }
   */
 
-  // console.log(query);
-
   [ err, commentList ] = await To(Comment.find({ query, select, options }));
-
-  // console.log(commentList);
 
   if (err || !commentList) {
     throw CreateError({
@@ -169,7 +170,6 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
   }
 
   options = [];
-
   
   if (Reflect.has(select, 'reply') && select.reply) {
 
@@ -197,12 +197,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
   }
 
   if (options.length > 0) {
-
-    // console.log(commentList[0]);
-
     [ err, commentList ] = await To(Comment.populate({ collections: commentList, options }));
-    // console.log(commentList);
-    // console.log(commentList[0].reply[0]);
   }
 
   options = [];
@@ -290,8 +285,6 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
     return item;
   });
 
-  // console.log(commentList);
-
   return commentList
 }
 
@@ -301,7 +294,6 @@ const countComments = async (root: any, args: any, context: any, schema: any) =>
   const { user, role } = context;
   let err, query, count;
 
-  // [ err, query ] = getQuery({ args, model: 'comment', role });
   [ err, query ] = getQuery({ args, model:Model.comments, role });
 
   if (user) {
@@ -338,11 +330,9 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
   let err, query, update, result, comment;
 
   [ err, query ] = getQuery({ args, model:Model.updateComment, role });
-  // [ err, query ] = getUpdateQuery({ args, model: 'comment', role });
   if (err) throw CreateError({ message: err });
 
   [ err, update ] = getSave({ args, model:Model.updateComment, role });
-  // [ err, update ] = getUpdateContent({ args, model: 'comment', role });
   if (err) throw CreateError({ message: err });
 
   [ err, comment ] = await To(Comment.findOne({ query }));
@@ -421,7 +411,6 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
   if (!user) throw CreateError({ message: '请求被拒绝' });
 
   [ err, fields ] = getSave({ args, model:Model.addComment, role });
-  // [ err, fields ] = getSaveFields({ args, model:'comment', role });
 
   if (err) throw CreateError({ message: err });
 
@@ -668,15 +657,12 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
         }
       }));
 
-
-    try {
-      // 极光推送
-      jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
-    } catch (err) {
-      console.log(err);
-    }
-
-
+      try {
+        // 极光推送
+        jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
+      } catch (err) {
+        console.log(err);
+      }
 
     }
 
@@ -710,9 +696,6 @@ function Countdown(nowDate: (string|number), endDate: (string|number)) {
   }
 
 }
-
-
-// export { query, mutation, resolvers }
 
 
 // 更新帖子的评论数量，以及评论id
@@ -807,17 +790,3 @@ function updateCommentReplyCount(comment_id: string, posts_id: string) {
 
 };
 
-/*
-Posts.find({
-  query: {},
-  select: { _id:1 }
-}).then(res=>{
-
-  res.map(i=>{
-    updatePostsCommentCount(i._id);
-  });
-
-
-  console.log('更新成功');
-});
-*/

@@ -1,20 +1,10 @@
 
-import { Feed, Posts, Comment, Follow, Like, User } from '../../../models';
-// import { domain } from '../../../config';
-
-// let query = {};
-// let mutation = {};
-// let resolvers = {};
-
+import { Feed, Follow, Like, User } from '../../../models';
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
 
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-
-
 import * as Model from './arguments'
 import { getQuery, getOption } from '../tools'
-
 
 /*
 Posts.find({
@@ -71,18 +61,13 @@ const feed = async (root: any, args: any, context: any, schema: any) => {
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
-  // console.log(args);
-
   [ err, query ] = getQuery({ args, model:Model.feed, role });
   [ err, options ] = getOption({ args, model:Model.feed, role });
 
 
-  // [ err, query ] = getQuery({ args, model:'feed', role });
-  // [ err, options ] = getOption({ args, model:'feed', role });
-
-  if (!options.limit || options.limit > 50) {
-    options.limit = 50
-  }
+  // if (!options.limit || options.limit > 50) {
+  //   options.limit = 50
+  // }
 
   let limit = options.limit;
 
@@ -128,8 +113,8 @@ const feed = async (root: any, args: any, context: any, schema: any) => {
 
   options.populate = [
     { path: 'user_id', select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 }, justOne: true },
-    { path: 'comment_id', match: { weaken: false, deleted: false } },
-    { path: 'posts_id', match: { weaken: false, deleted: false } }
+    { path: 'comment_id', match: { weaken: false, deleted: false }, justOne: true },
+    { path: 'posts_id', match: { weaken: false, deleted: false }, justOne: true }
   ];
 
   [ err, list ] = await To(Feed.find({ query, select: {}, options }));
@@ -239,10 +224,6 @@ const feed = async (root: any, args: any, context: any, schema: any) => {
 
     // 更新用户最后一次查询feed日期
     if (!query.user_id && user && limit != 1 && list && list.length > 0) {
-      // await User.update({
-      //   query: { _id: user._id },
-      //   update: { last_find_feed_at: new Date() }
-      // });
       updateLastFindFeedDate(user._id);
     }
 
@@ -259,9 +240,6 @@ const countFeed = async (root: any, args: any, context: any, schema:any) => {
 
   [ err, query ] = getQuery({ args, model:Model.feed, role });
   [ err, options ] = getOption({ args, model:Model.feed, role });
-
-  // [ err, query ] = getQuery({ args, model:'posts', role });
-  // [ err, options ] = getOption({ args, model:'posts', role });
 
   // 偏好模式（用户关注），如果用户未登陆，则拒绝请求
   if (args.preference && !user) {
@@ -310,7 +288,6 @@ const countFeed = async (root: any, args: any, context: any, schema:any) => {
   }
 
 }
-
 
 // 更新用户最后一次查询feed的日期
 const updateLastFindFeedDate = (userId: string) => {

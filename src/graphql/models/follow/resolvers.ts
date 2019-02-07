@@ -3,10 +3,6 @@ import { Follow, Topic, User, Posts, UserNotification } from '../../../models';
 
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
-// import xss from 'xss';
-
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-// let [ query, mutation, resolvers ] = [{},{},{}];
 
 import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
@@ -22,10 +18,6 @@ const findFollows = async (root: any, args: any, context: any, schema: any) => {
 
   [ err, query ] = getQuery({ args, model: Model.findFollows, role });
   [ err, options ] = getOption({ args, model: Model.findFollows, role });
-
-
-  // [ err, query ] = getQuery({ args, model:'follow', role });
-  // [ err, options ] = getOption({ args, model:'follow', role });
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map((item: any)=>select[item.name.value] = 1);

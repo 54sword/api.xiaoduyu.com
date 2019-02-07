@@ -6,37 +6,24 @@ import To from '../../../utils/to'
 import CreateError from '../../common/errors'
 import Validate from '../../../utils/validate'
 
-// graphql
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config'
-
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
-
-// console.log(getquery((), signIn));
-
-// console.log('-----');
 
 // 登录
 const signIn = async (root: any, args: any, context: any, schema: any) => {
 
   // 参数准备 ------------------------------------------------------------------
   
-  const { user, role, ip } = context;
+  const { role, ip } = context;
 
-  let query: any = {},
-      err: any,
-      result: any,
-      account: any;
+  let query: any = {}, err: any, result: any, account: any;
 
   // 判断ip是否存在
   if (!ip) {
     throw CreateError({ message: '获取不到您的IP' });
   };
 
-  [ err, query ] = getQuery({ args, model:Model.signIn, role });
-  
-  // 获取查询参数
-  // [ err, query ] = getQuery({ args, model: 'account', role });
+  [ err, query ] = getQuery({ args, model: Model.signIn, role });
 
   // 判断查询参数是否合法
   if (err) {
@@ -90,13 +77,13 @@ const signIn = async (root: any, args: any, context: any, schema: any) => {
   if (phone) {
     [ err, account ] = await To(Phone.findOne({
       query: { phone },
-      options: { populate: { path: 'user_id' } }
+      options: { populate: { path: 'user_id', justOne: true  } }
     }));
 
   } else if (email) {
     [ err, account ] = await To(Account.findOne({
       query: { email },
-      options: { populate: { path: 'user_id' } }
+      options: { populate: { path: 'user_id', justOne: true } }
     }));
   }
 
@@ -104,10 +91,6 @@ const signIn = async (root: any, args: any, context: any, schema: any) => {
     await To(Captcha.create({ ip, type: 'sign-in' }));
     throw CreateError({ message: '账号错误或不存在' });
   }
-
-  // if (role == 'admin' && account.role != 100) {
-  //   throw CreateError({ message: '您不是管理员，无法登陆' });
-  // }
 
   // 判断密码是否正确
   [ err, result ] = await To(User.verifyPassword({
@@ -125,7 +108,7 @@ const signIn = async (root: any, args: any, context: any, schema: any) => {
     throw CreateError({ message: '您的账号被禁止使用' });
   }
 
-  // 生产 access token -----------------------
+  // 生成 access token -----------------------
 
   result = await Token.create({
     userId: account.user_id._id,
@@ -148,8 +131,6 @@ const addEmail = async (root: any, args: any, context: any, schema: any) => {
   if (!user) throw CreateError({ message: '请求被拒绝' });
 
   let err: any, res: any, fields: any, account: any;
-
-  // [ err, fields ] = getSaveFields({ args, model:'account', role });
   
   [ err, fields ] = getSave({ args, model:Model.addEmail, role });
 

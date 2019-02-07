@@ -38,7 +38,7 @@ export const feed = {
     type: 'String',
     desc:'结束日期'
   }),
-  preference: (data: string) => ({
+  preference: (data: boolean) => ({
     typename: 'query',
     name: '',
     value: '',
@@ -60,7 +60,7 @@ export const feed = {
     desc:'每页数量'
   }),
   sort_by: (data: string) => ({
-    typename: 'oprion',
+    typename: 'option',
     name: 'sort',
     value: ParseParams.sortBy(data),
     type: 'String',

@@ -15,6 +15,13 @@ interface Param{
 export const sendSMS = ({ PhoneNumbers, TemplateParam }: Param): Promise<object> => {
   return new Promise((resolve, reject)=>{
 
+    if (!yunpian.international ||
+      yunpian.international.apikey ||
+      yunpian.international.text
+      ) {
+        return reject('未配置云片国际短信');
+      }
+
     request.post({
       url:'https://sms.yunpian.com/v2/sms/single_send.json',
       form: {

@@ -78,5 +78,5 @@ const updateNotifaction = async (root: any, args: any, context: any, schema: any
   return { success: true }
 }
 
-export const query = { notifications }
+export const query = { notifications, countNotifications }
 export const mutation = { updateNotifaction }

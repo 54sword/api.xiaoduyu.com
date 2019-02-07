@@ -102,36 +102,42 @@ export const posts = {
 // 储存
 export const addPosts = {
   title: (data: string) => ({
+    typename: 'save',
     name: 'title',
     value: data,
     type: 'String!',
     desc:'标题'
   }),
   content: (data: string) => ({
+    typename: 'save',
     name: 'content',
     value: data,
     type: 'String!',
     desc:'正文JSON'
   }),
   content_html: (data: string) => ({
+    typename: 'save',
     name: 'content_html',
     value: data,
     type: 'String!',
     desc:'文本HTML'
   }),
   topic_id: (data: string) => ({
+    typename: 'save',
     name: 'topic_id',
     value: data,
     type: 'ID!',
     desc:'话题'
   }),
   device_id: (data: number) => ({
+    typename: 'save',
     name: 'device_id',
     value: data,
     type: 'Int',
     desc:'设备'
   }),
   type: (data: number) => ({
+    typename: 'save',
     name: 'type',
     value: data,
     type: 'Int',

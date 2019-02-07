@@ -4,10 +4,7 @@ import fs from 'fs'
 import uuid from 'node-uuid'
 
 import Download from '../../../utils/download'
-import * as Tools from '../../../utils/tools'
 import config from '../../../config'
-
-import { User } from '../../../models'
 
 //需要填写你的 Access Key 和 Secret Key
 qiniu.conf.ACCESS_KEY = config.qiniu.accessKey;
@@ -21,10 +18,6 @@ const uptoken = (bucket: string) => {
   var putPolicy = new qiniu.rs.PutPolicy(bucket);
   return putPolicy.token();
 }
-
-// let query = {}
-// let mutation = {}
-// let resolvers = {}
 
 import To from '../../../utils/to'
 import CreateError from '../../common/errors';
@@ -54,8 +47,6 @@ const qiniuToken = async (root: any, args: any, context: any, schema: any) => {
     url: config.qiniu.url
   }
 }
-
-// export { query, mutation, resolvers }
 
 /**
  * 下载互联网图片，并上传到七牛
@@ -106,52 +97,6 @@ export const downloadImgAndUploadToQiniu = function (imgUrl: string) {
     });
 
   // });
-}
-
-export const uploadImage = function(imgUrl: string, userId: string, callback: any) {
-
-  Tools.download(imgUrl, 'public/', userId+".jpg", function(){
-    
-    var token = uptoken(bucket)
-
-    //构造上传函数
-    function uploadFile(uptoken: string, key: string, localFile: string, callback: any) {
-      let extra = new qiniu.io.PutExtra();
-      qiniu.io.putFile(uptoken, key, localFile, extra, callback);
-    }
-
-    //调用uploadFile上传
-    uploadFile(token, '', 'public/'+userId+'.jpg', async function(err: any, ret: any){
-      if(!err) {
-
-        [ err ] = await To(User.update({
-          query: { _id: userId },
-          update: { avatar: config.qiniu.url + '/' + ret.key }
-        }));
-
-        if (err) console.log(err);
-        // 删除源文件
-        fs.unlink('public/'+userId+'.jpg', function(){
-          callback(true)
-        });
-
-        /*
-        User.update({ _id: userId }, { avatar: config.qiniu.url + '/' + ret.key + '?imageMogr2/auto-orient/thumbnail/!200' }, function(err){
-          if (err) console.log(err);
-          // 删除源文件
-          fs.unlink('public/'+userId+'.jpg', function(){
-            callback(true)
-          })
-        })
-        */
-      } else {
-        // 上传失败， 处理返回代码
-        callback(false)
-      }
-    });
-
-  });
-
 }
 
 export const query = { qiniuToken }

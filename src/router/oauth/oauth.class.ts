@@ -4,8 +4,9 @@ import config from '../../config'
 import { User, Oauth, Token } from '../../models'
 import synthesis from '../../utils/synthesis'
 import To from '../../utils/to'
-import * as JWT from '../../utils/jwt'
 import social from '../../config/social'
+
+import checkToken from '../../graphql/common/check-token'
 
 import { downloadImgAndUploadToQiniu } from '../../graphql/models/qiniu/resolvers';
 
@@ -100,15 +101,23 @@ export default class OAuthClass {
 
     return new Promise(async resolve=>{
 
-      var decoded = JWT.decode(user_access_token), user;
+      let result = await checkToken({ token:user_access_token, role:'' });
 
-      if (decoded && decoded.expires > new Date().getTime()) {
-        let [ err, _user ] = await To(User.findOne({ query: { _id: decoded.user_id } }));
-        if (err) console.log(err);
-        if (_user && _user[0]) user = _user[0]
+      if (result && result.user) {
+        resolve(result.user)
+      } else {
+        resolve()
       }
 
-      resolve(user)
+      // var decoded = JWT.decode(user_access_token), user;
+
+      // if (decoded && decoded.expires > new Date().getTime()) {
+      //   let [ err, _user ] = await To(User.findOne({ query: { _id: decoded.user_id } }));
+      //   if (err) console.log(err);
+      //   if (_user && _user[0]) user = _user[0]
+      // }
+
+      // resolve(user)
 
     })
 

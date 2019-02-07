@@ -3,22 +3,17 @@ import { formatError } from 'apollo-errors'
 import { makeExecutableSchema } from 'graphql-tools'
 
 import config from '../config'
-
-const { debug } = config
-
-import checkToken from './auto'
-
+import checkToken from './common/check-token'
 import * as Models from './models/index'
 
 const schema = makeExecutableSchema(Models)
-
 
 /**
  * 启动 graphql
  * @param  {Object} app - express 的 app
  */
 export default (app: any): void => {
-
+  
   const server = new ApolloServer({
     schema,
     formatError,
@@ -39,8 +34,8 @@ export default (app: any): void => {
       }
     },
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
-    introspection: debug,
-    playground: debug
+    introspection: config.debug,
+    playground: config.debug
   });
 
   app.all('*', async (req: any, res: any, next: any) => {
@@ -52,21 +47,16 @@ export default (app: any): void => {
     if (!token) {
       next();
     } else {
-
-      let result = await checkToken({ token, role })
+      
+      let result = await checkToken({ token, role });
       
       if (!result.user) {
         res.send({
-          errors: [{
-            message: "invalid token"
-          }]
+          errors: [{ message: "invalid token" }]
         });
       } else if (result.user.blocked) {
         res.send({
-          errors: [{
-            message: "您的账号被禁止使用",
-            blocked: true
-          }]
+          errors: [{ message: "您的账号被禁止使用", blocked: true }]
         });
       } else {
         req.user = result.user;

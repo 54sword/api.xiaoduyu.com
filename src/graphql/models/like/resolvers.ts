@@ -1,11 +1,8 @@
 
-import { Topic, Posts, UserNotification, Comment, Like } from '../../../models';
-// import config from '../../../config';
-// const { domain } = config;
+import { Posts, UserNotification, Comment, Like } from '../../../models';
 
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
-// import { getSaveFields } from '../config';
 
 import * as aModel from './arguments'
 import { getSave } from '../tools'
@@ -23,8 +20,6 @@ const like = async (root: any, args: any, context: any, schema: any) => {
   if (!user) throw CreateError({ message: '请求被拒绝' });
 
   [ err, fields ] = getSave({ args, model: aModel.like, role });
-
-  // [ err, fields ] = getSaveFields({ args, model:'like', role });
 
   if (err) throw CreateError({ message: err });
 

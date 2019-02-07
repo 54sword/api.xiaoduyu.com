@@ -207,11 +207,11 @@ const countUserNotifications = async (root: any, args: any, context: any, schema
   //===
 
   // 请求用户的角色
-  let admin = role == 'admin' ? true : false
+  let admin = role == 'admin' ? true : false;
 
   if (user.block_people_count > 0 && !admin) {
     query.sender_id = { '$nin': user.block_people }
-  }
+  };
 
   [ err, count ] = await To(UserNotification.count({ query }))
 

@@ -1,33 +1,68 @@
 
 export interface Config {
-	debug: boolean,
-	name: string,
-	cookieSecret: string,
-	jwtSecret: string,
-	defaultAvatar: string,
-	mongodbURI: string,
-	host: string,
-	port: number,
-	domain: string,
-	email: object,
+	debug: boolean
+	name: string
+	cookieSecret: string
+	jwtSecret: string
+	defaultAvatar: string
+	mongodbURI: string
+	host: string
+	port: number
+	domain: string
+	email: {
+		sendCloud: {
+			from: string
+		  apiUser: string
+		  apiKey: string
+		},
+		qq?: {
+			host: string
+	    port: number
+	    auth: {
+	      user: string
+	      pass: string
+	    }
+		}
+	}
 	oauth: {
-		weibo: { appid: number, appSecret: string },
-		qq: { appid: number, appkey: string },
-		github: { appid: string, appkey: string },
-		wechatPC: { appid: string, appkey: string },
+		weibo: { appid: number, appSecret: string }
+		qq: { appid: number, appkey: string }
+		github: { appid: string, appkey: string }
+		wechatPC: { appid: string, appkey: string }
 		wechat: { token: string, appid: string, appkey: string }
 		landingPage: string
-  },
-	qiniu: object,
-	jpush: object,
-	alicloud: object,
-	yunpian: object
+  }
+	qiniu: {
+		accessKey: string
+    secretKey: string
+    bucket: string
+    url: string
+	}
+	jpush: {
+		// 是否是生产环境
+		production: boolean,
+		appKey: string,
+		masterSecret: string
+	}
+	alicloud: {
+		sms: {
+			accessKeyId: string
+			secretAccessKey: string
+			signName: string
+			templateCode: string
+		}
+	}
+	yunpian: {
+		international: {
+			apikey: string
+			text: string
+		}
+	}
 }
-
 
 const config:Config = {
 	// 调试
-	debug: true,
+	debug: false,
 	// 社区名称
 	name: '小度鱼API',
 	// cookie 配置 [必填，建议修改]

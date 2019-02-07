@@ -92,7 +92,6 @@ app.all('*',function (req, res, next) {
 		}
 
   } else {
-		
     next();
   }
 
@@ -112,4 +111,5 @@ const server = app.listen(config.port, ()=>{
 	console.log('server started on port ' + config.port);
 });
 
+// 启动 websocket
 socket(server);

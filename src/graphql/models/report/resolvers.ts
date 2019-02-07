@@ -1,5 +1,5 @@
 
-import { Report, Phone, User, Captcha, Posts, Comment } from '../../../models'
+import { Report, User, Posts, Comment } from '../../../models'
 
 import To from '../../../utils/to'
 import CreateError from '../../common/errors';
@@ -8,14 +8,12 @@ import reportList from '../../../config/report'
 import * as Model from './arguments'
 import { getSave } from '../tools'
 
-
 const fetchReportTypes = async (root: any, args: any, context: any, schema: any) => {
   return {
     success: true,
     data: reportList
   }
 }
-
 
 const addReport = async (root: any, args: any, context: any, schema: any) => {
 
@@ -27,7 +25,6 @@ const addReport = async (root: any, args: any, context: any, schema: any) => {
   let err, res, fields: any;
 
   [ err, fields ] = getSave({ args, model: Model.addReport, role });
-  // [ err, fields ] = getSaveFields({ args, model:'report', role });
 
   if (err) throw CreateError({ message: err });
 

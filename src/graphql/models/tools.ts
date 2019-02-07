@@ -33,13 +33,20 @@ const get = (type: string)=>{
       if (result.typename != type) {
         continue;
       }
-
+      
       if (result.role && role != result.role) {
         err = i + ' no access';
         break;
       }
 
-      if (result.name) params[result.name] = result.value;
+      if (result.name) {
+        if (typeof result.value == 'object') {
+          if (!params[result.name]) params[result.name] = {};
+          for (let n in result.value) params[result.name][n] = result.value[n];
+        } else {
+          params[result.name] = result.value;
+        }
+      }
       
     }
 

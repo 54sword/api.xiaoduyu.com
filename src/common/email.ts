@@ -6,7 +6,11 @@ let sendCloudConfig = config.email.sendCloud
 
 let client: any
 
-if (sendCloudConfig) {
+if (sendCloudConfig &&
+  sendCloudConfig.from &&
+  sendCloudConfig.apiUser &&
+  sendCloudConfig.apiKey
+  ) {
   client = SendCloud.create({
     from: config.name+' <'+sendCloudConfig.from+'>',
     apiUser: sendCloudConfig.apiUser,

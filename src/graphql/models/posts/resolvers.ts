@@ -1,12 +1,9 @@
-import { Posts, User, Follow, Like, Topic, Feed, Phone } from '../../../models';
+import { Posts, User, Follow, Like, Topic, Feed, Phone } from '../../../models'
 
-import CreateError from '../../common/errors';
-import To from '../../../utils/to';
+import CreateError from '../../common/errors'
+import To from '../../../utils/to'
 
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-import xss from 'xss';
-
-// let [ query, mutation, resolvers ] = [{},{},{}];
+import xss from 'xss'
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
@@ -19,20 +16,13 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   const { user, role } = context
   const { method } = args
 
-  let select: any = {}, err, postList: any, followList, likeList, ids, query, options;
-
+  let select: any = {}, err, postList: any, query, options;
 
   [ err, query ] = getQuery({ args, model: Model.posts, role });
   [ err, options ] = getOption({ args, model: Model.posts, role });
 
-
-  // [ err, query ] = getQuery({ args, model:'posts', role });
-  // [ err, options ] = getOption({ args, model:'posts', role });
-
   // 未登陆用户，不能使用method方式查询
-  if (!user && method) {
-    throw CreateError({ message: '请求被拒绝' })
-  }
+  if (!user && method) throw CreateError({ message: '请求被拒绝' })
 
   // 每页数量
   let limit = options.limit;
@@ -44,8 +34,6 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   if (!role || role != 'admin') {
     if (select.ip) delete select.ip;
   }
-
-  if (!options.populate) options.populate = []
 
   // 增加屏蔽条件
   // 1、如果是登陆状态，那么增加屏蔽条件
@@ -63,13 +51,11 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
 
   }
 
-  if (user && method == 'subscribe') {
+  // 收藏
+  if (user && method == 'subscribe' || user && method == 'favorite') {
 
-    if (user.follow_posts.length == 0 && user.block_posts.length == 0) {
-      return [];
-    }
+    if (user.follow_posts.length == 0 && user.block_posts.length == 0) return [];
 
-    // 用户订阅的帖子
     query._id = {
       '$in': user.follow_posts,
       // 过滤屏蔽的帖子
@@ -78,24 +64,12 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
 
   }
 
+  if (!options.populate) options.populate = []
+
   if (select.user_id) {
     options.populate.push({
       path: 'user_id',
       justOne: true
-      // select: {
-      //   '_id': 1,
-      //   'avatar': 1,
-      //   'nickname': 1,
-      //   'brief': 1,
-      //   posts_count: 1,
-      //   comment_count: 1,
-      //   fans_count: 1,
-      //   follow_people_count: 1,
-      //   follow_topic_count: 1,
-      //   follow_posts_count: 1,
-      //   block_people_count: 1,
-      //   block_posts_count: 1
-      // }
     })
   }
 
@@ -105,12 +79,6 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
       match: {
         deleted: false,
         weaken: false
-        /*
-        $or: [
-          { deleted: false, weaken: false, like_count: { $gte: 2 } },
-          { deleted: false, weaken: false, reply_count: { $gte: 1 } }
-        ]
-        */
       },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1,
@@ -140,8 +108,6 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
       data: { errorInfo: err.message }
     })
   }
-
-  // console.log(select.comment);
 
   if (select.comment && postList.length > 0) {
 
@@ -182,7 +148,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
 
   });
 
-  let promises:any = [
+  let promises:Array<Promise<any>> = [
     // 关注用户
     Follow.find({
       query: { user_id: user._id, people_id: { "$in": peopleIds }, deleted: false },
@@ -201,26 +167,26 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   ];
 
   if (method == 'user_follow' && limit != 1) {
-    promises.push([
+    promises.push(
       User.update({
         query: { _id: user._id },
         update: { last_find_posts_at: new Date() }
       })
-    ]);
-  } else if (method == 'subscribe' && limit != 1) {
-    promises.push([
+    );
+  } else if (method == 'subscribe' && limit != 1 || method == 'favorite' && limit != 1) {
+    promises.push(
       User.update({
         query: { _id: user._id },
         update: { last_find_subscribe_at: new Date() }
       })
-    ]);
+    );
   } else if (query.recommend && limit != 1) {
-    promises.push([
+    promises.push(
       User.update({
         query: { _id: user._id },
         update: { last_find_excellent_at: new Date() }
       })
-    ]);
+    );
   }
 
   return Promise.all(promises).then(([ followPeopleList, followPostsList, likePostsList ]: any)=>{
@@ -262,17 +228,9 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
   const { user, role } = context
   const { method } = args
 
-  // let select = {}, err, count, query;
-
   let [select, err, count, query]: any = [{}, null, null, null];
 
-  // let { query } = Querys({ args, model:'posts', role });
-
-  // [ err, query ] = getQuery({ args, model:'posts', role });
-
   [ err, query ] = getQuery({ args, model: Model.posts, role });
-  // [ err, options ] = getOption({ args, model: Model.posts, role });
-
 
   if (err) {
     throw CreateError({ message: err })
@@ -286,31 +244,27 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
   // select
   schema.fieldNodes[0].selectionSet.selections.map((item:any)=>select[item.name.value] = 1);
 
-  /**
-   * 增加屏蔽条件
-   *
-   * 如果是登陆状态，那么增加屏蔽条件
-   * 如果通过posts查询，那么不增加屏蔽条件
-   */
-   if (user) {
+  // 增加屏蔽条件
+  // 1、如果是登陆状态，那么增加屏蔽条件
+  // 2、如果通过posts id查询，那么不增加屏蔽条件
 
-     if (!query._id && user.block_posts_count > 0) {
-       query._id = { '$nin': user.block_posts }
-     }
+  if (user) {
 
-     if (!query.user_id && user.block_people_count > 0) {
-       query.user_id = { '$nin': user.block_people }
-     }
-
-   }
-
-   if (user && method == 'subscribe') {
-
-    if (user.follow_posts.length == 0 && user.block_posts.length == 0) {
-      return [];
+    if (!query._id && user.block_posts_count > 0) {
+      query._id = { '$nin': user.block_posts }
     }
 
-    // 用户订阅的帖子
+    if (!query.user_id && user.block_people_count > 0) {
+      query.user_id = { '$nin': user.block_people }
+    }
+
+  }
+
+  // 收藏
+  if (user && method == 'subscribe' || user && method == 'favorite') {
+
+    if (user.follow_posts.length == 0 && user.block_posts.length == 0) return [];
+
     query._id = {
       '$in': user.follow_posts,
       // 过滤屏蔽的帖子
@@ -318,59 +272,6 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
     }
 
   }
-
-  /*
-  // 用户关注
-  if (user && method == 'user_follow') {
-
-    let newQuery = { '$or': [] }
-
-    if (query.user_id) delete query.user_id;
-    if (query.topic_id) delete query.topic_id;
-    if (query.posts_id) delete query.posts_id;
-    if (query._id) delete query._id;
-
-    newQuery['$or'].push(Object.assign({}, query, {
-      user_id: user._id,
-      deleted: false
-    }, {}));
-
-    // 用户
-    if (user.follow_people.length > 0) {
-      newQuery['$or'].push(Object.assign({}, query, {
-        user_id: {
-          '$in': user.follow_people,
-          // 过滤屏蔽用户
-          '$nin': user.block_people
-        },
-        deleted: false
-      }, {}))
-    }
-
-    // 话题
-    if (user.follow_topic.length > 0) {
-      newQuery['$or'].push(Object.assign({}, query, {
-        topic_id: {'$in': user.follow_topic },
-        deleted: false,
-        weaken: false
-      }, {}))
-    }
-
-    // 帖子
-    if (user.follow_posts.length > 0) {
-      newQuery['$or'].push(Object.assign({}, query, {
-        posts_id: {
-          '$in': user.follow_posts,
-          // 过滤屏蔽的帖子
-          '$nin': user.block_posts
-        },
-        deleted: false
-      }, {}))
-    }
-
-    query = newQuery;
-  }
-  */
 
   [ err, count ] = await To(Posts.count({ query }))
 
@@ -580,16 +481,14 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
 
   // 必须登陆用户才有权限
   if (!user) throw CreateError({ message: '请求被拒绝' });
-
+  
   let [err, query, content, result]:any = [];
 
   // 获取查询条件
   [ err, query ] = getQuery({ args, model: Model.updatePosts, role });
-  // [ err, query ] = getUpdateQuery({ args, model:'posts', role });
   if (err) throw CreateError({ message: err });
 
   // 获取更新内容
-  // [ err, content ] = getUpdateContent({ args, model:'posts', role });
   [ err, content ] = getSave({ args, model: Model.updatePosts, role });
   if (err) throw CreateError({ message: err });
 
@@ -663,16 +562,13 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   return { success: true }
 }
 
-
 const viewPosts = async (root:any, args: any, context: any, schema: any) => {
 
   const { posts_id } = args;
 
-  let query = {
-    _id: posts_id
-  }
+  let query = { _id: posts_id }
 
-  let [ err, result ] = await To(Posts.update({
+  let [ err ] = await To(Posts.update({
     query,
     update: { $inc: { view_count: 1 } }
   }));
@@ -682,8 +578,6 @@ const viewPosts = async (root:any, args: any, context: any, schema: any) => {
       message: '更新失败',
       data: { errorInfo: err.message }
     });
-
-    return { success: false }
   }
 
   return {
@@ -693,5 +587,3 @@ const viewPosts = async (root:any, args: any, context: any, schema: any) => {
 
 export const query = { posts, countPosts }
 export const mutation = { addPosts, updatePosts, viewPosts }
-
-// export { query, mutation, resolvers }

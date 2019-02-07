@@ -150,8 +150,6 @@ const countUsers = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context
   let err, query, count;
-  // let { query } = Querys({ args, model: 'user', role });
-  // [ err, query ] = getQuery({ args, model: 'user', role });
   [ err, query ] = getQuery({ args, model: Model.users, role });
 
   //===
@@ -357,11 +355,8 @@ const updateUser = async (root: any, args: any, context: any, schema: any) => {
   const { user, role } = context;
   let options = {}, err, query, update, result;
 
-  // [ err, query ] = getUpdateQuery({ args, model: 'user', role });
-  // [ err, update ] = getUpdateContent({ args, model: 'user', role });
-
   [ err, query ] = getQuery({ args, model: Model.updateUser, role });
-  [ err, update ] = getOption({ args, model: Model.updateUser, role });
+  [ err, update ] = getSave({ args, model: Model.updateUser, role });
 
   if (err) {
     throw CreateError({
@@ -423,7 +418,7 @@ const updateUser = async (root: any, args: any, context: any, schema: any) => {
   return { success: true }
 }
 
-export const query = { selfInfo, users }
+export const query = { selfInfo, users, countUsers }
 export const mutation = { addUser, updateUser }
 
 // export { query, mutation, resolvers }

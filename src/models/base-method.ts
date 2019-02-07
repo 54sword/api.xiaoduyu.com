@@ -131,7 +131,14 @@ export default class Model {
   remove ({ query }: any): Promise<object> {
     return new Promise((resolve, reject) => {
       if (!query) return reject('query is null');
-      this.schema.remove(query, this.callback(resolve, reject));
+      this.schema.deleteMany(query, this.callback(resolve, reject));
+    });
+  }
+
+  removeOne ({ query }: any): Promise<object> {
+    return new Promise((resolve, reject) => {
+      if (!query) return reject('query is null');
+      this.schema.deleteOne(query, this.callback(resolve, reject));
     });
   }
   

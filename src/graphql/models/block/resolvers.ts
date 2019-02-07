@@ -1,9 +1,8 @@
 
-import { Block, Comment, Posts, User } from '../../../models';
+import { Block, Comment, Posts, User } from '../../../models'
 
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-import To from '../../../utils/to';
-import CreateError from '../../common/errors';
+import To from '../../../utils/to'
+import CreateError from '../../common/errors'
 
 import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
@@ -17,12 +16,9 @@ const blocks = async (root: any, args: any, context: any, schema: any) => {
   if (!ip) throw CreateError({ message: '获取不到您的ip' });
 
   let err: any, res: any, query: any = {}, select: any = {}, options: any = {};
-
-  [ err, query ] = getQuery({ args, model:Model.blocks, role });
-  [ err, options ] = getOption({ args, model:Model.blocks, role });
-
-  // [ err, query ] = getQuery({ args, model: 'block', role });
-  // [ err, options ] = getOption({ args, model:'block', role });
+  
+  [ err, query ] = getQuery({ args, model: Model.blocks, role });
+  [ err, options ] = getOption({ args, model: Model.blocks, role });
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map((item:any)=>select[item.name.value] = 1);
@@ -43,7 +39,8 @@ const blocks = async (root: any, args: any, context: any, schema: any) => {
     if (!options.populate) options.populate = [];
     options.populate.push({
       path: 'people_id',
-      select: { _id: 1, nickname: 1, avatar: 1, create_at: 1 }
+      select: { _id: 1, nickname: 1, avatar: 1, create_at: 1 },
+      justOne: true 
     });
   }
 
@@ -51,7 +48,8 @@ const blocks = async (root: any, args: any, context: any, schema: any) => {
     if (!options.populate) options.populate = [];
     options.populate.push({
       path: 'posts_id',
-      select: { _id: 1, title: 1, content_html: 1, type: 1 }
+      select: { _id: 1, title: 1, content_html: 1, type: 1 },
+      justOne: true 
     });
   }
 
@@ -59,7 +57,8 @@ const blocks = async (root: any, args: any, context: any, schema: any) => {
     if (!options.populate) options.populate = [];
     options.populate.push({
       path: 'comment_id',
-      select: { _id: 1, content_html: 1,  posts_id: 1, reply_id: 1, parent_id: 1 }
+      select: { _id: 1, content_html: 1,  posts_id: 1, reply_id: 1, parent_id: 1 },
+      justOne: true 
     });
   }
 
@@ -78,7 +77,6 @@ const countBlocks = async (root: any, args: any, context: any, schema: any) => {
 
   let err: any, res: any, query: any, count: any;
 
-  // [ err, query ] = getQuery({ args, model: 'block', role });
   [ err, query ] = getQuery({ args, model:Model.blocks, role });
 
   query.user_id = user._id;
@@ -105,8 +103,6 @@ const addBlock = async (root: any, args: any, context: any, schema: any) => {
   let err: any, res: any, fields: any;
 
   [ err, fields ] = getSave({ args, model: Model.addBlock, role });
-
-  // [ err, fields ] = getSaveFields({ args, model: 'block', role });
 
   if (err) throw CreateError({ message: err });
 
