@@ -20,6 +20,8 @@ import * as topic from './topic'
 import * as unlockToken from './unlock-token'
 import * as user from './user'
 import * as userNotification from './user-notification'
+import * as message from './message'
+import * as session from './session'
 
 export const typeDefs = [ `
 
@@ -44,6 +46,8 @@ export const typeDefs = [ `
   ${unlockToken.typedefs.Schema}
   ${user.typedefs.Schema}
   ${userNotification.typedefs.Schema}
+  ${message.typedefs.Schema}
+  ${session.typedefs.Schema}
 
   # 查询
   type Query {
@@ -68,6 +72,8 @@ export const typeDefs = [ `
     ${unlockToken.typedefs.Query}
     ${user.typedefs.Query}
     ${userNotification.typedefs.Query}
+    ${message.typedefs.Query}
+    ${session.typedefs.Query}
   }
 
   # 增、删、改
@@ -93,6 +99,8 @@ export const typeDefs = [ `
     ${unlockToken.typedefs.Mutation}
     ${user.typedefs.Mutation}
     ${userNotification.typedefs.Mutation}
+    ${message.typedefs.Mutation}
+    ${session.typedefs.Mutation}
   }
 
   schema {
@@ -125,7 +133,9 @@ export const resolvers = {
     ...topic.resolvers.query,
     ...unlockToken.resolvers.query,
     ...user.resolvers.query,
-    ...userNotification.resolvers.query
+    ...userNotification.resolvers.query,
+    ...message.resolvers.query,
+    ...session.resolvers.query
   },
   // 修改
   Mutation: {
@@ -149,6 +159,8 @@ export const resolvers = {
     ...topic.resolvers.mutation,
     ...unlockToken.resolvers.mutation,
     ...user.resolvers.mutation,
-    ...userNotification.resolvers.mutation
+    ...userNotification.resolvers.mutation,
+    ...message.resolvers.mutation,
+    ...session.resolvers.mutation
   }
 }

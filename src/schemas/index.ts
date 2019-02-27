@@ -27,6 +27,7 @@ import './report'
 import './block'
 import './feed'
 import './message'
+import './session'
 
 export const User = mongoose.model('User')
 export const Account = mongoose.model('Account')
@@ -45,3 +46,4 @@ export const UserNotification = mongoose.model('UserNotification')
 export const Block = mongoose.model('Block')
 export const Feed = mongoose.model('Feed')
 export const Message = mongoose.model('Message')
+export const Session = mongoose.model('Session')

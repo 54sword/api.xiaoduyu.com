@@ -15,8 +15,10 @@ import Report from './report'
 import Block from './block'
 import Feed from './feed'
 import Message from './message'
+import Session from './session'
 
 export {
   User, Account, Oauth, Comment, Like, Notification, UserNotification,
-  Captcha, Token, Posts, Topic, Follow, Phone, Report, Block, Feed, Message
+  Captcha, Token, Posts, Topic, Follow, Phone, Report, Block, Feed, Message,
+  Session
 }

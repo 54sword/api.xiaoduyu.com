@@ -1,13 +1,13 @@
 {
   "name": "xiaoduyu-api",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "scripts": {
     "start": "supervisor node ./dist/index.js",
     "dist-ts": "tsc",
     "watch-ts": "tsc -w",
     "pro": "node ./dist/index.js",
-    "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db"
+    "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/data/db"
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",

@@ -1,3 +1,4 @@
+
 import { Report } from '../schemas'
 import baseMethod from './base-method'
 

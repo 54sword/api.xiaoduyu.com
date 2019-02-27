@@ -64,6 +64,9 @@ const UserSchema = new Schema({
 
   // 最近一次查询Notification的日期
   find_notification_at: { type: Date },
+  
+  // 记录最早未一条读消息的日期
+  unread_message_at: { type: Date },
 
   // 最后一次查询帖子的日期
   last_find_posts_at: { type: Date },

@@ -33,13 +33,28 @@ export default (server: any) => {
     // 获取客户端用户的id
     const { accessToken } = socket.handshake.query;
 
-    // 解码JWT获取用户的id
-    let res = JWT.decode(accessToken);
-    const userId = res && res.user_id ? res.user_id : '';
+    let userId = '';
+    
+    if (accessToken) {
+      // 解码JWT获取用户的id
+      let res = JWT.decode(accessToken);
+      userId = res && res.user_id ? res.user_id : '';
+    }
 
+    let address = '';
+
+    try {
+      address = socket.handshake.headers["x-real-ip"];
+    } catch (err) {
+      console.log(err);
+      address = socket.handshake.address;
+      address = address.replace(/^.*:/, '');
+    }
+    
     // 获取客户端ip
-    let address = socket.handshake.address;
-    address = address.replace(/^.*:/, '');
+    // let address = socket.handshake.address;
+    // console.log(address);
+    // address = address.replace(/^.*:/, '');
     
     if (userId) {
       onlineMember.push(userId);

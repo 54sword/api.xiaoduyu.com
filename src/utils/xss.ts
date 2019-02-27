@@ -36,6 +36,6 @@ export default (content_html: string) => {
     }
   });
 
-  return '';
+  return content_html;
   
 }

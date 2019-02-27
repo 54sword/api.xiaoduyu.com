@@ -1,7 +1,7 @@
 
-import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
-const ObjectId = Schema.Types.ObjectId;
+import mongoose from 'mongoose'
+const Schema = mongoose.Schema
+const ObjectId = Schema.Types.ObjectId
 
 const MessageSchema = new Schema({
   // 发件人
@@ -20,10 +20,12 @@ const MessageSchema = new Schema({
   device: { type: Number, default: 1 },
   // ip地址
   ip: { type: String, default: '' },
+  // 是否已读
+  has_read: { type: Boolean, default: false },
   // 是否被屏蔽
   blocked: { type: Boolean, default: false },
   // 删除标记
   deleted: { type: Boolean, default: false }
-});
+})
 
-mongoose.model('Message', MessageSchema);
+mongoose.model('Message', MessageSchema)

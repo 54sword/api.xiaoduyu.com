@@ -67,3 +67,29 @@ export const search = function(str: string): any {
   let s = (str+'').split(' ');
   return { $regex: RegExp("("+s.join('|')+")","i") }
 }
+
+/*
+export const operation = function(str: string): any {
+
+  let obj: any;
+
+  let arr = [
+    { str: '>=', symbol: '$gte' },
+    { str: '<=', symbol: '$lte' },
+    { str: '<', symbol: '$lt' },
+    { str: '>', symbol: '$$gt' },
+    { str: '!=', symbol: '$ne' }
+  ];
+
+  arr.map((item: any)=>{
+    if (str.indexOf(item.str) != -1) {
+      let arr = str.replace(item.str, '');
+      obj = {};
+      obj[item.symbol] = parseInt(arr[1])
+    }
+  });
+
+  return obj
+
+}
+*/

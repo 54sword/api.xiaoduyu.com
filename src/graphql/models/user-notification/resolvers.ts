@@ -7,12 +7,8 @@ import CreateError from '../../common/errors';
 // import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
 // let [ query, mutation, resolvers ] = [{},{},{}];
 
-// test
-
 import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
-
-
 
 const userNotifications = async (root: any, args: any, context: any, schema: any) => {
 
