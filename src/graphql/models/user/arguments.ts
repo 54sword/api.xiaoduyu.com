@@ -178,5 +178,12 @@ export const updateUser = {
     value: data,
     type: 'String',
     desc:'昵称'
-  })
+  }),
+  theme: (data: string) => ({
+    typename: 'save',
+    name: 'theme',
+    value: data,
+    type: 'Int',
+    desc:'主题（0自动，1亮色，2暗色）'
+  }),
 }

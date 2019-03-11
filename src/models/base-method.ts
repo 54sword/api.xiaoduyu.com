@@ -153,4 +153,13 @@ export default class Model {
     });
   }
 
+  /**
+   * 聚合查询
+   * @param {Object} query 查询条件
+   * @return {Object} promise
+   */
+  aggregate (query: any): Promise<object> {
+    return this.schema.aggregate(query);
+  }
+
 }

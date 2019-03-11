@@ -68,6 +68,7 @@ export const Schema = `
     last_find_subscribe_at: String
     last_find_excellent_at: String
     has_password: Boolean
+    theme: Int
   }
 
   # 更新用户返回

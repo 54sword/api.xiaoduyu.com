@@ -9,7 +9,7 @@ export const comments = {
     type: 'ID',
     desc:'id、ids、exists、not-exists'
   }),
-  weaken: (data: boolean): object => ({
+  weaken: (data: any): object => ({
     typename: 'query',
     name: 'weaken',
     value: data,

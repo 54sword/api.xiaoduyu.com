@@ -430,6 +430,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     });
   }
 
+  /*
   // phone
   [ err, result ] = await To(Phone.findOne({
     query: { user_id: user._id }
@@ -452,6 +453,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     }
 
   }
+  */
 
   let _content_html = content_html || '';
 

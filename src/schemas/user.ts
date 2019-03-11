@@ -83,7 +83,9 @@ const UserSchema = new Schema({
   // 访问令牌
   access_token: { type: String },
   // 密码
-  password: String
+  password: String,
+  // 主题(1亮色，2暗色)
+  theme: { type: Number, default: 0 }
 });
 
 UserSchema.virtual('avatar_url').get(function (this: any) {

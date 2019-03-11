@@ -7,6 +7,32 @@ import CreateError from '../../common/errors';
 import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
 
+/*
+Follow.aggregate([
+  {
+    $lookup: {
+      from: "posts",
+      localField: "posts_id",
+      foreignField: "_id",
+      as: "posts_id"
+    }
+  },
+  {
+    $match: {
+      posts_id: { '$exists': true },
+      'posts_id.type': 2
+    }
+  },
+  {
+    $project: {
+      // 'posts_id': 1,
+      'posts_id': { ip: 1 }
+    }
+  }
+]).then((res: any)=>{
+  console.log(res[0]);
+});
+*/
 
 const findFollows = async (root: any, args: any, context: any, schema: any) => {
 

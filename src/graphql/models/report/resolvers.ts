@@ -6,7 +6,79 @@ import CreateError from '../../common/errors';
 import reportList from '../../../config/report'
 
 import * as Model from './arguments'
-import { getSave } from '../tools'
+import { getQuery, getOption, getSave } from '../tools'
+
+const reports = async (root: any, args: any, context: any, schema: any) => {
+  
+  const { user, role } = context
+  const { method } = args
+
+  let select: any = {}, err, postList: any, query, options;
+
+  [ err, query ] = getQuery({ args, model: Model.reports, role });
+  [ err, options ] = getOption({ args, model: Model.reports, role });
+
+  // console.log(query);
+  // console.log(options);
+
+  // 用户隐私信息，仅对管理员可以返回
+  if (role != 'admin') {
+    throw CreateError({ message: '请求被拒绝' })
+  }
+
+  options.populate = [
+    { path: 'user_id' },
+    { path: 'comment_id' },
+    { path: 'posts_id' },
+    { path: 'people_id' }
+  ];
+
+  [ err, postList ] = await To(Report.find({ query, select, options }));
+
+  options = [
+    {
+      path: 'comment_id.user_id',
+      model: 'User',
+      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
+      justOne: true
+    },
+    {
+      path: 'posts_id.user_id',
+      model: 'User',
+      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
+      justOne: true
+    }
+  ];
+
+  [ err, postList ] = await To(Posts.populate({ collections: postList, options }));
+
+  return postList
+}
+
+const countReports = async (root: any, args: any, context: any, schema: any) => {
+
+  const { user, role } = context
+  const { method } = args
+
+  let select: any = {}, err, postList: any, query, options, count: number;
+
+  [ err, query ] = getQuery({ args, model: Model.reports, role });
+  [ err, options ] = getOption({ args, model: Model.reports, role });
+
+
+  // console.log(query);
+  // console.log(options);
+
+  // 用户隐私信息，仅对管理员可以返回
+  if (role != 'admin') {
+    throw CreateError({ message: '请求被拒绝' })
+  }
+
+  // [ err, postList ] = await To(Report.count({ query }));
+  [ err, count ] = await To(Report.count({ query }));
+
+  return count
+}
 
 const fetchReportTypes = async (root: any, args: any, context: any, schema: any) => {
   return {
@@ -84,6 +156,6 @@ const addReport = async (root: any, args: any, context: any, schema: any) => {
   return { success: true }
 }
 
-export const query = { fetchReportTypes }
+export const query = { reports, fetchReportTypes, countReports }
 export const mutation = { addReport }
 

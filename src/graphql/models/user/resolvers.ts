@@ -377,6 +377,10 @@ const updateUser = async (root: any, args: any, context: any, schema: any) => {
       throw CreateError({ message: '字符长度不能大于16个字符' });
     }
   }
+  
+  if (Reflect.has(update, 'brief') && update.brief.length > 70) {
+    throw CreateError({ message: '字符长度不能大于120个字符' });
+  }
 
   [ err, result ] = await To(User.update({ query, update, options }));
 

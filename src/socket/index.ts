@@ -15,10 +15,10 @@ export default (server: any) => {
   io = socketIO.listen(server);
   // io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);
   // io.set('origins', 'http://127.0.0.1:4000');
-
+  
   // 广播在线用户
-  const updateOnline = () => {
-    io.sockets.emit("online-user", {
+  const updateOnline = (sockets = io.sockets) => {
+    sockets.emit('online-user', {
       // 连接数
       connect: connectCount,
       // 在线会员
@@ -27,6 +27,14 @@ export default (server: any) => {
       visitor: Array.from(new Set([...onlineVisitor])).length
     });
   }
+
+  let timer = function(){
+    setTimeout(()=>{
+      updateOnline();
+      timer();
+    }, 1000 * 10);
+  }
+  timer();
 
   io.on('connection', function(socket: any){
 
@@ -63,7 +71,7 @@ export default (server: any) => {
     }
     connectCount += 1;
 
-    updateOnline();
+    // updateOnline();
 
     socket.on('disconnect', function(res: any){
 
@@ -87,9 +95,11 @@ export default (server: any) => {
         });
       }
 
-      updateOnline();
+      // updateOnline();
 
     });
+
+    updateOnline(socket);
 
   });
 }
