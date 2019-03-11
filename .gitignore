@@ -24,12 +24,8 @@ build/Release
 # see https://npmjs.org/doc/faq.html#Should-I-check-my-node_modules-folder-into-git
 node_modules
 
-psd
 dist
-config.js
-config/index.js
-config/index_*.js
+src/config/index.ts
+src/config/index_*.ts
 *.DS_Store
-package-lock.json
-docs
-Makefile
+logs/*
