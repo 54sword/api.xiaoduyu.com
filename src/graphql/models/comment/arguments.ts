@@ -138,6 +138,13 @@ export const addComment = {
     value: data,
     type: 'String',
     desc:'设备id'
+  }),
+  forward: (data: string): object => ({
+    // typename: '',
+    // name: 'forward',
+    value: data,
+    type: 'Boolean',
+    desc:'是否转发'
   })
 }
 

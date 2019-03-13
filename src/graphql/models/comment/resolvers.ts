@@ -410,7 +410,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
 
   if (!user) throw CreateError({ message: '请求被拒绝' });
 
-  [ err, fields ] = getSave({ args, model:Model.addComment, role });
+  [ err, fields ] = getSave({ args, model: Model.addComment, role });
 
   if (err) throw CreateError({ message: err });
 
@@ -590,15 +590,17 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
   // ==================================
   // 评论相关更新与通知
   if (posts_id && !parent_id && !reply_id) {
-
-    // 添加到feed
-    Feed.save({
-      data: {
-        user_id: user._id,
-        posts_id,
-        comment_id: result._id
-      }
-    });
+    // 是否转发
+    if (args.forward) {
+      // 添加到feed
+      Feed.save({
+        data: {
+          user_id: user._id,
+          posts_id,
+          comment_id: result._id
+        }
+      });
+    }
 
     await updatePostsCommentCount(posts_id);
     await updateUserCommentCount(user._id);
