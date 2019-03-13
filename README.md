@@ -6,7 +6,8 @@
 ### 技术栈
 TypeScript、NodeJS、Express、GraphQL、MongoDB
 
-### 安装部署
+
+### 本地开发环境部署
 不保证 Windows 系统的兼容性  
 线上运行版本 Node.js 是 v8.7.0，MongoDB 是 v3.4.9
 
@@ -24,6 +25,7 @@ cd api.xiaoduyu.com
 4、安装依赖包   
 ```
 npm install
+npm install -g typescript
 ```
    
 5、创建默认的配置文件，并根据需要修改其中的配置   
@@ -36,18 +38,33 @@ cp ./src/config/index.default.ts ./src/config/index.ts
 mkdir ./logs
 ```
    
-7、运行TypeScript编译器   
-注意，如修改src里面的文件.ts文件，都需要重新执行一下编译一下   
+7、运行TypeScript编译器，监控src里面的文件变化      
 ```
-npm run dist-ts
+npm run watch-ts
 ```
    
 8、启动项目  
 ```
-node ./dist/index.js
+npm run start
 ```
 
 9、浏览器中打开 http://localhost:3000
+
+### 服务器部署
+1、打包项目  
+```
+npm run dist
+```
+
+2、将 dist、public、logs、package.json、package-lock.json 上传到服务器，然后执行如下命令，安装依赖包  
+```
+npm install
+```
+
+3、启动服务  
+```
+node ./dist/index.js
+```
 
 
 ### 小度鱼相关开源项目

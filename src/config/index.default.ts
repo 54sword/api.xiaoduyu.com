@@ -142,4 +142,12 @@ const config:Config = {
 
 }
 
+if (process.env.NODE_ENV == 'development') {
+	config.debug = true;
+	config.port = 3000;
+	config.mongodbURI = 'mongodb://localhost:27017/xiaoduyu';
+	config.domain = 'http://localhost:3000';
+	config.jpush.production = false;
+}
+
 export default config
