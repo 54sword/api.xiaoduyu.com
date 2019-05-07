@@ -54,8 +54,8 @@ app.use(rateLimit({
 }));
 
 // 设置静态文件，存放一些对外的静态文件
-app.use(express.static(path.join(__dirname, '../public')));
-app.use(express.static(path.join(__dirname, '../assets')));
+app.use(express.static(path.join(__dirname, '../../public')));
+app.use(express.static(path.join(__dirname, '../../assets')));
 
 app.all('*',function (req, res, next) {
 
