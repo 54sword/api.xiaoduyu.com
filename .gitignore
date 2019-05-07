@@ -25,8 +25,8 @@ build/Release
 node_modules
 
 dist
-src/config/index.ts
-src/config/index_*.ts
+config/index.ts
+config/index_*.ts
 *.DS_Store
 logs/*
 update.sh

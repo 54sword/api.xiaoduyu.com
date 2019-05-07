@@ -1,12 +1,12 @@
 {
   "name": "xiaoduyu-api",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "scripts": {
     "start": "cross-env NODE_ENV=development supervisor node ./dist/src/index.js",
     "dist": "tsc",
     "watch-ts": "tsc -w",
-    "pro": "node ./dist/index.js",
+    "pro": "node ./dist/src/index.js",
     "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/data/db"
   },
   "dependencies": {
@@ -37,7 +37,6 @@
     "graphql": "^14.1.1",
     "graphql-tools": "^4.0.4",
     "helmet": "^3.15.0",
-    "jpush-sdk": "^3.4.2",
     "jsonwebtoken": "^8.4.0",
     "log4js": "^4.0.0",
     "mongoose": "^5.4.8",
