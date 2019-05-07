@@ -2,17 +2,18 @@
 <img src="https://qncdn.xiaoduyu.com/20190507.png" alt="小度鱼" width="100">
 </p>
 <h1 align="center">小度鱼(API)</h1>
+<p align="center">一个年轻人的交流社区</p>
 
-#### 网址：[https://www.xiaoduyu.com](https://www.xiaoduyu.com)   
+#### 网址：[xiaoduyu.com](https://www.xiaoduyu.com)   
 #### APP下载（iOS与Android）   
 ![小度鱼](https://qncdn.xiaoduyu.com/qrcode.png "小度鱼")
 
 
-### 技术栈
+## 技术栈
 TypeScript、NodeJS、Express、GraphQL、MongoDB
 
 
-### 本地开发环境部署
+## 本地开发环境部署
 不保证 Windows 系统的兼容性  
 线上运行版本 Node.js 是 v8.7.0，MongoDB 是 v3.4.9
 
@@ -55,7 +56,7 @@ npm run start
 
 9、浏览器中打开 http://localhost:3000
 
-### 服务器部署
+## 服务器部署
 1、打包项目  
 ```
 npm run dist
@@ -72,12 +73,12 @@ node ./dist/src/index.js
 ```
 
 
-### 小度鱼相关开源项目
+## 小度鱼相关开源项目
  + 前端：[https://github.com/54sword/xiaoduyu.com](https://github.com/54sword/xiaoduyu.com)  
  + 后端：[https://github.com/54sword/api.xiaoduyu.com](https://github.com/54sword/api.xiaoduyu.com)  
  + 移动端：[https://github.com/54sword/xiaoduyuReactNative](https://github.com/54sword/xiaoduyuReactNative)  
  + 后台管理：[https://github.com/54sword/admin.xiaoduyu.com](https://github.com/54sword/admin.xiaoduyu.com)  
  + 自制React同构脚手架：[https://github.com/54sword/react-starter](https://github.com/54sword/react-starter)  
 
-### 开源协议
+## 开源协议
 MIT
