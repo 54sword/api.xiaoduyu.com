@@ -44,12 +44,12 @@ cp ./config/index.default.ts ./config/index.ts
 mkdir ./logs
 ```
    
-7、运行TypeScript编译器，监控src里面的文件变化      
+7、启动监听服务，保持进程不要关闭，运行TypeScript编译器，监控src里面的文件变化    
 ```
 npm run watch-ts
 ```
    
-8、启动项目  
+8、另外再启动项目服务   
 ```
 npm run start
 ```
