@@ -1,8 +1,13 @@
-# 小度鱼（后端API篇）
+<p align="center">
+<img src="https://qncdn.xiaoduyu.com/20190507.png" alt="小度鱼" width="100">
+</p>
+<h1 align="center">小度鱼(API)</h1>
 
-### 介绍
-小度鱼是一个好学人们的社区  
-[https://www.xiaoduyu.com](https://www.xiaoduyu.com) 
+#### 网址：[https://www.xiaoduyu.com](https://www.xiaoduyu.com)   
+#### APP下载（iOS与Android）   
+![小度鱼](https://qncdn.xiaoduyu.com/qrcode.png "小度鱼")
+
+
 ### 技术栈
 TypeScript、NodeJS、Express、GraphQL、MongoDB
 
@@ -30,7 +35,7 @@ npm install -g typescript
    
 5、创建默认的配置文件，并根据需要修改其中的配置   
 ```
-cp ./src/config/index.default.ts ./src/config/index.ts
+cp ./config/index.default.ts ./config/index.ts
 ```
 
 6、创建日志文件夹  
@@ -63,7 +68,7 @@ npm install
 
 3、启动服务  
 ```
-node ./dist/index.js
+node ./dist/src/index.js
 ```
 
 
