@@ -1,23 +1,23 @@
 <p align="center">
 <img src="https://qncdn.xiaoduyu.com/20190507.png" alt="小度鱼" width="100">
 </p>
-<h1 align="center">小度鱼(API)</h1>
-<p align="center">一个年轻人的交流社区</p>
+<h3 align="center">小度鱼(API)</h3>
+<p align="center">年轻人的交流社区</p>
 
-#### 网址：[xiaoduyu.com](https://www.xiaoduyu.com)   
-#### APP下载（iOS与Android）   
-![小度鱼](https://qncdn.xiaoduyu.com/qrcode.png "小度鱼")
+## 小度鱼开源项目
+|项目|项目体验|原代码|主要技术栈|
+|:---:|:---:|:---:|:---:|
+|WEB网站|[www.xiaoduyu.com](https://www.xiaoduyu.com)|[github.com/54sword/xiaoduyu.com](https://github.com/54sword/xiaoduyu.com)|React、Redux、React-Router、GraphQL|
+|APP（iOS、Android）|![小度鱼](https://qncdn.xiaoduyu.com/qrcode.png "小度鱼")|[github.com/54sword/xiaoduyuReactNative](https://github.com/54sword/xiaoduyuReactNative)|React-Native、Redux、React-Navigation、GraphQL|
+|后端API|[www.xiaoduyu.com/graphql](https://www.xiaoduyu.com/graphql)|[github.com/54sword/api.xiaoduyu.com](https://github.com/54sword/api.xiaoduyu.com)|TypeScript、NodeJS、Express、GraphQL、MongoDB|
+|后台管理|[admin.xiaoduyu.com](http://admin.xiaoduyu.com)|[github.com/54sword/admin.xiaoduyu.com](https://github.com/54sword/admin.xiaoduyu.com)|React、Redux、React-Router、GraphQL|
 
 
-## 技术栈
-TypeScript、NodeJS、Express、GraphQL、MongoDB
+## 开发环境部署
 
+线上运行版本 Node.js 是 v10.15.3，MongoDB 是 v4.0.6
 
-## 本地开发环境部署
-不保证 Windows 系统的兼容性  
-线上运行版本 Node.js 是 v8.7.0，MongoDB 是 v3.4.9
-
-1、安装 Node.js[必须] MongoDB[必须]   
+1、安装 Node.js[必须]、MongoDB[必须]，并启动 MongoDB   
 2、克隆项目   
 ```
 git clone git@github.com:54sword/api.xiaoduyu.com.git   
@@ -56,29 +56,23 @@ npm run start
 
 9、浏览器中打开 http://localhost:3000
 
-## 服务器部署
-1、打包项目  
+## 线上部署
+1、安装 Node.js[必须]、MongoDB[必须]，并启动 MongoDB  
+2、打包项目  
+注意：只要有修改了，都需要重新打包  
 ```
 npm run dist
 ```
 
-2、将 dist、public、logs、package.json、package-lock.json 上传到服务器，然后执行如下命令，安装依赖包  
+3、将 dist、public、logs、package.json、package-lock.json 上传到服务器，然后在服务器进入到项目目录，然后执行如下命令，安装依赖包  
 ```
 npm install
 ```
 
-3、启动服务  
+4、启动服务  
 ```
 node ./dist/src/index.js
 ```
-
-
-## 小度鱼相关开源项目
- + 前端：[https://github.com/54sword/xiaoduyu.com](https://github.com/54sword/xiaoduyu.com)  
- + 后端：[https://github.com/54sword/api.xiaoduyu.com](https://github.com/54sword/api.xiaoduyu.com)  
- + 移动端：[https://github.com/54sword/xiaoduyuReactNative](https://github.com/54sword/xiaoduyuReactNative)  
- + 后台管理：[https://github.com/54sword/admin.xiaoduyu.com](https://github.com/54sword/admin.xiaoduyu.com)  
- + 自制React同构脚手架：[https://github.com/54sword/react-starter](https://github.com/54sword/react-starter)  
 
 ## 开源协议
 MIT
