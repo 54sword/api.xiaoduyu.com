@@ -1,6 +1,6 @@
 
 import { Captcha, Account, Phone } from '../../../models';
-import config from '../../../config';
+import config from '../../../../config';
 const { domain, debug } = config;
 
 // tools
@@ -12,7 +12,7 @@ import * as alicloud from '../../../common/alicloud';
 import * as yunpian from '../../../common/yunpian';
 
 // data
-import Countries from '../../../config/countries';
+import Countries from '../../../../config/countries';
 
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
@@ -426,7 +426,7 @@ const sendSMS = ({ user, area_code = '', phone, type }:SendSMS) => {
     }
 
     // 发送短信
-    let serviceProvider = alicloud;
+    let serviceProvider: any = alicloud;
     // 阿里云仅支持国内短信，因此不需要加区号
     let _area_code = '';
 

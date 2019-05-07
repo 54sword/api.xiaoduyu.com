@@ -3,7 +3,7 @@ import { Report, User, Posts, Comment } from '../../../models'
 
 import To from '../../../utils/to'
 import CreateError from '../../common/errors';
-import reportList from '../../../config/report'
+import reportList from '../../../../config/report'
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'

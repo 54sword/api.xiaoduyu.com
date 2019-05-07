@@ -1,6 +1,6 @@
 // https://github.com/jpush/jpush-api-nodejs-client/blob/master/doc/api.md
 import JPush from 'jpush-sdk/lib/JPush/JPush.js'
-import config from '../config'
+import config from '../../config'
 
 const { debug, jpush } = config
 

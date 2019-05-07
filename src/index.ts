@@ -19,7 +19,7 @@ import MongoStore from 'rate-limit-mongo'
 // 日志记录
 import log4js from './utils/log4js'
 
-import config from './config'
+import config from '../config'
 
 import graphql from './graphql'
 import router from './router'
@@ -55,6 +55,7 @@ app.use(rateLimit({
 
 // 设置静态文件，存放一些对外的静态文件
 app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../assets')));
 
 app.all('*',function (req, res, next) {
 
@@ -113,3 +114,4 @@ const server = app.listen(config.port, ()=>{
 
 // 启动 websocket
 socket(server);
+

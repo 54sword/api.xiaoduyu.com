@@ -4,7 +4,7 @@ import fs from 'fs'
 import uuid from 'node-uuid'
 
 import Download from '../../../utils/download'
-import config from '../../../config'
+import config from '../../../../config'
 
 //需要填写你的 Access Key 和 Secret Key
 qiniu.conf.ACCESS_KEY = config.qiniu.accessKey;

@@ -2,7 +2,7 @@ import { ApolloServer, gql } from 'apollo-server-express'
 import { formatError } from 'apollo-errors'
 import { makeExecutableSchema } from 'graphql-tools'
 
-import config from '../config'
+import config from '../../config'
 import checkToken from './common/check-token'
 import * as Models from './models/index'
 
@@ -21,6 +21,7 @@ export default (app: any): void => {
 
       // 获取客户端请求ip
       let ip;
+      
       if (req.headers['x-forwarded-for']) {
         ip = req.headers['x-forwarded-for'].toString().split(",")[0];
       } else {
@@ -34,8 +35,8 @@ export default (app: any): void => {
       }
     },
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
-    introspection: config.debug,
-    playground: config.debug
+    introspection: true,//config.debug,
+    playground: true//config.debug
   });
 
   app.all('*', async (req: any, res: any, next: any) => {

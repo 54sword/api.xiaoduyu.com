@@ -132,11 +132,11 @@ export const addComment = {
     type: 'String',
     desc:'内容HTML'
   }),
-  device: (data: string): object => ({
+  device: (data: number): object => ({
     typename: 'save',
     name: 'device',
     value: data,
-    type: 'String',
+    type: 'Int',
     desc:'设备id'
   }),
   forward: (data: string): object => ({

@@ -5,7 +5,7 @@ import * as qq from './oauth/qq'
 import * as github from './oauth/github'
 import * as wechat from './oauth/wechat'
 
-import config from '../config'
+import config from '../../config'
 
 const { debug, oauth } = config
 

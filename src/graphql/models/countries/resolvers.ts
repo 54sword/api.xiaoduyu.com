@@ -1,4 +1,4 @@
-import Countries from '../../../config/countries'
+import Countries from '../../../../config/countries'
 
 const countries = ():Array<{code:string, name:string, abbr: string}> => Countries;
 

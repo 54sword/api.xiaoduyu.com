@@ -1,10 +1,12 @@
 import xss from 'xss'
 
-import config from '../../config'
+import config from '../../../config'
 import { User, Oauth, Token } from '../../models'
 import synthesis from '../../utils/synthesis'
 import To from '../../utils/to'
-import social from '../../config/social'
+import social from '../../../config/social'
+
+import { getIP } from '../../utils/tools';
 
 import checkToken from '../../graphql/common/check-token'
 
@@ -140,7 +142,8 @@ export default class OAuthClass {
       
       // 绑定失败，账号已绑定
       if (userId && oauth && oauth.deleted == false) {
-        return reject('has_been_binding');
+        reject('has_been_binding');
+        return;
       }
 
       // 将已解除绑定的账号，重新绑定用户
@@ -158,10 +161,11 @@ export default class OAuthClass {
         }));
 
         if (err) {
-          console.log(err)
-          return reject('binding_failed');
+          reject('binding_failed');
+          return
         } else {
-          return reject('binding_finished');
+          reject('binding_finished');
+          return
         }
 
       }
@@ -177,7 +181,8 @@ export default class OAuthClass {
           }
         }));
 
-        return reject('binding_finished');
+        reject('binding_finished');
+        return;
       }
 
       // 登陆
@@ -200,7 +205,8 @@ export default class OAuthClass {
         }));
 
         if (err || !user) {
-          return reject('create_user_failed');
+          reject('create_user_failed');
+          return;
         }
 
         [ err ] = await To(Oauth.save({
@@ -212,8 +218,9 @@ export default class OAuthClass {
         }));
 
         if (err) {
-          console.log(err);
-          return reject('create_oauth_failed');
+          // console.log(err);
+          reject('create_oauth_failed');
+          return;
         }
 
         resolve(user._id);
@@ -262,19 +269,16 @@ export default class OAuthClass {
     res.redirect(landingPageDomain+'/notice?notice='+string)
   }
 
+  // 创建token
+  public createAccessToken(ip: string, userId: string): Promise<object> {
+    return Token.create({ userId, ip });
+  }
+
   public async goToAutoSignin(req: any, res: any, userId: string) {
-
-    let ip;
-    if (req.headers['x-forwarded-for']) {
-      ip = req.headers['x-forwarded-for'].toString().split(",")[0];
-    } else {
-      ip = req.connection.remoteAddress;
-    }
-
-    var result: any = await Token.create({ userId, ip })
+    let ip = getIP(req);
+    var result: any = await this.createAccessToken(ip, userId)
     var landingPage = req.cookies['landing_page'] || config.oauth.landingPage;
     var landingPageDomain = req.cookies['landing_page_domain'] || config.oauth.landingPage;
-
     res.redirect(landingPageDomain+'/oauth?access_token='+result.access_token+'&expires='+result.expires+'&landing_page='+landingPage)
   }
 

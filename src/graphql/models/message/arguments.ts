@@ -104,11 +104,11 @@ export const addMessage = {
     type: 'String',
     desc:'内容展示格式'
   }),
-  device: (data: string): object => ({
+  device: (data: number): object => ({
     typename: 'save',
     name: 'device',
     value: data,
-    type: 'String',
+    type: 'Int',
     desc:'设备id'
   })
 }

@@ -181,8 +181,19 @@ export const download = function(uri: string, dir: string, filename: string, cal
   });
 };
 
-export const getIP = function(req: any) {
-         // form nginx ip
-  return req.headers['x-forwarded-for'] ||
-         req.connection.remoteAddress;
+/**
+ * 获取客户端ip地址
+ * @param req 
+ */
+export const getIP = function(req: any): string {
+
+  let ip;
+  if (req.headers['x-forwarded-for']) {
+    ip = req.headers['x-forwarded-for'].toString().split(",")[0];
+  } else {
+    ip = req.connection.remoteAddress;
+  }
+  
+  return ip;
+
 };

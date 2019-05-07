@@ -3,11 +3,11 @@
   "version": "2.2.0",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=development supervisor node ./dist/index.js",
+    "start": "cross-env NODE_ENV=development supervisor node ./dist/src/index.js",
     "dist": "tsc",
     "watch-ts": "tsc -w",
     "pro": "node ./dist/index.js",
-    "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-3.6.3/data/db"
+    "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/data/db"
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",
@@ -21,6 +21,7 @@
     "@types/node-uuid": "0.0.28",
     "@types/request": "^2.48.1",
     "@types/socket.io": "^2.1.2",
+    "aliyun-sdk": "^1.12.0",
     "apollo-errors": "^1.9.0",
     "apollo-server-express": "^2.3.3",
     "async": "^1.4.2",

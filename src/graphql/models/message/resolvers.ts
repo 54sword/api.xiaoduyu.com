@@ -1,6 +1,7 @@
 import { Message, Session, User} from '../../../models'
 import To from '../../../utils/to'
 import CreateError from '../../common/errors'
+import * as alicloud from '../../../common/alicloud';
 
 import xss from '../../../utils/xss'
 
@@ -32,20 +33,9 @@ const messages = async (root: any, args: any, context: any, schema: any) => {
   ];
 
   [ err, messageList ] = await To(Message.find({ query, options }));
-  
-  messageList.map((item: any)=>{
-    if (item.has_read) return;
-    if (user._id + '' == item.addressee_id._id) {
-      Message.update({
-        query: { _id: item._id },
-        update: { has_read: true }
-      });
-    }
-  });
 
   return messageList
 }
-
 
 const countMessages = async (root: any, args: any, context: any, schema: any) => {
 
@@ -180,10 +170,28 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
     });
   }
 
+  // 阿里云推送
+  let commentContent = content_html.replace(/<[^>]+>/g,"");
+      
+  let titleIOS = user.nickname + ': ' + commentContent;
+  if (titleIOS.length > 40) titleIOS = titleIOS.slice(0, 40) + '...';
+  
+  let body = commentContent;
+  if (body.length > 40) body = body.slice(0, 40) + '...';
+
+  alicloud.pushToAccount({
+    userId: addressee_id,
+    title: user.nickname,
+    body,
+    summary: titleIOS,
+    params: {
+      routeName: 'Sessions', params: {}
+    }
+  });
+
+
   updateSession(user._id, addressee_id, res._id);
   updateSession(addressee_id, user._id, res._id);
-
-
 
   return {
     success: true,

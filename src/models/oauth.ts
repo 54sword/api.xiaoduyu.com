@@ -1,7 +1,7 @@
 import { Oauth } from '../schemas'
 import baseMethod from './base-method'
 
-import social from '../config/social'
+import social from '../../config/social'
 
 /*
 const sources = {
