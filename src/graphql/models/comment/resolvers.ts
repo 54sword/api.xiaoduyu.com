@@ -1,28 +1,16 @@
 import { Comment, Like, Posts, User, UserNotification, Feed, Phone } from '../../../models';
 import xss from 'xss';
 
-import * as jpush from '../../../common/jpush';
+import config from '../../../../config';
+const { debug } = config;
+
+// import * as jpush from '../../../common/jpush';
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
+import * as alicloud from '../../../common/alicloud';
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
-
-/*
-Posts.find({
-  query: {},
-  select: { _id:1 }
-}).then(res=>{
-
-  res.map(i=>{
-    updatePostsCommentCount(i._id);
-  });
-
-
-  console.log('更新成功');
-});
-*/
-
 
 const comments = async (root: any, args: any, context: any, schema: any) => {
 
@@ -430,30 +418,34 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     });
   }
 
-  /*
-  // phone
-  [ err, result ] = await To(Phone.findOne({
-    query: { user_id: user._id }
-  }));
 
-  if (!result) {
+  // 正式环境开启限制
+  if (!debug) {
 
-    // 一个用户只能评论一次
-    if (posts_id && !parent_id && !reply_id) {
+    // phone
+    [ err, result ] = await To(Phone.findOne({
+      query: { user_id: user._id }
+    }));
 
-      [ err, result ] = await To(Comment.findOne({
-        query: { user_id: user._id, posts_id, parent_id: { $exists : false } }
-      }));
-      
-      if (result) {
-        throw CreateError({
-          message: '每个帖子仅能评论一次，绑定手机号后解除限制'
-        });
+    if (!result) {
+
+      // 一个用户只能评论一次
+      if (posts_id && !parent_id && !reply_id) {
+
+        [ err, result ] = await To(Comment.findOne({
+          query: { user_id: user._id, posts_id, parent_id: { $exists : false } }
+        }));
+        
+        if (result) {
+          throw CreateError({
+            message: '每个帖子仅能评论一次，绑定手机号后解除限制'
+          });
+        }
       }
+
     }
 
   }
-  */
 
   let _content_html = content_html || '';
 
@@ -628,6 +620,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     }
 
     if (user._id + '' != posts.user_id + '') {
+
       // 发送通知邮件给帖子作者
       await To(UserNotification.addOneAndSendNotification({
         data: {
@@ -637,8 +630,28 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
           comment_id: result._id
         }
       }));
+
+      // 阿里云推送
+      let commentContent = result.content_html.replace(/<[^>]+>/g,"");
+      
+      let titleIOS = user.nickname + ': ' + commentContent;
+      if (titleIOS.length > 40) titleIOS = titleIOS.slice(0, 40) + '...';
+      
+      let body = commentContent;
+      if (body.length > 40) body = body.slice(0, 40) + '...';
+
+      alicloud.pushToAccount({
+        userId: posts.user_id,
+        title: user.nickname,
+        body,
+        summary: titleIOS,
+        params: {
+          routeName: 'Notifications', params: {}
+        }
+      });
+
       // 极光推送
-      jpush.pushCommentToUser({ comment: result, posts, user });
+      // jpush.pushCommentToUser({ comment: result, posts, user });
     }
 
   }
@@ -660,13 +673,32 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
           comment_id: result._id
         }
       }));
+      
+      // 阿里云推送
+      let commentContent = result.content_html.replace(/<[^>]+>/g,"");
+      
+      let titleIOS = user.nickname + ': ' + commentContent;
+      if (titleIOS.length > 40) titleIOS = titleIOS.slice(0, 40) + '...';
+      
+      let body = commentContent;
+      if (body.length > 40) body = body.slice(0, 40) + '...';
 
-      try {
+      alicloud.pushToAccount({
+        userId: reply_id ? reply.user_id : parentComment.user_id,
+        title: user.nickname,
+        body,
+        summary: titleIOS,
+        params: {
+          routeName: 'Notifications', params: {}
+        }
+      });
+
+      // try {
         // 极光推送
-        jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
-      } catch (err) {
-        console.log(err);
-      }
+        // jpush.pushReplyToUser({ comment: parentComment, reply: result, user });
+      // } catch (err) {
+        // console.log(err);
+      // }
 
     }
 

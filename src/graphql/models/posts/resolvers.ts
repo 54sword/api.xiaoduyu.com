@@ -1,5 +1,9 @@
 import { Posts, User, Follow, Like, Topic, Feed, Phone } from '../../../models'
 
+
+import config from '../../../../config';
+const { debug } = config;
+
 import CreateError from '../../common/errors'
 import To from '../../../utils/to'
 
@@ -337,38 +341,42 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
       data: { error_data: countdown }
     });
   }
+  
+  if (!debug) {
 
-  // phone
-  [ err, result ] = await To(Phone.findOne({
-    query: { user_id: user._id }
-  }));
-
-  if (!result) {
-
-    // 一天仅能发布一次
-    let date = new Date();
-    [ err, result ] = await To(Posts.findOne({
-      query: {
-        user_id: user._id,
-        create_at: {
-          '$gte': new Date(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate())
-        }
-      }
+    // phone
+    [ err, result ] = await To(Phone.findOne({
+      query: { user_id: user._id }
     }));
 
-    if (err) {
-      throw CreateError({
-        message: '添加失败',
-        data: { errorInfo: err.message }
-      })
+    if (!result) {
+
+      // 一天仅能发布一次
+      let date = new Date();
+      [ err, result ] = await To(Posts.findOne({
+        query: {
+          user_id: user._id,
+          create_at: {
+            '$gte': new Date(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate())
+          }
+        }
+      }));
+
+      if (err) {
+        throw CreateError({
+          message: '添加失败',
+          data: { errorInfo: err.message }
+        })
+      }
+
+      if (result) {
+        throw CreateError({
+          message: '一天仅能发布一次帖子，绑定手机号后解除限制'
+        })
+      }
+      
     }
 
-    if (result) {
-      throw CreateError({
-        message: '一天仅能发布一次帖子，绑定手机号后解除限制'
-      })
-    }
-    
   }
 
   // title

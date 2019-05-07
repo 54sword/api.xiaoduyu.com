@@ -32,7 +32,7 @@ export default (server: any) => {
     setTimeout(()=>{
       updateOnline();
       timer();
-    }, 1000 * 10);
+    }, 1000 * 60);
   }
   timer();
 

@@ -1,6 +1,7 @@
 
 export interface Config {
 	debug: boolean
+	mongodbDebug: boolean
 	name: string
 	cookieSecret: string
 	jwtSecret: string
@@ -38,18 +39,16 @@ export interface Config {
     bucket: string
     url: string
 	}
-	jpush: {
-		// 是否是生产环境
-		production: boolean,
-		appKey: string,
-		masterSecret: string
-	}
 	alicloud: {
+		accessKeyId: string
+		secretAccessKey: string
 		sms: {
-			accessKeyId: string
-			secretAccessKey: string
 			signName: string
 			templateCode: string
+		},
+		push: {
+			androidAppKey: string
+			iOSAppKey: string
 		}
 	}
 	yunpian: {
@@ -60,9 +59,11 @@ export interface Config {
 	}
 }
 
-const config:Config = {
+let config:Config = {
 	// 调试
 	debug: false,
+	// mongodb debug模式，如果打开会显示数据库的记录
+	mongodbDebug: false,
 	// 社区名称
 	name: '小度鱼API',
 	// cookie 配置 [必填，建议修改]
@@ -74,12 +75,13 @@ const config:Config = {
 	defaultAvatar: '//img.xiaoduyu.com/default_avatar.jpg',
 	// mongodb配置 [必填]
 	mongodbURI: 'mongodb://localhost:27017/xiaoduyu',
+	
 	host: 'localhost',
 	// 端口 [必填]
-	port: 3000,
+	port: 9002,
 	// 网站的域名 [必填]
-	domain: 'http://localhost:3000',
-
+	domain: 'https://api.xiaoduyu.com',
+	
 	// 第三方发送邮件服务
 	email: {
 		// SendCloud配置信息，用于发送邮件 [必填, 否则将不能发送邮件]
@@ -97,8 +99,14 @@ const config:Config = {
 		qq: { appid: 0, appkey: '' },
 		github: { appid: '', appkey: '' },
 		wechatPC: { appid: '', appkey: '' },
-		wechat: { token: '', appid: '', appkey: '' },
-		// 授权成功后跳转到着陆网站，注意是绝对地址
+		wechat: {
+			// https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421135319
+			// 用于验证消息的确来自微信服务器
+			token: '',
+			appid: '',
+			appkey: ''
+		},
+		// 授权成功后跳转到着陆默认网站，如果能获取到header中的referer，则会以referer中的网站为着陆域名
 		landingPage: 'https://www.xiaoduyu.com'
 	},
 
@@ -107,27 +115,24 @@ const config:Config = {
 		accessKey: '',
     secretKey: '',
     bucket: '',
-    // 七牛的资源地址，“//” 需保留
+    // 七牛的资源地址
     url: '//img.xiaoduyu.com'
 	},
-
-	jpush: {
-		// 是否是生产环境
-		production: false,
-		appKey: '',
-		masterSecret: ''
-	},
-
+	
 	// 阿里云
 	alicloud: {
+		accessKeyId: '',
+		secretAccessKey: '',
 		// 短信服务
 		sms: {
-			accessKeyId: '',
-			secretAccessKey: '',
 			// 短信签名
 			signName: '小度鱼',
 			// 短信模版CODE
-			templateCode: 'SMS_****'
+			templateCode: ''
+		},
+		push: {
+			androidAppKey: '',
+			iOSAppKey: ''
 		}
 	},
 
@@ -144,10 +149,10 @@ const config:Config = {
 
 if (process.env.NODE_ENV == 'development') {
 	config.debug = true;
+	// config.mongodbDebug = true;
 	config.port = 3000;
 	config.mongodbURI = 'mongodb://localhost:27017/xiaoduyu';
 	config.domain = 'http://localhost:3000';
-	config.jpush.production = false;
 }
 
-export default config
+export default config;

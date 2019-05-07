@@ -26,7 +26,7 @@ class Model extends baseMethod {
       resolve({
         user_id: userId,
         access_token: token,
-        expires
+        expires: Math.floor(expires/1000)
       });
 
     })

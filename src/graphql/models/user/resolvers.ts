@@ -3,7 +3,7 @@ import { User, Account, Oauth, Phone, Captcha, Follow, Feed } from '../../../mod
 import xss from 'xss';
 import uuid from 'node-uuid';
 
-import Countries from '../../../config/countries';
+import Countries from '../../../../config/countries';
 import Validate from '../../../utils/validate';
 
 import To from '../../../utils/to';

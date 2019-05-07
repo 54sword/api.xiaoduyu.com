@@ -1,4 +1,4 @@
-import { Session } from '../../../models'
+import { Session, Message } from '../../../models'
 import To from '../../../utils/to'
 import CreateError from '../../common/errors'
 
@@ -152,12 +152,36 @@ const readSession = async (root: any, args: any, context: any, schema: any) => {
 
   if (session.addressee_id +'' == user._id + '') {
 
+    // 更新会话未读条数为0
     await To(Session.updateOne({
       query,
       update: {
         unread_count: 0
       }
     }));
+
+    // 查询这个会话中未读的消息，并更新为已读
+    Message.find({
+      query: {
+        addressee_id: session.addressee_id,
+        user_id: session.user_id,
+        has_read: false,
+        blocked: false,
+        deleted: false
+      }
+    }).then((res: any)=>{
+
+      if (res) {
+        res.map((item: any)=>{
+          Message.update({
+            query: { _id: item._id },
+            update: { has_read: true }
+          });
+        });
+      }
+
+      console.log(res);
+    });
       
     return {
       success: true

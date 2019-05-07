@@ -2,7 +2,7 @@ import request from 'request'
 import uuid from 'node-uuid'
 
 import To from '../../utils/to'
-import config from '../../config'
+import config from '../../../config'
 import OauthClass from './oauth.class'
 
 class GithubClass extends OauthClass {

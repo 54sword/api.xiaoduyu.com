@@ -16,6 +16,7 @@ export const Schema = `
   type addEmail {
     success: Boolean
   }
+
 `
 
 export const Query = `

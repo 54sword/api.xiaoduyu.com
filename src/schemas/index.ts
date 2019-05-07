@@ -1,9 +1,9 @@
 
 import mongoose from 'mongoose'
-import config from '../config'
-const { debug, mongodbURI } = config
+import config from '../../config'
+const { mongodbDebug, mongodbURI } = config
 
-// if (debug) mongoose.set('debug', true)
+if (mongodbDebug) mongoose.set('debug', true)
 
 mongoose.connect(mongodbURI, {
 	useCreateIndex: true,

@@ -2,7 +2,7 @@
 import { Phone, Captcha } from '../../../models'
 
 // tools
-import Countries from '../../../config/countries'
+import Countries from '../../../../config/countries'
 import To from '../../../utils/to'
 import CreateError from '../../common/errors'
 import * as JWT from '../../../utils/jwt'
