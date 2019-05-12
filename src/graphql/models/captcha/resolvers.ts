@@ -119,8 +119,8 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
       select: { _id: 1 },
       options: { sort:{ create_at: -1 } }
     }));
-
-    if (!result) return { success: true, _id: '', url: '' };
+    
+    if (!result) return { success: false };
 
     [ err, result ] = await To(Captcha.create({ ip, type }));
 

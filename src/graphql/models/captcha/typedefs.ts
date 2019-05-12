@@ -4,7 +4,7 @@ import { getArguments } from '../tools'
 
 export const Schema = `
 
-  # 返回图片验证码
+  # 返回图片验证码，如果没有，则表示无需验证验证码
   type captchaImg {
     success: Boolean
     _id: String
