@@ -490,7 +490,7 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   // 必须登陆用户才有权限
   if (!user) throw CreateError({ message: '请求被拒绝' });
   
-  let [err, query, content, result]:any = [];
+  let [err, query, content, result]:any = [], posts = null;
 
   // 获取查询条件
   [ err, query ] = getQuery({ args, model: Model.updatePosts, role });
@@ -522,6 +522,8 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
       throw CreateError({ message: '帖子超过24小时后，不能被修改' });
     }
   }
+
+  posts = result;
   
   content.update_at = new Date();
 
@@ -561,14 +563,27 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
       });
     }
 
-  }
+    // 更新话题帖子累计数
+    await To(Topic.update({
+      query: { _id: posts.topic_id },
+      update: { $inc: { 'posts_count': content.deleted ? -1 : 1 } }
+    }));
 
-  if (Reflect.has(content, 'recommend')) {
-    emit('member', { type: 'recommend-posts' });
+    // 更新用户帖子累计数
+    await To(User.update({
+      query: { _id: posts.user_id },
+      update: { $inc: { 'posts_count': content.deleted ? -1 : 1 } }
+    }));
+
   }
+  
+  // if (Reflect.has(content, 'recommend')) {
+    // emit('member', { type: 'recommend-posts' });
+  // }
 
   return { success: true }
 }
+
 
 const viewPosts = async (root:any, args: any, context: any, schema: any) => {
 
