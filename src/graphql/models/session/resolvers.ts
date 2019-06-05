@@ -179,8 +179,7 @@ const readSession = async (root: any, args: any, context: any, schema: any) => {
           });
         });
       }
-
-      console.log(res);
+      
     });
       
     return {

@@ -156,42 +156,4 @@ export const pushToAccount = ({ userId, title, body, summary, params }: pushToAc
     // console.log(err, res);
   });
   
-
-  /*
-  // ios
-  push.push({
-    AppKey: alicloud.push.iOSAppKey,
-    DeviceType: 0,
-    Target: 'account',
-    TargetValue: userId,
-    Type:1,
-    Title: title,
-    Body: body,
-    ApnsEnv: config.debug ? 'DEV' : 'PRODUCT',
-    // iOSMutableContent: true,
-    iOSExtParameters: JSON.stringify(params),
-    Summary: summary
-  }, function (err: any, res: any) {
-    console.log(err, res);
-  });
-  
-  // android
-  push.push({
-    AppKey: alicloud.push.androidAppKey,
-    DeviceType: 1,
-    Target: 'account',
-    TargetValue: userId,
-    Type:1,
-    Title: title,
-    Body: body,
-    ApnsEnv: config.debug ? 'DEV' : 'PRODUCT',
-    AndroidExtParameters: JSON.stringify(params),
-    Summary: summary
-    // AndroidNotificationChannel: 1
-  }, function (err: any, res: any) {
-    console.log(err, res);
-  });
-  */
-  
-  
 }
