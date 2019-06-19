@@ -1,4 +1,3 @@
-
 import * as JWT from '../../utils/jwt';
 import Token from '../../models/token';
 import User from '../../models/user';
