@@ -3,7 +3,7 @@ import To from '../../../utils/to'
 import CreateError from '../../common/errors'
 import * as alicloud from '../../../common/alicloud';
 
-import xss from '../../../utils/xss'
+import HTMLXSS from '../../common/html-xss';
 
 import { emit } from '../../../socket'
 
@@ -119,7 +119,7 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
     });
   }
 
-  content_html = xss(content_html);
+  content_html = HTMLXSS(content_html);
 
   let _content_html = content_html || '';
 

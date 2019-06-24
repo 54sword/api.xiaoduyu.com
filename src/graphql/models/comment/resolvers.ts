@@ -1,5 +1,4 @@
 import { Comment, Like, Posts, User, UserNotification, Feed, Phone } from '../../../models';
-import xss from 'xss';
 
 import config from '../../../../config';
 const { debug } = config;
@@ -7,6 +6,7 @@ const { debug } = config;
 // import * as jpush from '../../../common/jpush';
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
+import HTMLXSS from '../../common/html-xss';
 import * as alicloud from '../../../common/alicloud';
 
 import * as Model from './arguments'
@@ -342,8 +342,12 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
       throw CreateError({ message: '评论或回复，超过1小时后，不能被修改' });
     }
   }
-
+  
   update.update_at = new Date();
+
+  if (update.content_html) {
+    update.content_html = HTMLXSS(update.content_html);
+  }
 
   [ err, result ] = await To(Comment.update({ query, update }));
 
@@ -512,6 +516,9 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     }
   }
 
+  content_html = HTMLXSS(content_html);
+
+  /*
   content_html = xss(content_html, {
     whiteList: {
       a: ['href', 'title', 'target', 'rel'],
@@ -544,6 +551,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
       }
     }
   });
+  */
 
   let _contentHTML = content_html
   _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1")
@@ -825,4 +833,3 @@ function updateCommentReplyCount(comment_id: string, posts_id: string) {
   });
 
 };
-

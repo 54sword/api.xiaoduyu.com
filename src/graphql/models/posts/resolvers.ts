@@ -6,8 +6,7 @@ const { debug } = config;
 
 import CreateError from '../../common/errors'
 import To from '../../../utils/to'
-
-import xss from 'xss'
+import HTMLXSS from '../../common/html-xss';
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
@@ -380,12 +379,8 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
   }
 
   // title
-  title = xss(title, {
-    whiteList: {},
-    stripIgnoreTag: true,
-    onTagAttr: (tag: any, name: any, value: any, isWhiteAttr: any) => ''
-  })
-
+  title = HTMLXSS(title);
+  
   if (!title || title.replace(/(^\s*)|(\s*$)/g, "") == '') {
     throw CreateError({ message: '标题不能为空' });
   } else if (title.length > 120) {
@@ -399,6 +394,9 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
   //   onTagAttr: (tag, name, value, isWhiteAttr) => ''
   // });
   
+  content_html = HTMLXSS(content_html);
+
+  /*
   content_html = xss(content_html, {
     whiteList: {
       a: ['href', 'title', 'target', 'rel'],
@@ -415,6 +413,7 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
       }
     }
   });
+  */
 
   // topic
   [ err, result ] = await To(Topic.findOne({
@@ -526,6 +525,10 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   posts = result;
   
   content.update_at = new Date();
+
+  if (content.content_html) {
+    content.content_html = HTMLXSS(content.content_html);
+  }
 
   // 更新
   [ err, result ] = await To(Posts.update({ query, update: content }));
