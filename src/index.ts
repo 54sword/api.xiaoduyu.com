@@ -43,15 +43,17 @@ app.use(cookieParser(config.cookieSecret));
 // 可以支持X-Forwarded-Proto(协议代理) X-Forwarded-For(ip代理), X-Forwarded-Host(主机代理)
 app.set('trust proxy', 1);
 
-// [所有请求]限制每个ip，一小时最多1500次请求
-app.use(rateLimit({
-  store: new MongoStore({
-		uri: config.mongodbURI,
-		expireTimeMs: 60 * 60 * 1000
-  }),
-  windowMs: 60 * 60 * 1000,
-	max: 1500
-}));
+if (!config.debug) {
+	// [所有请求]限制每个ip，一小时最多1500次请求
+	app.use(rateLimit({
+		store: new MongoStore({
+			uri: config.mongodbURI,
+			expireTimeMs: 60 * 60 * 1000
+		}),
+		windowMs: 60 * 60 * 1000,
+		max: 1500
+	}));
+}
 
 // 设置静态文件，存放一些对外的静态文件
 app.use(express.static(path.join(__dirname, '../../public')));
@@ -60,7 +62,7 @@ app.use(express.static(path.join(__dirname, '../../assets')));
 app.all('*',function (req, res, next) {
 
   res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role, X-Requested-With');
+	res.header('Access-Control-Allow-Headers', 'Content-Type, AccessToken, Role, Cache-Control, X-Requested-With');
 	// res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With ,yourHeaderFeild, AccessToken');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 
@@ -114,4 +116,3 @@ const server = app.listen(config.port, ()=>{
 
 // 启动 websocket
 socket(server);
-

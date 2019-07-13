@@ -28,6 +28,7 @@ import './block'
 import './feed'
 import './message'
 import './session'
+// import './ad'
 
 export const User = mongoose.model('User')
 export const Account = mongoose.model('Account')
@@ -47,3 +48,4 @@ export const Block = mongoose.model('Block')
 export const Feed = mongoose.model('Feed')
 export const Message = mongoose.model('Message')
 export const Session = mongoose.model('Session')
+// export const AD = mongoose.model('AD')

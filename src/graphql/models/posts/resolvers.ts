@@ -16,6 +16,10 @@ import { emit } from '../../../socket'
 // 查询
 const posts = async (root: any, args: any, context: any, schema: any) => {
 
+  // console.log(schema.cacheControl);
+
+  schema.cacheControl.setCacheHint({ maxAge: 160, scope: 'PRIVATE' });
+
   const { user, role } = context
   const { method } = args
 
@@ -85,7 +89,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
       },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1,
-        'like_count': 1, 'user_id': 1, 'posts_id': 1
+        'like_count': 1, 'user_id': 1, 'posts_id': 1, 'ad': 1
       },
       options: { limit: 5, sort: { create_at: -1 } }
     })
@@ -514,13 +518,15 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   if (role != 'admin' && user._id + '' != result.user_id + '') {
     throw CreateError({ message: '无权修改' });
   }
-
+  
+  /*
   if (role != 'admin') {
     // 帖子超过48小时，则不能被修改
     if (new Date().getTime() - new Date(result.create_at).getTime() > 1000*60*60*24) {
       throw CreateError({ message: '帖子超过24小时后，不能被修改' });
     }
   }
+  */
 
   posts = result;
   

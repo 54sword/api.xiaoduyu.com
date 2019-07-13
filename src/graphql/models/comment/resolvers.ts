@@ -123,7 +123,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
 
   if (Reflect.has(select, 'user_id') && select.user_id) {
     options.populate.push([
-      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }, justOne: true }
+      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1, 'ad': 1 }, justOne: true }
     ])
   }
 
@@ -335,13 +335,15 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
       throw CreateError({ message: '无权限编辑' });
     }
   }
-
+  
+  /*
   if (role != 'admin') {
     // 帖子超过48小时，则不能被修改
     if (new Date().getTime() - new Date(comment.create_at).getTime() > 1000*60*60*1) {
       throw CreateError({ message: '评论或回复，超过1小时后，不能被修改' });
     }
   }
+  */
   
   update.update_at = new Date();
 

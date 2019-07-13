@@ -29,6 +29,7 @@ export const Schema = `
     banned_to_post: String
     avatar_url: String
     follow: Boolean
+    ad: String
   }
 
   # 获取自己的个人信息
@@ -69,6 +70,7 @@ export const Schema = `
     last_find_excellent_at: String
     has_password: Boolean
     theme: Int
+    ad: String
   }
 
   # 更新用户返回

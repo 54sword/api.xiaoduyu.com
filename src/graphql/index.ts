@@ -1,22 +1,35 @@
 import { ApolloServer, gql } from 'apollo-server-express'
-import { formatError } from 'apollo-errors'
-import { makeExecutableSchema } from 'graphql-tools'
+// import { formatError } from 'apollo-errors'
+// import { makeExecutableSchema } from 'graphql-tools'
+
+// import { MemcachedCache } from 'apollo-server-cache-memcached';
+import responseCachePlugin from 'apollo-server-plugin-response-cache';
 
 import config from '../../config'
 import checkToken from './common/check-token'
-import * as Models from './models/index'
+// import * as Models from './models/index'
+import { typeDefs, resolvers } from './models/index'
 
-const schema = makeExecutableSchema(Models)
+// import textReview from './common/text-review'
+// textReview(`
+// 国家政治江泽民，逃犯条款
+// `).then(res=>{
+//   console.log(res);
+// })
 
 /**
  * 启动 graphql
  * @param  {Object} app - express 的 app
  */
 export default (app: any): void => {
+
   
+  // https://www.apollographql.com/docs/apollo-server/whats-new/
   const server = new ApolloServer({
-    schema,
-    formatError,
+    // schema,
+    typeDefs: gql(typeDefs),
+    resolvers,
+    // formatError,
     context: ({ req }: any) => {
 
       // 获取客户端请求ip
@@ -34,6 +47,21 @@ export default (app: any): void => {
         ip
       }
     },
+    // persistedQueries: {
+    //   cache: new MemcachedCache(
+    //     ['memcached-server-1', 'memcached-server-2', 'memcached-server-3'],
+    //     { retries: 10, retry: 10000 }, // Options
+    //   ),
+    // },
+    // https://www.apollographql.com/docs/apollo-server/features/caching/#saving-full-responses-to-a-cache
+    // plugins: [responseCachePlugin({
+    //   sessionId: (requestContext: any) => {
+    //     return requestContext.request.http.headers.get('accesstoken') || 'tourists'
+    //   }
+    // })],
+    // cacheControl: {
+    //   defaultMaxAge: 1000
+    // },
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
     introspection: true,//config.debug,
     playground: true//config.debug
@@ -67,7 +95,7 @@ export default (app: any): void => {
 
     }
 
-	});
+  });
 
   server.applyMiddleware({ app, path: '/graphql' });
 }

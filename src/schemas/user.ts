@@ -86,6 +86,7 @@ const UserSchema = new Schema({
   password: String,
   // 主题(1亮色，2暗色)
   theme: { type: Number, default: 0 }
+  // ad: { type: ObjectId, ref: 'AD' }
 });
 
 UserSchema.virtual('avatar_url').get(function (this: any) {

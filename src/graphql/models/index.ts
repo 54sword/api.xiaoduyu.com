@@ -22,8 +22,9 @@ import * as user from './user'
 import * as userNotification from './user-notification'
 import * as message from './message'
 import * as session from './session'
+// import * as ad from './ad'
 
-export const typeDefs = [ `
+export const typeDefs = `
 
   ${account.typedefs.Schema}
   ${block.typedefs.Schema}
@@ -108,7 +109,7 @@ export const typeDefs = [ `
     query: Query
   }
 
-`]
+`
 
 export const resolvers = {
   // 查询

@@ -14,6 +14,7 @@ export const Schema = `
     comment_count: Int
     fans_count: Int
     follow: Boolean
+    ad: String
   }
 
   type _Topic {
@@ -34,7 +35,7 @@ export const Schema = `
   }
 
   # 帖子的返回字段
-  type Posts {
+  type Posts{
     _id: String
     # 作者
     user_id: _User
@@ -43,9 +44,9 @@ export const Schema = `
     # 类型
     type: String
     # 标题
-    title: String
+    title: String 
     # 内容Draft JSON
-    content: String,
+    content: String
     # 内容HTML
     content_html: String
     # 创建日期
