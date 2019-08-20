@@ -35,7 +35,7 @@ export const Schema = `
     content_html: String
   }
 
-  # 评论
+  "评论"
   type Comment {
     content: String
     content_html: String
@@ -59,37 +59,37 @@ export const Schema = `
     like: Boolean
   }
 
-  # 更新评论
+  "更新评论"
   type updateComment {
     success: Boolean
   }
 
-  # 评论计数
+  "评论计数"
   type countComments {
     count: Int
   }
 
-  # 添加评论
+  "添加评论"
   type addComment {
-    # 结果
+    "结果"
     success: Boolean
-    # posts id
+    "posts id"
     _id: ID
   }
 `
 
 export const Query = `
-  # 查询用户
-  comments(${getArguments(comments)}): [Comment]
+  "查询用户"
+  comments(${getArguments(comments)}): [Comment] @cacheControl(maxAge: 0, scope: PRIVATE)
 
-  # 评论计数
-  countComments(${getArguments(comments)}): countComments
+  "评论计数"
+  countComments(${getArguments(comments)}): countComments @cacheControl(maxAge: 0, scope: PRIVATE)
 `
 
 export const Mutation = `
-  # 添加评论
+  "添加评论"
   addComment(${getArguments(addComment)}): addComment
 
-  # 更新评论
+  "更新评论"
   updateComment(${getArguments(updateComment)}): updateComment
 `

@@ -27,25 +27,25 @@ export const Schema = `
     count: Int
   }
 
-  # 添加私信
+  "添加私信"
   type addMessage {
-    # 结果
+    "结果"
     success: Boolean
-    # 私信id
+    "私信id"
     _id: ID
   }
 
 `
 
 export const Query = `
-  # 查询私信
-  messages(${getArguments(messages)}): [messages]
+  "查询私信"
+  messages(${getArguments(messages)}): [messages] @cacheControl(maxAge: 0)
 
-  # 查询私信的总数
-  countMessages(${getArguments(messages)}): countMessages
+  "查询私信的总数"
+  countMessages(${getArguments(messages)}): countMessages @cacheControl(maxAge: 0)
 `
 
 export const Mutation = `
-  # 添加私信
+  "添加私信"
   addMessage(${getArguments(addMessage)}): addMessage
 `

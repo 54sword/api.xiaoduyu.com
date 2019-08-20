@@ -87,10 +87,9 @@ export const Schema = `
 `
 
 export const Query = `
-  # 查询帖子
-  feed(${getArguments(feed)}): [Feed]
-
-  countFeed(${getArguments(feed)}): countFeed
+  "查询帖子"
+  feed(${getArguments(feed)}): [Feed] @cacheControl(maxAge: 0)
+  countFeed(${getArguments(feed)}): countFeed @cacheControl(maxAge: 0)
 `
 
 export const Mutation = `

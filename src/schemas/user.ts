@@ -74,8 +74,9 @@ const UserSchema = new Schema({
   // 最近一次查询自己关注的feed的日期，用于有新的feed，与它比较是否有新的feed，显示小红点
   last_find_feed_at: { type: Date },
 
-  // 最近一次查询自己订阅帖子的日期
-  last_find_subscribe_at: { type: Date },
+  // 最近一次查询自己收藏帖子的日期
+  // last_find_subscribe_at: { type: Date },
+  last_find_favorite_at: { type: Date },
 
   // 最近一次查询优选帖子的日期
   last_find_excellent_at: { type: Date },

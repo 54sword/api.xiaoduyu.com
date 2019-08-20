@@ -22,7 +22,7 @@ import * as user from './user'
 import * as userNotification from './user-notification'
 import * as message from './message'
 import * as session from './session'
-// import * as ad from './ad'
+import * as sitemap from './sitemap'
 
 export const typeDefs = `
 
@@ -49,6 +49,7 @@ export const typeDefs = `
   ${userNotification.typedefs.Schema}
   ${message.typedefs.Schema}
   ${session.typedefs.Schema}
+  ${sitemap.typedefs.Schema}
 
   # 查询
   type Query {
@@ -75,6 +76,7 @@ export const typeDefs = `
     ${userNotification.typedefs.Query}
     ${message.typedefs.Query}
     ${session.typedefs.Query}
+    ${sitemap.typedefs.Query}
   }
 
   # 增、删、改
@@ -102,6 +104,7 @@ export const typeDefs = `
     ${userNotification.typedefs.Mutation}
     ${message.typedefs.Mutation}
     ${session.typedefs.Mutation}
+    ${sitemap.typedefs.Mutation}
   }
 
   schema {
@@ -136,7 +139,8 @@ export const resolvers = {
     ...user.resolvers.query,
     ...userNotification.resolvers.query,
     ...message.resolvers.query,
-    ...session.resolvers.query
+    ...session.resolvers.query,
+    ...sitemap.resolvers.query
   },
   // 修改
   Mutation: {
@@ -162,6 +166,7 @@ export const resolvers = {
     ...user.resolvers.mutation,
     ...userNotification.resolvers.mutation,
     ...message.resolvers.mutation,
-    ...session.resolvers.mutation
+    ...session.resolvers.mutation,
+    ...sitemap.resolvers.mutation
   }
 }

@@ -21,18 +21,18 @@ export const Schema = `
     posts_id: posts_id
   }
 
-  # 添加屏蔽
+  "添加屏蔽"
   type addBlock {
     success: Boolean
     _id: ID
   }
 
-  # 移除屏蔽
+  "移除屏蔽"
   type removeBlock {
     success: Boolean
   }
 
-  # 帖子计数
+  "帖子计数"
   type countBlocks {
     count: Int
   }
@@ -41,20 +41,20 @@ export const Schema = `
 
 export const Query = `
 
-  # 获取屏蔽列表
-  blocks(${getArguments(blocks)}): [blocks]
+  "获取屏蔽列表"
+  blocks(${getArguments(blocks)}): [blocks] @cacheControl(maxAge: 0)
 
-  # 帖子计数
-  countBlocks(${getArguments(blocks)}): countBlocks
+  "帖子计数"
+  countBlocks(${getArguments(blocks)}): countBlocks @cacheControl(maxAge: 0)
 
 `
 
 export const Mutation = `
 
-  # 添加屏蔽
+  "添加屏蔽"
   addBlock(${getArguments(addBlock)}): addBlock
 
-  # 移除屏蔽
+  "移除屏蔽"
   removeBlock(${getArguments(removeBlock)}): removeBlock
 
 `

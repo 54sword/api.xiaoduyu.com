@@ -11,6 +11,6 @@ export const Query = `
 `
 
 export const Mutation = `
-  # 赞
+  "赞"
   like(${getArguments(like)}): like
 `

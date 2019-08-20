@@ -44,20 +44,20 @@ export const Schema = `
 `
 
 export const Query = `
-  # 查询私信
-  sessions(${getArguments(sessions)}): [sessions]
+  "查询私信"
+  sessions(${getArguments(sessions)}): [sessions] @cacheControl(maxAge: 0)
 
-  # 查询私信的总数
-  countSessions(${getArguments(sessions)}): countSessions
+  "查询私信的总数"
+  countSessions(${getArguments(sessions)}): countSessions @cacheControl(maxAge: 0)
 
-  # 获取session
-  getSession(${getArguments(getSession)}): getSession
+  "获取session"
+  getSession(${getArguments(getSession)}): getSession @cacheControl(maxAge: 0)
 
-  # 获取未读会话
-  getUnreadSessions: getUnreadSessions
+  "获取未读会话"
+  getUnreadSessions: getUnreadSessions @cacheControl(maxAge: 0)
 `
 
 export const Mutation = `
-  # 设置session已阅
+  "设置session已阅"
   readSession(${getArguments(readSession)}): readSession
 `

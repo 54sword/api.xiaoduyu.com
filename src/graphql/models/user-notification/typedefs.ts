@@ -44,7 +44,7 @@ export const Schema = `
     content_trim: String
   }
 
-  # 话题
+  "话题"
   type userNotification {
     has_read: Boolean
     deleted: Boolean
@@ -57,17 +57,17 @@ export const Schema = `
     posts_id: posts_id
   }
 
-  # 更新用户的通知
+  "更新用户的通知"
   type updateUserNotifaction {
     success: Boolean
   }
 
-  # 用户通知计数
+  "用户通知计数"
   type countUserNotifications {
     count: Int
   }
 
-  # 获取未读的用户消息
+  "获取未读的用户消息"
   type fetchUnreadUserNotification {
     ids: [String]
   }
@@ -76,20 +76,20 @@ export const Schema = `
 
 export const Query = `
 
-  # 查询用户通知
+  "查询用户通知"
   userNotifications(${getArguments(userNotifications)}): [userNotification]
 
-  # 用户通知计数
+  "用户通知计数"
   countUserNotifications(${getArguments(userNotifications)}): countUserNotifications
 
-  # 获取未读的用户消息
+  "获取未读的用户消息"
   fetchUnreadUserNotification: fetchUnreadUserNotification
 
 `
 
 export const Mutation = `
 
-  # 更新用户的通知
+  "更新用户的通知"
   updateUserNotifaction(${getArguments(updateUserNotifaction)}): updateUserNotifaction
 
 `

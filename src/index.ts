@@ -43,7 +43,7 @@ app.use(cookieParser(config.cookieSecret));
 // 可以支持X-Forwarded-Proto(协议代理) X-Forwarded-For(ip代理), X-Forwarded-Host(主机代理)
 app.set('trust proxy', 1);
 
-if (!config.debug) {
+// if (!config.debug) {
 	// [所有请求]限制每个ip，一小时最多1500次请求
 	app.use(rateLimit({
 		store: new MongoStore({
@@ -51,9 +51,22 @@ if (!config.debug) {
 			expireTimeMs: 60 * 60 * 1000
 		}),
 		windowMs: 60 * 60 * 1000,
-		max: 1500
+		max: 1500,
+		skip: (req: any, res: any) => {
+
+      // 获取客户端请求ip
+      let ip;
+      
+      if (req.headers['x-forwarded-for']) {
+        ip = req.headers['x-forwarded-for'].toString().split(",")[0];
+      } else {
+        ip = req.connection.remoteAddress;
+			}
+			
+			return config.IPWhitelist.indexOf(ip) != -1 ? true : false;
+		}
 	}));
-}
+// }
 
 // 设置静态文件，存放一些对外的静态文件
 app.use(express.static(path.join(__dirname, '../../public')));

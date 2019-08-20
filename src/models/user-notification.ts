@@ -23,9 +23,46 @@ class Model extends baseMethod {
         [ err, res ] = await To(self.save({ data }));
         err ? reject(err) : resolve(res);
       }
-      
+
+      let options: any = [{
+        path: 'sender_id',
+        model: 'User',
+        select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
+        justOne: true
+      }];
+
+      if (data.comment_id) {
+        options.push({
+          path: 'comment_id',
+          select: {
+            '_id': 1,
+            'content_html': 1,
+            'create_at': 1,
+            'parent_id': 1
+          },
+          justOne: true
+        })
+      }
+
+      if (data.comment_id) {
+        options.push({
+          path: 'posts_id',
+          select: {
+            '_id': 1,
+            'title': 1,
+            'create_at': 1
+          },
+          justOne: true
+        })
+      }
+
+      [ err, res ] = await To(self.populate({
+        collections: data,
+        options
+      }));
+
       // 触发消息，通知该用户查询新通知
-      emit(data.addressee_id, { type:'notification' })
+      emit(data.addressee_id, { type:'notification', data: res })
     });
   }
 }

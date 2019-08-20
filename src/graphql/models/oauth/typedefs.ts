@@ -3,12 +3,12 @@ import { QQOAuth } from './arguments'
 
 export const Schema = `
 
-# 取消绑定
+"取消绑定"
 type oAuthUnbinding {
   success: Boolean
 }
 
-# 登陆&注册、绑定（绑定账号需要在headers中附带access_token）
+"登陆&注册、绑定（绑定账号需要在headers中附带access_token）"
 type QQOAuth {
   success: Boolean
   access_token: String

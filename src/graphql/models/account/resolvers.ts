@@ -9,12 +9,14 @@ import Validate from '../../../utils/validate'
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
 
+import config from '../../../../config'
+
 // 登录
 const signIn = async (root: any, args: any, context: any, schema: any) => {
 
   // 参数准备 ------------------------------------------------------------------
   
-  const { role, ip } = context;
+  const { role, ip, req, res } = context;
 
   let query: any = {}, err: any, result: any, account: any;
 
@@ -114,6 +116,18 @@ const signIn = async (root: any, args: any, context: any, schema: any) => {
     userId: account.user_id._id,
     ip
   });
+
+  // console.log(res.cookie);
+
+  // res.cookie('test', '1234', {
+  //   path: '/',
+  //   httpOnly: true,
+  //   maxAge: 1000 * 60 * 15
+  //   // domain: config.cookieDomain
+  // });
+
+  // console.log('======');  
+  // console.log(req.cookies)
 
   return {
     user_id: result.user_id,

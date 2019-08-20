@@ -6,7 +6,7 @@ export const getArguments = (params: any): string => {
 
   for (let i in params) {
     schema += `
-      #${params[i]().desc}${params[i]().role == 'admin' ? ' (管理员)' : ''}
+      "${params[i]().desc}${params[i]().role == 'admin' ? ' (管理员)' : ''}"
       ${i}:${params[i]().type}
     `
   }

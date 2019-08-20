@@ -37,9 +37,9 @@ export const Schema = `
     detail: String
   }
 
-  # 修改密码
+  "修改密码"
   type addRepory {
-    # 结果
+    "结果"
     success: Boolean
   }
 
@@ -65,6 +65,6 @@ export const Query = `
 `
 
 export const Mutation = `
-  # 修改密码
+  "修改密码"
   addReport(${getArguments(addReport)}): addRepory
 `

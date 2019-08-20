@@ -1,6 +1,5 @@
 import { Posts, User, Follow, Like, Topic, Feed, Phone } from '../../../models'
 
-
 import config from '../../../../config';
 const { debug } = config;
 
@@ -11,14 +10,14 @@ import HTMLXSS from '../../common/html-xss';
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
 
-import { emit } from '../../../socket'
+// import { emit } from '../../../socket'
 
 // 查询
 const posts = async (root: any, args: any, context: any, schema: any) => {
 
   // console.log(schema.cacheControl);
 
-  schema.cacheControl.setCacheHint({ maxAge: 160, scope: 'PRIVATE' });
+  // schema.cacheControl.setCacheHint({ maxAge: 160, scope: 'PRIVATE' });
 
   const { user, role } = context
   const { method } = args
@@ -98,7 +97,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   if (select.topic_id) {
     options.populate.push({
       path: 'topic_id',
-      select: { '_id': 1, 'name': 1, 'avatar':1 },
+      select: { '_id': 1, 'name': 1, 'avatar':1, 'parent_id': 1 },
       justOne: true
     })
   }
@@ -116,18 +115,29 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
     })
   }
 
+  let _options: Array<any> = [];
+
+  if (select.topic_id) {
+    _options.push({
+      path: 'topic_id.parent_id',
+      model: 'Topic',
+      select: { '_id': 1, 'name': 1, 'avatar':1 },
+      justOne: true
+    })
+  }
+
   if (select.comment && postList.length > 0) {
+    _options.push({
+      path: 'comment.user_id',
+      model: 'User',
+      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
+      justOne: true
+    })
+  }
 
-    options = [
-      {
-        path: 'comment.user_id',
-        model: 'User',
-        select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
-        justOne: true
-      }
-    ];
-
-    [ err, postList ] = await To(Posts.populate({ collections: postList, options }));
+  if (_options.length) {
+    
+    [ err, postList ] = await To(Posts.populate({ collections: postList, options: _options }));
 
     if (err) {
       throw CreateError({
@@ -173,6 +183,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
     })
   ];
 
+  /*
   if (method == 'user_follow' && limit != 1) {
     promises.push(
       User.update({
@@ -180,14 +191,19 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
         update: { last_find_posts_at: new Date() }
       })
     );
-  } else if (method == 'subscribe' && limit != 1 || method == 'favorite' && limit != 1) {
+  } else 
+  */
+  // method == 'favorite' && limit != 1 || 
+  if (method == 'favorite' && limit != 1) {
     promises.push(
       User.update({
         query: { _id: user._id },
-        update: { last_find_subscribe_at: new Date() }
+        update: { last_find_favorite_at: new Date() }
       })
     );
-  } else if (query.recommend && limit != 1) {
+  }
+  /*
+  else if (query.recommend && limit != 1) {
     promises.push(
       User.update({
         query: { _id: user._id },
@@ -195,6 +211,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
       })
     );
   }
+  */
 
   return Promise.all(promises).then(([ followPeopleList, followPostsList, likePostsList ]: any)=>{
 
@@ -268,7 +285,8 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
   }
 
   // 收藏
-  if (user && method == 'subscribe' || user && method == 'favorite') {
+  // user && method == 'subscribe' || 
+  if (user && method == 'favorite') {
 
     if (user.follow_posts.length == 0 && user.block_posts.length == 0) return [];
 
