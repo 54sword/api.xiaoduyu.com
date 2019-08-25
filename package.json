@@ -1,6 +1,6 @@
 {
   "name": "xiaoduyu-api",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": true,
   "scripts": {
     "start": "cross-env NODE_ENV=development supervisor node ./dist/src/index.js",
