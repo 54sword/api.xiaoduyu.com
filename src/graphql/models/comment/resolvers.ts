@@ -15,7 +15,13 @@ import { getQuery, getOption, getSave } from '../tools'
 const comments = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role, ip } = context
-  const { method } = args
+  const { method, reply_page_size = 3 } = args
+
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
+  // -------------------------
+
   let select: any = {}, query, options, err, commentList: any = [], likeList: any = [];
 
   [ err, query ] = getQuery({ args, model:Model.comments, role });
@@ -88,7 +94,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
         options.populate.push({
           path: 'reply',
           // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
+          options: { limit: reply_page_size },
           match
         });
 
@@ -96,7 +102,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
         options.populate.push({
           path: 'reply',
           // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
+          options: { limit: reply_page_size },
           match: { deleted: false, weaken: false }
         });
       }
@@ -281,6 +287,11 @@ const countComments = async (root: any, args: any, context: any, schema: any) =>
 
   const { user, role } = context;
   let err, query, count;
+
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
+  // -------------------------
 
   [ err, query ] = getQuery({ args, model:Model.comments, role });
 

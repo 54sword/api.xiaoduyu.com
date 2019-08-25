@@ -51,7 +51,7 @@ export const Schema = `
 
 export const Query = `
 
-  "查询帖子"
+  "查询话题"
   topics(${getArguments(topics)}): [Topic]
 
   "话题计数"

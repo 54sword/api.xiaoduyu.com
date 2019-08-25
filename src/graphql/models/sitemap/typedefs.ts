@@ -2,7 +2,6 @@ import { sitemap } from './arguments'
 import { getArguments } from '../tools'
 
 export const Schema = `
-
   type sitemap_posts {
     _id: String
     update_at: String

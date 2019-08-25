@@ -77,13 +77,13 @@ export const Schema = `
 export const Query = `
 
   "查询用户通知"
-  userNotifications(${getArguments(userNotifications)}): [userNotification]
+  userNotifications(${getArguments(userNotifications)}): [userNotification] @cacheControl(maxAge: 0)
 
   "用户通知计数"
-  countUserNotifications(${getArguments(userNotifications)}): countUserNotifications
+  countUserNotifications(${getArguments(userNotifications)}): countUserNotifications @cacheControl(maxAge: 0)
 
   "获取未读的用户消息"
-  fetchUnreadUserNotification: fetchUnreadUserNotification
+  fetchUnreadUserNotification: fetchUnreadUserNotification @cacheControl(maxAge: 0)
 
 `
 

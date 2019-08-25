@@ -65,6 +65,6 @@ export const Query = `
 `
 
 export const Mutation = `
-  "修改密码"
+  "添加举报"
   addReport(${getArguments(addReport)}): addRepory
 `

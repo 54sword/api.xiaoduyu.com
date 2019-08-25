@@ -14,13 +14,14 @@ import { getQuery, getOption, getSave } from '../tools'
 
 // 查询
 const posts = async (root: any, args: any, context: any, schema: any) => {
-
-  // console.log(schema.cacheControl);
-
-  // schema.cacheControl.setCacheHint({ maxAge: 160, scope: 'PRIVATE' });
-
+  
   const { user, role } = context
   const { method } = args
+
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 60, scope: 'PRIVATE' });
+  // -------------------------
 
   let select: any = {}, err, postList: any, query, options;
 
@@ -251,6 +252,11 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context
   const { method } = args
+
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 60, scope: 'PRIVATE' });
+  // -------------------------
 
   let [select, err, count, query]: any = [{}, null, null, null];
 

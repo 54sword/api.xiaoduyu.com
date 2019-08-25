@@ -58,6 +58,11 @@ const feed = async (root: any, args: any, context: any, schema: any) => {
   const { user, role } = context;
   let err, query: any, options: any, select = {}, list: any, followList;
 
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
+  // -------------------------
+
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
@@ -237,6 +242,11 @@ const countFeed = async (root: any, args: any, context: any, schema:any) => {
 
   const { user, role } = context;
   let err, query, options, select = {}, count;
+
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
+  // -------------------------
 
   [ err, query ] = getQuery({ args, model:Model.feed, role });
   [ err, options ] = getOption({ args, model:Model.feed, role });

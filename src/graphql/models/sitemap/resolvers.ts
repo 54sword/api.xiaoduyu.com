@@ -2,8 +2,8 @@ import { Posts, Topic } from '../../../models';
 
 import To from '../../../utils/to';
 
-import * as Model from './arguments'
-import { getOption } from '../tools'
+// import * as Model from './arguments'
+// import { getOption } from '../tools'
 
 // 查询
 const sitemap = async (root: any, args: any, context: any, schema: any) => {

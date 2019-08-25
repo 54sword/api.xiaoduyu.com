@@ -1,4 +1,5 @@
 import { ApolloServer, gql, AuthenticationError } from 'apollo-server-express'
+
 // import { formatError } from 'apollo-errors'
 // import { makeExecutableSchema } from 'graphql-tools'
 
@@ -59,7 +60,7 @@ export default (app: any): void => {
         }
     
       }
-      
+
       // 获取客户端请求ip
       let ip;
       
@@ -86,12 +87,16 @@ export default (app: any): void => {
     // https://www.apollographql.com/docs/apollo-server/features/caching/#saving-full-responses-to-a-cache
     plugins: [responseCachePlugin({
       sessionId: (requestContext: any) => {
+        // 不同的用户单独缓存
         return requestContext.request.http.headers.get('accesstoken') ? null : 'tourists'
+        // return requestContext.request.http.headers.get('accesstoken') || 'tourists'
       }
     })],
-    // cacheControl: {
-    //   defaultMaxAge: 60 * 5
-    // },
+    cacheControl: {
+      // 是否显示请求头
+      // calculateHttpHeaders: false,
+      defaultMaxAge: 60
+    },
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
     introspection: true,//config.debug,
     playground: true//config.debug

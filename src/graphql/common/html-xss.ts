@@ -12,7 +12,7 @@ export default function(str: string): string {
         img: ['src', 'alt'],
         p: [], div: [], br: [], blockquote: [], li: [], ol: [], ul: [],
         strong: [], em: [], u: [], pre: [], b: [], h1: [], h2: [], h3: [],
-        h4: [], h5: [], h6: [], h7: [], video: []
+        h4: [], h5: [], h6: [], h7: [], video: [], code: []
       },
       stripIgnoreTag: true,
     });

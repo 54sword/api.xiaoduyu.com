@@ -80,10 +80,10 @@ export const Schema = `
 
 export const Query = `
   "查询用户"
-  comments(${getArguments(comments)}): [Comment] @cacheControl(maxAge: 0, scope: PRIVATE)
+  comments(${getArguments(comments)}): [Comment]
 
   "评论计数"
-  countComments(${getArguments(comments)}): countComments @cacheControl(maxAge: 0, scope: PRIVATE)
+  countComments(${getArguments(comments)}): countComments
 `
 
 export const Mutation = `

@@ -28,12 +28,12 @@ export const Schema = `
 `
 
 export const Query = `
-
+  
   "查询用户通知"
-  notifications(${getArguments(notifications)}): [notification]
+  notifications(${getArguments(notifications)}): [notification] @cacheControl(maxAge: 0)
 
   "评论计数"
-  countNotifications(${getArguments(notifications)}): countNotifications
+  countNotifications(${getArguments(notifications)}): countNotifications @cacheControl(maxAge: 0)
 
 `
 

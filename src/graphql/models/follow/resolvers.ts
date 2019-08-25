@@ -39,6 +39,11 @@ const findFollows = async (root: any, args: any, context: any, schema: any) => {
   const { user, role } = context
   const { method } = args
 
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 0 });
+  // -------------------------
+
   let err, query, options, res, select: any = {}, list, ids: any;
 
 
@@ -204,8 +209,13 @@ const findFollows = async (root: any, args: any, context: any, schema: any) => {
 
 const countFindFollows = async (root: any, args: any, context: any, schema: any) => {
 
-  const { user, role } = context
-  const { method } = args
+  const { user, role } = context;
+  const { method } = args;
+
+  // -------------------------
+  // [缓存] 登录用户不使用缓存
+  if (user) schema.cacheControl.setCacheHint({ maxAge: 0 });
+  // -------------------------
 
   let err, query, options, count;
 
