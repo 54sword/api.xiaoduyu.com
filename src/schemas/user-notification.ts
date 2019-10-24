@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
@@ -13,6 +12,9 @@ const ObjectId = Schema.Types.ObjectId;
  * like-reply: xx 赞了你的回复
  * new-comment: xx 评论了 xx 帖子
  * like-posts: xx 赞了你的 xx 帖子
+ * 
+ * delete: 你的 xx 帖子被删除、你的 xx 评论被删除
+ * banned: 禁言
  */
 
 const UserNotificationSchema = new Schema({
@@ -26,10 +28,7 @@ const UserNotificationSchema = new Schema({
   create_at: { type: Date, default: Date.now }
 });
 
-// UserNotificationSchema.index({ addressee_id: 1 });
-// UserNotificationSchema.index({ addressee_id: 1, create_at: -1, deleted: 1 });
-
+UserNotificationSchema.index({ addressee_id: 1, has_read: 1, deleted: 1, type: 1 });
 UserNotificationSchema.index({ type: 1, sender_id: 1, addressee_id: 1, posts_id: 1, comment_id:1 }, { unique: true });
-
 
 mongoose.model('UserNotification', UserNotificationSchema);

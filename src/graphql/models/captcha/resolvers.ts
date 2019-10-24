@@ -17,6 +17,8 @@ import Countries from '../../../../config/countries';
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
 
+import temporaryEmail from '../../../../config/temporary-email'
+
 // 通过id获取验证码「单元测试环境使用」
 const getCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
@@ -55,6 +57,10 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
   if (err) throw CreateError({ message: err });
 
   let { email, phone, area_code, type } = fields;
+
+  if (email && temporaryEmail.indexOf(email.split('@')[1]) != -1) {
+    throw CreateError({ message: '验证码获取失败，不支持该邮箱服务商，请尝试其他。' });
+  }
 
   // =========================
   // 给自己绑定的邮箱发送验证码
@@ -151,8 +157,6 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
 export const query = { getCaptcha }
 export const mutation = { addCaptcha }
-
-// export { query, mutation, resolvers }
 
 
 interface SendEmail {

@@ -25,6 +25,8 @@ import graphql from './graphql'
 import router from './router'
 import socket from './socket'
 
+import * as Models from './models';
+
 const app = express();
 
 // 启动日志
@@ -33,7 +35,7 @@ log4js(app);
 app.use(helmet());
 
 // 开发环境生产,在控制台打印出请求记录
-if (config.debug) app.use(logger('dev'));
+// if (config.debug) app.use(logger('dev'));
 
 // http://www.cnblogs.com/vipstone/p/4865079.html
 app.use(bodyParser.json({limit: '20mb'}));
@@ -43,7 +45,7 @@ app.use(cookieParser(config.cookieSecret));
 // 可以支持X-Forwarded-Proto(协议代理) X-Forwarded-For(ip代理), X-Forwarded-Host(主机代理)
 app.set('trust proxy', 1);
 
-// if (!config.debug) {
+if (!config.debug) {
 	// [所有请求]限制每个ip，一小时最多1500次请求
 	app.use(rateLimit({
 		store: new MongoStore({
@@ -66,11 +68,30 @@ app.set('trust proxy', 1);
 			return config.IPWhitelist.indexOf(ip) != -1 ? true : false;
 		}
 	}));
-// }
+}
 
 // 设置静态文件，存放一些对外的静态文件
 app.use(express.static(path.join(__dirname, '../../public')));
 app.use(express.static(path.join(__dirname, '../../assets')));
+
+
+app.use(function (req: any, res: any, next: any) {
+
+  // 计算页面生成总的花费时间
+  const start_at = Date.now();
+  const _send = res.send;
+  res.send = function () {
+    
+    // 发送Header
+    res.set('X-Execution-Time', String(Date.now() - start_at) + ' ms');
+
+    // 调用原始处理函数
+    return _send.apply(res, arguments);
+  };
+
+  next();
+  
+});
 
 app.all('*',function (req, res, next) {
 
@@ -123,9 +144,22 @@ app.use(function(req, res, next) {
 	res.send('404 not found');
 });
 
+
+
+// 启动 websocket
+
 const server = app.listen(config.port, ()=>{
 	console.log('server started on port ' + config.port);
 });
 
-// 启动 websocket
-socket(server);
+socket(server, Models);
+
+/*
+let timer = function() {
+	setTimeout(()=>{
+		console.log(process.memoryUsage().heapUsed/1024/1204);
+		timer();
+	}, 5000);
+}
+timer();
+*/

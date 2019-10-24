@@ -15,8 +15,8 @@ export const Schema = `
     like_count: Int
     device: Int
     ip: String
-    blocked: Int
-    deleted: Int
+    blocked: Int @cacheControl(scope: PRIVATE)
+    deleted: Int @cacheControl(scope: PRIVATE)
     verify: Int
     weaken: Int
     recommend: Int
@@ -26,7 +26,7 @@ export const Schema = `
     parent_id: String
     reply_id: _ReplyUser
     update_at: String
-    like: Boolean
+    like: Boolean @cacheControl(scope: PRIVATE)
   }
 
   type _Posts {
@@ -44,8 +44,8 @@ export const Schema = `
     like_count: Int
     device: Int
     ip: String
-    blocked: Int
-    deleted: Int
+    blocked: Int @cacheControl(scope: PRIVATE)
+    deleted: Int @cacheControl(scope: PRIVATE)
     verify: Int
     weaken: Int
     recommend: Int
@@ -56,7 +56,7 @@ export const Schema = `
     reply_id: _ReplyUser
     reply: [_Reply]
     update_at: String
-    like: Boolean
+    like: Boolean @cacheControl(scope: PRIVATE)
   }
 
   "更新评论"

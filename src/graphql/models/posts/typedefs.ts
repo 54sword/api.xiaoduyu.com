@@ -14,7 +14,8 @@ export const Schema = `
     comment_count: Int
     fans_count: Int
     follow_people_count: Int
-    follow: Boolean
+    "关注 [PRIVATE]"
+    follow: Boolean @cacheControl(scope: PRIVATE)
   }
 
   type ParentTopic {
@@ -38,7 +39,6 @@ export const Schema = `
     reply_count: Int
     create_at: String
     content_html: String
-    like: Boolean
   }
 
   "帖子的返回字段"
@@ -76,8 +76,8 @@ export const Schema = `
     device: Int
     "IP"
     ip: String
-    "删除"
-    deleted: Boolean
+    "删除 [PRIVATE]"
+    deleted: Boolean @cacheControl(scope: PRIVATE)
     "验证"
     verify: Boolean
     "推荐"
@@ -88,10 +88,10 @@ export const Schema = `
     sort_by_date: String
     "评论"
     comment: [_Comment]
-    "关注（登陆用户）"
-    follow: Boolean,
-    "赞（登陆用户）"
-    like: Boolean
+    "关注（登陆用户）[PRIVATE]"
+    follow: Boolean @cacheControl(scope: PRIVATE)
+    "赞（登陆用户）[PRIVATE]"
+    like: Boolean @cacheControl(scope: PRIVATE)
   }
 
   "添加帖子"

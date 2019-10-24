@@ -59,8 +59,8 @@ export const Schema = `
 `
 
 export const Query = `
-  reports(${getArguments(reports)}): [reports]
-  countReports(${getArguments(reports)}): countReports
+  reports(${getArguments(reports)}): [reports] @cacheControl(scope: PRIVATE)
+  countReports(${getArguments(reports)}): countReports @cacheControl(scope: PRIVATE)
   fetchReportTypes: fetchReportTypes
 `
 

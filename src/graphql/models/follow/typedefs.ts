@@ -55,10 +55,10 @@ export const Schema = `
 
 export const Query = `
   "查询关注"
-  findFollows(${getArguments(findFollows)}): [follow]
+  findFollows(${getArguments(findFollows)}): [follow] @cacheControl(scope: PRIVATE)
 
   "获取关注的累计"
-  countFindFollows(${getArguments(findFollows)}): countFindFollows
+  countFindFollows(${getArguments(findFollows)}): countFindFollows @cacheControl(scope: PRIVATE)
 `
 
 export const Mutation = `

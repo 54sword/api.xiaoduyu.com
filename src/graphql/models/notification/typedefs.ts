@@ -30,10 +30,10 @@ export const Schema = `
 export const Query = `
   
   "查询用户通知"
-  notifications(${getArguments(notifications)}): [notification] @cacheControl(maxAge: 0)
+  notifications(${getArguments(notifications)}): [notification] @cacheControl(scope: PRIVATE)
 
   "评论计数"
-  countNotifications(${getArguments(notifications)}): countNotifications @cacheControl(maxAge: 0)
+  countNotifications(${getArguments(notifications)}): countNotifications @cacheControl(scope: PRIVATE)
 
 `
 

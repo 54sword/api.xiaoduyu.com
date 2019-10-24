@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
@@ -23,5 +22,6 @@ const NotificationSchema = new Schema({
 });
 
 NotificationSchema.index({ sender_id: 1, addressee_id: 1, target: 1, type: 1 }, { unique: true });
+NotificationSchema.index({ addressee_id: 1, deleted: 1, create_at: -1 });
 
 mongoose.model('Notification', NotificationSchema);

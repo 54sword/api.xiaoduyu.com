@@ -12,7 +12,7 @@ export const Schema = `
     avatar_url: String
     id: ID
   }
-
+  
   type addressee_id {
     create_at: String
     avatar: String
@@ -77,13 +77,13 @@ export const Schema = `
 export const Query = `
 
   "查询用户通知"
-  userNotifications(${getArguments(userNotifications)}): [userNotification] @cacheControl(maxAge: 0)
+  userNotifications(${getArguments(userNotifications)}): [userNotification] @cacheControl(scope: PRIVATE)
 
   "用户通知计数"
-  countUserNotifications(${getArguments(userNotifications)}): countUserNotifications @cacheControl(maxAge: 0)
+  countUserNotifications(${getArguments(userNotifications)}): countUserNotifications @cacheControl(scope: PRIVATE)
 
   "获取未读的用户消息"
-  fetchUnreadUserNotification: fetchUnreadUserNotification @cacheControl(maxAge: 0)
+  fetchUnreadUserNotification: fetchUnreadUserNotification
 
 `
 

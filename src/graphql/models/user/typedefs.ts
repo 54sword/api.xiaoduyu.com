@@ -9,7 +9,7 @@ export const Schema = `
     nickname_reset_at: String
     create_at: String
     last_sign_at: String
-    blocked: Boolean
+    blocked: Boolean @cacheControl(scope: PRIVATE)
     role: Int
     avatar: String
     brief: String
@@ -28,8 +28,9 @@ export const Schema = `
     nickname: String
     banned_to_post: String
     avatar_url: String
-    follow: Boolean
-    ad: String
+    follow: Boolean @cacheControl(scope: PRIVATE)
+    "用户封面"
+    user_cover: String
   }
 
   "获取自己的个人信息"
@@ -64,15 +65,18 @@ export const Schema = `
     phone: String
     area_code: String
     find_notification_at: String
+    "已废弃的字段"
     last_find_posts_at: String
     last_find_feed_at: String
-    # 已废弃的字段
+    "已废弃的字段"
     last_find_subscribe_at: String
     last_find_favorite_at: String
+    "已废弃的字段"
     last_find_excellent_at: String
     has_password: Boolean
     theme: Int
-    ad: String
+    "用户封面"
+    user_cover: String
   }
 
   "更新用户返回"

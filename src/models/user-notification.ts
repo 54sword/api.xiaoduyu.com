@@ -13,9 +13,10 @@ class Model extends baseMethod {
 
       if (!data) return reject('data is null');
 
-      let [ err, res] = await To(self.findOne({ query: data }));
+      let [ err, res ] = await To(self.findOne({ query: data }));
 
       if (err) return reject(err);
+
       if (res) {
         await To(self.update({ query: res._id, update: { deleted: false } }));
         resolve(res);
@@ -30,7 +31,7 @@ class Model extends baseMethod {
         select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
         justOne: true
       }];
-
+      
       if (data.comment_id) {
         options.push({
           path: 'comment_id',

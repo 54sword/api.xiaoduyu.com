@@ -30,7 +30,6 @@ export const Schema = `
   type _Feed_Comment {
     _id: String
     user_id: _Feed_User
-    # posts_id: _Feed_Comment_Posts
     like_count: Int
     reply_count: Int
     create_at: String
@@ -40,8 +39,6 @@ export const Schema = `
 
   type _Feed_Comment_A {
     _id: String
-    # user_id: _Feed_User
-    # posts_id: _Feed_Comment_Posts
     like_count: Int
     reply_count: Int
     create_at: String
@@ -88,8 +85,8 @@ export const Schema = `
 
 export const Query = `
   "查询帖子"
-  feed(${getArguments(feed)}): [Feed] @cacheControl(maxAge: 0)
-  countFeed(${getArguments(feed)}): countFeed @cacheControl(maxAge: 0)
+  feed(${getArguments(feed)}): [Feed] @cacheControl(scope: PRIVATE)
+  countFeed(${getArguments(feed)}): countFeed @cacheControl(scope: PRIVATE)
 `
 
 export const Mutation = `

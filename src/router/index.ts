@@ -7,13 +7,16 @@ import * as wechat from './oauth/wechat'
 
 import config from '../../config'
 
+import * as Models from '../models';
+
 const { debug, oauth } = config
 
 export default () => {
 
   const router = express.Router()
 
-  router.get('/', (req, res)=>{
+  router.get('/',  async (req: any, res: any)=>{
+
     let text = `
       <p>API服务运行中...</p>
       ${debug ? '<p><a href="/graphql">GraphQL API文档（线上环境会关闭）</a></p>' : ''}

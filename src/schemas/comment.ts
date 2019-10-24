@@ -44,4 +44,6 @@ const CommentSchema = new Schema({
   recommend: { type: Boolean, default: false }
 });
 
+CommentSchema.index({ posts_id: 1, parent_id: 1, deleted: 1, weaken: 1 });
+
 mongoose.model('Comment', CommentSchema);

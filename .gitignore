@@ -30,3 +30,4 @@ config/index_*.ts
 *.DS_Store
 logs/*
 update.sh
+other

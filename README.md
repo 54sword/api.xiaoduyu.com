@@ -51,7 +51,7 @@ npm run watch-ts
    
 8、另外再启动项目服务   
 ```
-npm run start
+npm run dev
 ```
 
 9、浏览器中打开 http://localhost:3000

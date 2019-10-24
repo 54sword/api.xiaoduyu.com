@@ -1,9 +1,12 @@
-
 import mongoose from 'mongoose'
 import config from '../../config'
 const { mongodbDebug, mongodbURI } = config
 
 if (mongodbDebug) mongoose.set('debug', true)
+
+// https://mongoosejs.com/docs/deprecations.html
+// (node:9156) DeprecationWarning: current Server Discovery and Monitoring engine is deprecated, and will be removed in a future version. To use the new Server Discover and Monitoring engine, pass option { useUnifiedTopology: true } to the MongoClient constructor.
+mongoose.set('useUnifiedTopology', true)
 
 mongoose.connect(mongodbURI, {
 	useCreateIndex: true,
@@ -28,7 +31,7 @@ import './block'
 import './feed'
 import './message'
 import './session'
-// import './ad'
+import './live'
 
 export const User = mongoose.model('User')
 export const Account = mongoose.model('Account')
@@ -48,4 +51,4 @@ export const Block = mongoose.model('Block')
 export const Feed = mongoose.model('Feed')
 export const Message = mongoose.model('Message')
 export const Session = mongoose.model('Session')
-// export const AD = mongoose.model('AD')
+export const Live = mongoose.model('Live')

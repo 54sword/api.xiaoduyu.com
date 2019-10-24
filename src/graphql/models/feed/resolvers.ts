@@ -1,4 +1,3 @@
-
 import { Feed, Follow, Like, User } from '../../../models';
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
@@ -6,73 +5,17 @@ import CreateError from '../../common/errors';
 import * as Model from './arguments'
 import { getQuery, getOption } from '../tools'
 
-/*
-Posts.find({
-  query: {}
-}).then(result=>{
-  // console.log(res);
-  // console.log(res);
-
-  result.map(item=>{
-    Feed.save({
-      data: {
-        user_id: item.user_id,
-        topic_id: item.topic_id,
-        posts_id: item._id,
-        create_at: item.create_at
-      }
-    })
-  });
-
-  console.log('posts 完成');
-
-});
-
-
-
-Comment.find({
-  query: {}
-}).then(result=>{
-  // console.log(res);
-  // console.log(res);
-
-  result.map(item=>{
-    Feed.save({
-      data: {
-        user_id: item.user_id,
-        posts_id: item.posts_id,
-        comment_id: item._id,
-        create_at: item.create_at
-      }
-    })
-  })
-
-  console.log('comment 完成');
-
-});
-*/
-
 
 const feed = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context;
   let err, query: any, options: any, select = {}, list: any, followList;
 
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
-  // -------------------------
-
   // 请求用户的角色
   let admin = role == 'admin' ? true : false;
 
   [ err, query ] = getQuery({ args, model:Model.feed, role });
   [ err, options ] = getOption({ args, model:Model.feed, role });
-
-
-  // if (!options.limit || options.limit > 50) {
-  //   options.limit = 50
-  // }
 
   let limit = options.limit;
 
@@ -96,21 +39,63 @@ const feed = async (root: any, args: any, context: any, schema: any) => {
 
     // 关注的用户的评论与帖子
     if (user.follow_people.length > 0) {
+      
+      let obj: any = {
+        user_id: { '$in': user.follow_people },
+        deleted: false
+      };
+
+      if (user.block_people && user.block_people.length > 0) {
+        obj.user_id['$nin'] = user.block_people;
+      }
+
+      if (user.block_posts && user.block_posts.length > 0) {
+        obj.posts_id = {
+          '$nin': user.block_posts
+        }
+      }
+
+      _query['$or'].push(Object.assign({}, query, obj, {}));
+
+      /*
       _query['$or'].push(Object.assign({}, query, {
         user_id: { '$in': user.follow_people, '$nin': user.block_people },
         posts_id: { '$nin': user.block_posts },
         deleted: false
       }, {}));
+      */
     }
 
     // 关注的话题的评论与帖子
     if (user.follow_topic.length > 0) {
+      
+      let obj: any = {
+        topic_id: {'$in': user.follow_topic },
+        deleted: false
+      };
+
+      if (user.block_people && user.block_people.length > 0) {
+        obj.user_id = {
+          '$nin': user.block_people
+        }
+      }
+
+      if (user.block_posts && user.block_posts.length > 0) {
+        obj.posts_id = {
+          '$nin': user.block_posts
+        }
+      }
+      
+      _query['$or'].push(Object.assign({}, query, obj, {}));
+
+      /*
       _query['$or'].push(Object.assign({}, query, {
         user_id: { '$nin': user.block_people },
         topic_id: {'$in': user.follow_topic },
         posts_id: { '$nin': user.block_posts },
         deleted: false
       }, {}));
+      */
     }
 
     query = _query;
@@ -243,11 +228,6 @@ const countFeed = async (root: any, args: any, context: any, schema:any) => {
   const { user, role } = context;
   let err, query, options, select = {}, count;
 
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
-  // -------------------------
-
   [ err, query ] = getQuery({ args, model:Model.feed, role });
   [ err, options ] = getOption({ args, model:Model.feed, role });
 
@@ -301,7 +281,7 @@ const countFeed = async (root: any, args: any, context: any, schema:any) => {
 
 // 更新用户最后一次查询feed的日期
 const updateLastFindFeedDate = (userId: string) => {
-  User.update({
+  User.updateOne({
     query: { _id: userId },
     update: { last_find_feed_at: new Date() }
   });

@@ -7,6 +7,8 @@ import CreateError from '../../common/errors';
 import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
 
+import cache from '../../../common/cache';
+
 /*
 Follow.aggregate([
   {
@@ -38,11 +40,6 @@ const findFollows = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context
   const { method } = args
-
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 0 });
-  // -------------------------
 
   let err, query, options, res, select: any = {}, list, ids: any;
 
@@ -212,11 +209,6 @@ const countFindFollows = async (root: any, args: any, context: any, schema: any)
   const { user, role } = context;
   const { method } = args;
 
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 0 });
-  // -------------------------
-
   let err, query, options, count;
 
   // [ err, query ] = getQuery({ args, model:'follow', role });
@@ -236,10 +228,9 @@ const countFindFollows = async (root: any, args: any, context: any, schema: any)
   return { count }
 }
 
-// 还缺少通知
 const addFollow = async (root: any, args: any, context: any, schema: any) => {
 
-  const { user, role } = context;
+  const { token, user, role } = context;
   let err, // 错误
       result, // 结果
       fields, // 字段
@@ -318,7 +309,7 @@ const addFollow = async (root: any, args: any, context: any, schema: any) => {
     }
 
     if (result.user_id + '' == user._id) {
-      throw CreateError({ message: '不能关注自己的帖子' });
+      throw CreateError({ message: '不能收藏自己的帖子' });
     }
 
     posts_user_id = result.user_id;
@@ -451,6 +442,8 @@ const addFollow = async (root: any, args: any, context: any, schema: any) => {
 
   }
 
+  cache.del(token);
+
   return {
     success: true
   }
@@ -458,110 +451,132 @@ const addFollow = async (root: any, args: any, context: any, schema: any) => {
 
 
 
-async function updateUserPostsCount(userId: string) {
+function updateUserPostsCount(userId: string) {
 
-  let [ err, result ] = await To(Follow.find({
-    query: {
-      user_id: userId,
-      posts_id: { $exists: true },
-      deleted: false
-    },
-    select: { posts_id: 1, _id: 0 }
-  }));
+  return new Promise(async (resolve)=>{
 
-  var ids: any = [];
-  result.map((item: any) =>{ ids.push(item.posts_id) });
+    let [ err, result ] = await To(Follow.find({
+      query: {
+        user_id: userId,
+        posts_id: { $exists: true },
+        deleted: false
+      },
+      select: { posts_id: 1, _id: 0 }
+    }));
 
-  [ err, result ] = await To(User.update({
-    query: { _id: userId },
-    update: { follow_posts: ids, follow_posts_count: ids.length }
-  }));
+    var ids: any = [];
+    result.map((item: any) =>{ ids.push(item.posts_id) });
 
-};
+    [ err, result ] = await To(User.updateOne({
+      query: { _id: userId },
+      update: { follow_posts: ids, follow_posts_count: ids.length }
+    }));
 
-async function updateUserTopicCount(userId: string) {
-
-  let [ err, result ] = await To(Follow.find({
-    query: {
-      user_id: userId,
-      topic_id: { $exists: true },
-      deleted: false
-    },
-    select: { topic_id: 1, _id: 0 }
-  }));
-
-  var ids: any = [];
-  result.map((item: any) =>{ ids.push(item.topic_id) });
-
-  [ err, result ] = await To(User.update({
-    query: { _id: userId },
-    update: { follow_topic: ids, follow_topic_count: ids.length }
-  }));
+    resolve();
+  })
 
 };
 
+function updateUserTopicCount(userId: string) {
 
-async function updateUserFollowPeopleCount(userId: string) {
+  return new Promise(async (resolve)=>{
 
-  let [ err, result ] = await To(Follow.find({
-    query: {
-      user_id: userId,
-      people_id: { $exists: true },
-      deleted: false
-    },
-    select: { people_id: 1, _id: 0 }
-  }));
+    let [ err, result ] = await To(Follow.find({
+      query: {
+        user_id: userId,
+        topic_id: { $exists: true },
+        deleted: false
+      },
+      select: { topic_id: 1, _id: 0 }
+    }));
 
-  var ids: any = [];
-  result.map((item: any) =>{ ids.push(item.people_id) });
+    var ids: any = [];
+    result.map((item: any) =>{ ids.push(item.topic_id) });
 
-  [ err, result ] = await To(User.update({
-    query: { _id: userId },
-    update: { follow_people: ids, follow_people_count: ids.length }
-  }));
+    [ err, result ] = await To(User.updateOne({
+      query: { _id: userId },
+      update: { follow_topic: ids, follow_topic_count: ids.length }
+    }));
 
+    resolve();
+  })
 };
 
 
-async function updatePostsFollowCount(postsId: any) {
+function updateUserFollowPeopleCount(userId: string) {
+  return new Promise(async (resolve)=>{
 
-  let [ err, total ] = await To(Follow.count({
-    query: { posts_id: postsId, deleted: false }
-  }));
+    let [ err, result ] = await To(Follow.find({
+      query: {
+        user_id: userId,
+        people_id: { $exists: true },
+        deleted: false
+      },
+      select: { people_id: 1, _id: 0 }
+    }));
 
-  await To(Posts.update({
-    query: { _id: postsId },
-    update: { follow_count: total }
-  }));
+    var ids: any = [];
+    result.map((item: any) =>{ ids.push(item.people_id) });
 
+    [ err, result ] = await To(User.updateOne({
+      query: { _id: userId },
+      update: { follow_people: ids, follow_people_count: ids.length }
+    }));
+
+    resolve();
+  })
+};
+
+
+function updatePostsFollowCount(postsId: any) {
+  return new Promise(async (resolve)=>{
+
+    let [ err, total ] = await To(Follow.count({
+      query: { posts_id: postsId, deleted: false }
+    }));
+
+    await To(Posts.update({
+      query: { _id: postsId },
+      update: { follow_count: total }
+    }));
+    resolve();
+  })
 };
 
 
 // 更新节点被关注的数量
-async function updateTopicFollowCount(topicId: string) {
+function updateTopicFollowCount(topicId: string) {
+  return new Promise(async (resolve)=>{
 
-  let [ err, total ] = await To(Follow.count({
-    query: { topic_id: topicId, deleted: false }
-  }));
+    let [ err, total ] = await To(Follow.count({
+      query: { topic_id: topicId, deleted: false }
+    }));
+  
+    await To(Topic.update({
+      query: { _id: topicId },
+      update: { follow_count: total }
+    }));
 
-  await To(Topic.update({
-    query: { _id: topicId },
-    update: { follow_count: total }
-  }));
-
+    resolve();
+  })
 };
 
-async function updatePeopleFollowCount(peopleId: string) {
+function updatePeopleFollowCount(peopleId: string) {
 
-  let [ err, total ] = await To(Follow.count({
-    query: { people_id: peopleId, deleted: false }
-  }));
+  return new Promise(async (resolve)=>{
 
-  await To(User.update({
-    query: { _id: peopleId },
-    update: { fans_count: total }
-  }));
+    let [ err, total ] = await To(Follow.count({
+      query: { people_id: peopleId, deleted: false }
+    }));
 
+    await To(User.updateOne({
+      query: { _id: peopleId },
+      update: { fans_count: total }
+    }));
+
+    resolve();
+  })
+  
 };
 
 

@@ -1,4 +1,4 @@
-import { Posts, User, Follow, Like, Topic, Feed, Phone } from '../../../models'
+import { Posts, User, Follow, Like, Topic, Feed, Phone, UserNotification } from '../../../models'
 
 import config from '../../../../config';
 const { debug } = config;
@@ -10,18 +10,11 @@ import HTMLXSS from '../../common/html-xss';
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
 
-// import { emit } from '../../../socket'
-
 // 查询
 const posts = async (root: any, args: any, context: any, schema: any) => {
   
   const { user, role } = context
   const { method } = args
-
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 60, scope: 'PRIVATE' });
-  // -------------------------
 
   let select: any = {}, err, postList: any, query, options;
 
@@ -40,6 +33,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   // 用户隐私信息，仅对管理员可以返回
   if (!role || role != 'admin') {
     if (select.ip) delete select.ip;
+    query.deleted = false;
   }
 
   // 增加屏蔽条件
@@ -58,15 +52,16 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
 
   }
 
-  // 收藏
+  // 查询用户收藏的帖子
   if (user && method == 'subscribe' || user && method == 'favorite') {
+  // if (user && method == 'favorite') {
 
     if (user.follow_posts.length == 0 && user.block_posts.length == 0) return [];
 
     query._id = {
-      '$in': user.follow_posts,
+      '$in': user.follow_posts
       // 过滤屏蔽的帖子
-      '$nin': user.block_posts
+      // '$nin': user.block_posts
     }
 
   }
@@ -184,35 +179,14 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
     })
   ];
 
-  /*
-  if (method == 'user_follow' && limit != 1) {
-    promises.push(
-      User.update({
-        query: { _id: user._id },
-        update: { last_find_posts_at: new Date() }
-      })
-    );
-  } else 
-  */
-  // method == 'favorite' && limit != 1 || 
   if (method == 'favorite' && limit != 1) {
     promises.push(
-      User.update({
+      User.updateOne({
         query: { _id: user._id },
         update: { last_find_favorite_at: new Date() }
       })
     );
   }
-  /*
-  else if (query.recommend && limit != 1) {
-    promises.push(
-      User.update({
-        query: { _id: user._id },
-        update: { last_find_excellent_at: new Date() }
-      })
-    );
-  }
-  */
 
   return Promise.all(promises).then(([ followPeopleList, followPostsList, likePostsList ]: any)=>{
 
@@ -253,11 +227,6 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
   const { user, role } = context
   const { method } = args
 
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 60, scope: 'PRIVATE' });
-  // -------------------------
-
   let [select, err, count, query]: any = [{}, null, null, null];
 
   [ err, query ] = getQuery({ args, model: Model.posts, role });
@@ -265,7 +234,7 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
   if (err) {
     throw CreateError({ message: err })
   }
-
+  
   // 未登陆用户，不能使用method方式查询
   if (!user && method) {
     throw CreateError({ message: '请求被拒绝' })
@@ -273,6 +242,11 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map((item:any)=>select[item.name.value] = 1);
+
+  // 如果不是管理员，不查询删除的帖子
+  if (!role || role != 'admin') {
+    query.deleted = false;
+  }
 
   // 增加屏蔽条件
   // 1、如果是登陆状态，那么增加屏蔽条件
@@ -490,7 +464,7 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
     update: { $inc: { 'posts_count': 1 } }
   }));
 
-  await To(User.update({
+  await To(User.updateOne({
     query: { _id: user._id },
     update: { $inc: { 'posts_count': 1 } }
   }));
@@ -543,14 +517,12 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
     throw CreateError({ message: '无权修改' });
   }
   
-  /*
   if (role != 'admin') {
     // 帖子超过48小时，则不能被修改
-    if (new Date().getTime() - new Date(result.create_at).getTime() > 1000*60*60*24) {
-      throw CreateError({ message: '帖子超过24小时后，不能被修改' });
+    if (new Date().getTime() - new Date(result.create_at).getTime() > 1000*60*60*24*3) {
+      throw CreateError({ message: '帖子超过3天，不能被修改' });
     }
   }
-  */
 
   posts = result;
   
@@ -597,16 +569,26 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
     }
 
     // 更新话题帖子累计数
-    await To(Topic.update({
+    await To(Topic.updateOne({
       query: { _id: posts.topic_id },
       update: { $inc: { 'posts_count': content.deleted ? -1 : 1 } }
     }));
 
     // 更新用户帖子累计数
-    await To(User.update({
+    await To(User.updateOne({
       query: { _id: posts.user_id },
       update: { $inc: { 'posts_count': content.deleted ? -1 : 1 } }
     }));
+
+    // 发送通知，帖子被删除
+    if (content.deleted) {
+      UserNotification.save({
+        sender_id: user._id,
+        addressee_id: posts.user_id,
+        posts_id: posts._id,
+        type: 'delete'
+      })
+    }
 
   }
   

@@ -24,7 +24,7 @@ const oAuthUnbinding = async (root: any, args: any, context: any, schema: any) =
   if (err) throw CreateError({ message: '查询失败' });
   if (!res) throw CreateError({ message: '未绑定' });
   
-  await To(Oauth.update({
+  await To(Oauth.updateOne({
     query: { _id: res._id },
     update: { deleted: true }
   }));

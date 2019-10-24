@@ -1,22 +1,16 @@
 import { ApolloServer, gql, AuthenticationError } from 'apollo-server-express'
-
-// import { formatError } from 'apollo-errors'
-// import { makeExecutableSchema } from 'graphql-tools'
-
-// import { MemcachedCache } from 'apollo-server-cache-memcached';
 import responseCachePlugin from 'apollo-server-plugin-response-cache';
 
-// import config from '../../config'
 import checkToken from './common/check-token'
-// import * as Models from './models/index'
 import { typeDefs, resolvers } from './models/index'
+
+import config from '../../config'
 
 /**
  * 启动 graphql
  * @param  {Object} app - express 的 app
  */
 export default (app: any): void => {
-
   
   // https://www.apollographql.com/docs/apollo-server/whats-new/
   const server = new ApolloServer({
@@ -39,13 +33,19 @@ export default (app: any): void => {
       return err;
     },
     context: async ({ req, res }: any) => {
+
+      // console.log(req.body.query.indexOf('mutation{'));
+
+      // if (req.body && req.body.query && req.body.query.indexOf('mutation{')) {
+
+      // }
       
       // 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
       let token = req.headers.accesstoken || '';
       let role = req.headers.role || '';
 
       let user = null;
-
+      
       if (token) {
 
         let result = await checkToken({ token, role });
@@ -71,6 +71,7 @@ export default (app: any): void => {
       }
       
       return {
+        token,
         user,
         role,
         ip,
@@ -87,55 +88,28 @@ export default (app: any): void => {
     // https://www.apollographql.com/docs/apollo-server/features/caching/#saving-full-responses-to-a-cache
     plugins: [responseCachePlugin({
       sessionId: (requestContext: any) => {
-        // 不同的用户单独缓存
-        return requestContext.request.http.headers.get('accesstoken') ? null : 'tourists'
-        // return requestContext.request.http.headers.get('accesstoken') || 'tourists'
+        // 返回 null，表式不缓存
+
+        const { role, user } = requestContext.context;
+
+        // 未登录的用户，使用游客共享的缓存
+        if (!user) return 'tourists';
+        // 如果是管理员不进行缓存
+        if (role == 'admin') return null;
+
+        return null;
+        // return requestContext.request.http.headers.get('accesstoken') ? null : 'tourists'
       }
     })],
     cacheControl: {
       // 是否显示请求头
       // calculateHttpHeaders: false,
-      defaultMaxAge: 60
+      defaultMaxAge: config.cache.graphql
     },
     // https://www.apollographql.com/docs/apollo-server/features/graphql-playground.html#Enabling-GraphQL-Playground-in-production
     introspection: true,//config.debug,
     playground: true//config.debug
   });
-
-  /*
-  app.all('*', async (req: any, res: any, next: any) => {
-
-    // console.log(req.cookies['refs']);
-    // console.log(res);
-
-    // 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
-    let token = req.headers.accesstoken || '';
-    let role = req.headers.role || '';
-
-    if (!token) {
-      next();
-    } else {
-      
-      let result = await checkToken({ token, role });
-      
-      if (!result.user) {
-        res.send({
-          errors: [{ message: "invalid token" }]
-        });
-      } else if (result.user.blocked) {
-        res.send({
-          errors: [{ message: "您的账号被禁止使用", blocked: true }]
-        });
-      } else {
-        req.user = result.user;
-        req.role = result.role;
-        next();
-      }
-
-    }
-
-  });
-  */
 
   server.applyMiddleware({ app, path: '/graphql' });
 }

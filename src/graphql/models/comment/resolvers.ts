@@ -17,11 +17,6 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
   const { user, role, ip } = context
   const { method, reply_page_size = 3 } = args
 
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
-  // -------------------------
-
   let select: any = {}, query, options, err, commentList: any = [], likeList: any = [];
 
   [ err, query ] = getQuery({ args, model:Model.comments, role });
@@ -288,11 +283,6 @@ const countComments = async (root: any, args: any, context: any, schema: any) =>
   const { user, role } = context;
   let err, query, count;
 
-  // -------------------------
-  // [缓存] 登录用户不使用缓存
-  if (user) schema.cacheControl.setCacheHint({ maxAge: 0, scope: 'PRIVATE' });
-  // -------------------------
-
   [ err, query ] = getQuery({ args, model:Model.comments, role });
 
   if (user) {
@@ -383,7 +373,6 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
       updateCommentReplyCount(comment.parent_id, comment.posts_id);
     }
 
-
     [ err ] = await To(Feed.update({
       query: { comment_id: query._id },
       update: { deleted: update.deleted }
@@ -394,6 +383,16 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
         message: 'Feed 更新失败',
         data: { errorInfo: err.message }
       });
+    }
+
+    // 发送通知，帖子被删除
+    if (update.deleted) {
+      UserNotification.save({
+        sender_id: user._id,
+        addressee_id: comment.user_id,
+        comment_id: comment._id,
+        type: 'delete'
+      })
     }
 
   }
@@ -653,7 +652,23 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
       }));
 
       // 阿里云推送
-      let commentContent = result.content_html.replace(/<[^>]+>/g,"");
+      let commentContent = result.content_html;
+
+      let imgReg = /<img(.*?)>/gi;
+
+      let imgs = [];
+      let img;
+      while (img = imgReg.exec(commentContent)) {
+        imgs.push(img[0]);
+      }
+
+      imgs.map(item=>{
+        commentContent = commentContent.replace(item, '[图片] ');
+      });
+
+      commentContent = commentContent.replace(/<[^>]+>/g, '');
+      commentContent = commentContent.replace(/\r\n/g, ''); 
+      commentContent = commentContent.replace(/\n/g, '');
       
       let titleIOS = user.nickname + ': ' + commentContent;
       if (titleIOS.length > 40) titleIOS = titleIOS.slice(0, 40) + '...';
@@ -804,7 +819,7 @@ function updateUserCommentCount(user_id: string) {
       query: { user_id: user_id, deleted: false, parent_id: { $exists: false } }
     }));
 
-    await To(User.update({
+    await To(User.updateOne({
       query: { _id: user_id },
       update: { comment_count: total }
     }));

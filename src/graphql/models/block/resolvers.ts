@@ -303,7 +303,7 @@ async function updateUserBlockData(userId: string) {
     if (item.comment_id) comment_ids.push(item.comment_id);
   });
 
-  User.update({
+  User.updateOne({
     query: { _id: userId },
     update: {
       block_posts: posts_ids,

@@ -38,7 +38,7 @@ export const send = (param: Param): Promise<any> => {
       html: param.html || param.text
     });
 
-    if (res.message == 'success') {
+    if (res && res.message && res.message == 'success') {
       resolve();
     } else {
       reject(JSON.stringify(res));

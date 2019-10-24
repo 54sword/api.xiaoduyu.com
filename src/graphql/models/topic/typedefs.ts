@@ -27,7 +27,7 @@ export const Schema = `
     language: Int
     recommend: Boolean
     user_id: String
-    follow: Boolean
+    follow: Boolean @cacheControl(scope: PRIVATE)
     parent_id: childrenTopic
     children: [childrenTopic]
   }

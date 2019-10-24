@@ -42,10 +42,10 @@ export const Schema = `
 export const Query = `
 
   "获取屏蔽列表"
-  blocks(${getArguments(blocks)}): [blocks] @cacheControl(maxAge: 0)
+  blocks(${getArguments(blocks)}): [blocks] @cacheControl(scope: PRIVATE)
 
   "帖子计数"
-  countBlocks(${getArguments(blocks)}): countBlocks @cacheControl(maxAge: 0)
+  countBlocks(${getArguments(blocks)}): countBlocks @cacheControl(scope: PRIVATE)
 
 `
 

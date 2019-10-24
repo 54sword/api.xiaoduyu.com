@@ -16,9 +16,8 @@ export const Schema = `
     topics: [sitemap_topic]
   }
 `
-//  @cacheControl(maxAge: 1000)
 export const Query = `
-  sitemap(${getArguments(sitemap)}): Sitemap
+  sitemap(${getArguments(sitemap)}): Sitemap @cacheControl(maxAge: 3600)
 `
 
 export const Mutation = ``

@@ -22,5 +22,6 @@ Feed.pre('save', function(next: any) {
 });
 
 Feed.index({ user_id: 1, topic_id: 1, posts_id: 1, comment_id: 1 }, { unique: true });
+// Feed.index({ user_id: 1, posts_id: 1, deleted: 1, create_at: -1 });
 
 mongoose.model('Feed', Feed);

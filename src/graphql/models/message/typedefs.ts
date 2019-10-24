@@ -39,10 +39,10 @@ export const Schema = `
 
 export const Query = `
   "查询私信"
-  messages(${getArguments(messages)}): [messages] @cacheControl(maxAge: 0)
+  messages(${getArguments(messages)}): [messages] @cacheControl(scope: PRIVATE)
 
   "查询私信的总数"
-  countMessages(${getArguments(messages)}): countMessages @cacheControl(maxAge: 0)
+  countMessages(${getArguments(messages)}): countMessages @cacheControl(scope: PRIVATE)
 `
 
 export const Mutation = `
