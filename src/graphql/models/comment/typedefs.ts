@@ -15,8 +15,8 @@ export const Schema = `
     like_count: Int
     device: Int
     ip: String
-    blocked: Int
-    deleted: Int
+    blocked: Int @cacheControl(scope: PRIVATE)
+    deleted: Int @cacheControl(scope: PRIVATE)
     verify: Int
     weaken: Int
     recommend: Int
@@ -26,7 +26,7 @@ export const Schema = `
     parent_id: String
     reply_id: _ReplyUser
     update_at: String
-    like: Boolean
+    like: Boolean @cacheControl(scope: PRIVATE)
   }
 
   type _Posts {
@@ -35,7 +35,7 @@ export const Schema = `
     content_html: String
   }
 
-  # 评论
+  "评论"
   type Comment {
     content: String
     content_html: String
@@ -44,8 +44,8 @@ export const Schema = `
     like_count: Int
     device: Int
     ip: String
-    blocked: Int
-    deleted: Int
+    blocked: Int @cacheControl(scope: PRIVATE)
+    deleted: Int @cacheControl(scope: PRIVATE)
     verify: Int
     weaken: Int
     recommend: Int
@@ -56,40 +56,40 @@ export const Schema = `
     reply_id: _ReplyUser
     reply: [_Reply]
     update_at: String
-    like: Boolean
+    like: Boolean @cacheControl(scope: PRIVATE)
   }
 
-  # 更新评论
+  "更新评论"
   type updateComment {
     success: Boolean
   }
 
-  # 评论计数
+  "评论计数"
   type countComments {
     count: Int
   }
 
-  # 添加评论
+  "添加评论"
   type addComment {
-    # 结果
+    "结果"
     success: Boolean
-    # posts id
+    "posts id"
     _id: ID
   }
 `
 
 export const Query = `
-  # 查询用户
+  "查询用户"
   comments(${getArguments(comments)}): [Comment]
 
-  # 评论计数
+  "评论计数"
   countComments(${getArguments(comments)}): countComments
 `
 
 export const Mutation = `
-  # 添加评论
+  "添加评论"
   addComment(${getArguments(addComment)}): addComment
 
-  # 更新评论
+  "更新评论"
   updateComment(${getArguments(updateComment)}): updateComment
 `

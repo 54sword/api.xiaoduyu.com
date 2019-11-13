@@ -21,5 +21,6 @@ const SessionSchema = new Schema({
 });
 
 SessionSchema.index({ user_id: 1, addressee_id: 1 }, { unique: true });
+SessionSchema.index({ addressee_id: 1, last_message: -1 });
 
 mongoose.model('Session', SessionSchema);

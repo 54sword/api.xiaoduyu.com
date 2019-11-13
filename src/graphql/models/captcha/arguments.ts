@@ -1,7 +1,7 @@
 
 // 查询
 export const getCaptcha = {
-  id: (data: string): object => ({
+  _id: (data: string): object => ({
     typename: 'query',
     name: '_id',
     value: data,

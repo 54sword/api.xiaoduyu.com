@@ -1,22 +1,19 @@
-import { Posts, User, Follow, Like, Topic, Feed, Phone } from '../../../models'
-
+import { Posts, User, Follow, Like, Topic, Feed, Phone, UserNotification } from '../../../models';
 
 import config from '../../../../config';
 const { debug } = config;
 
-import CreateError from '../../common/errors'
-import To from '../../../utils/to'
+import CreateError from '../../common/errors';
+import To from '../../../utils/to';
+import HTMLXSS from '../../common/html-xss';
+import textReview from '../../common/text-review';
 
-import xss from 'xss'
-
-import * as Model from './arguments'
-import { getQuery, getOption, getSave } from '../tools'
-
-import { emit } from '../../../socket'
+import * as Model from './arguments';
+import { getQuery, getOption, getSave } from '../tools';
 
 // 查询
 const posts = async (root: any, args: any, context: any, schema: any) => {
-
+  
   const { user, role } = context
   const { method } = args
 
@@ -37,6 +34,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   // 用户隐私信息，仅对管理员可以返回
   if (!role || role != 'admin') {
     if (select.ip) delete select.ip;
+    query.deleted = false;
   }
 
   // 增加屏蔽条件
@@ -55,15 +53,16 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
 
   }
 
-  // 收藏
+  // 查询用户收藏的帖子
   if (user && method == 'subscribe' || user && method == 'favorite') {
+  // if (user && method == 'favorite') {
 
     if (user.follow_posts.length == 0 && user.block_posts.length == 0) return [];
 
     query._id = {
-      '$in': user.follow_posts,
+      '$in': user.follow_posts
       // 过滤屏蔽的帖子
-      '$nin': user.block_posts
+      // '$nin': user.block_posts
     }
 
   }
@@ -86,7 +85,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
       },
       select: {
         '_id': 1, 'content_html': 1, 'create_at': 1, 'reply_count': 1,
-        'like_count': 1, 'user_id': 1, 'posts_id': 1
+        'like_count': 1, 'user_id': 1, 'posts_id': 1, 'ad': 1
       },
       options: { limit: 5, sort: { create_at: -1 } }
     })
@@ -95,7 +94,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   if (select.topic_id) {
     options.populate.push({
       path: 'topic_id',
-      select: { '_id': 1, 'name': 1, 'avatar':1 },
+      select: { '_id': 1, 'name': 1, 'avatar':1, 'parent_id': 1 },
       justOne: true
     })
   }
@@ -113,18 +112,29 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
     })
   }
 
+  let _options: Array<any> = [];
+
+  if (select.topic_id) {
+    _options.push({
+      path: 'topic_id.parent_id',
+      model: 'Topic',
+      select: { '_id': 1, 'name': 1, 'avatar':1 },
+      justOne: true
+    })
+  }
+
   if (select.comment && postList.length > 0) {
+    _options.push({
+      path: 'comment.user_id',
+      model: 'User',
+      select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
+      justOne: true
+    })
+  }
 
-    options = [
-      {
-        path: 'comment.user_id',
-        model: 'User',
-        select: { '_id': 1, 'avatar': 1, 'nickname': 1, 'brief': 1 },
-        justOne: true
-      }
-    ];
-
-    [ err, postList ] = await To(Posts.populate({ collections: postList, options }));
+  if (_options.length) {
+    
+    [ err, postList ] = await To(Posts.populate({ collections: postList, options: _options }));
 
     if (err) {
       throw CreateError({
@@ -170,25 +180,11 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
     })
   ];
 
-  if (method == 'user_follow' && limit != 1) {
+  if (method == 'favorite' && limit != 1) {
     promises.push(
-      User.update({
+      User.updateOne({
         query: { _id: user._id },
-        update: { last_find_posts_at: new Date() }
-      })
-    );
-  } else if (method == 'subscribe' && limit != 1 || method == 'favorite' && limit != 1) {
-    promises.push(
-      User.update({
-        query: { _id: user._id },
-        update: { last_find_subscribe_at: new Date() }
-      })
-    );
-  } else if (query.recommend && limit != 1) {
-    promises.push(
-      User.update({
-        query: { _id: user._id },
-        update: { last_find_excellent_at: new Date() }
+        update: { last_find_favorite_at: new Date() }
       })
     );
   }
@@ -239,7 +235,7 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
   if (err) {
     throw CreateError({ message: err })
   }
-
+  
   // 未登陆用户，不能使用method方式查询
   if (!user && method) {
     throw CreateError({ message: '请求被拒绝' })
@@ -247,6 +243,11 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
 
   // select
   schema.fieldNodes[0].selectionSet.selections.map((item:any)=>select[item.name.value] = 1);
+
+  // 如果不是管理员，不查询删除的帖子
+  if (!role || role != 'admin') {
+    query.deleted = false;
+  }
 
   // 增加屏蔽条件
   // 1、如果是登陆状态，那么增加屏蔽条件
@@ -265,7 +266,8 @@ const countPosts = async (root: any, args: any, context: any, schema: any) => {
   }
 
   // 收藏
-  if (user && method == 'subscribe' || user && method == 'favorite') {
+  // user && method == 'subscribe' || 
+  if (user && method == 'favorite') {
 
     if (user.follow_posts.length == 0 && user.block_posts.length == 0) return [];
 
@@ -380,41 +382,39 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
   }
 
   // title
-  title = xss(title, {
-    whiteList: {},
-    stripIgnoreTag: true,
-    onTagAttr: (tag: any, name: any, value: any, isWhiteAttr: any) => ''
-  })
-
+  title = HTMLXSS(title);
+  
   if (!title || title.replace(/(^\s*)|(\s*$)/g, "") == '') {
     throw CreateError({ message: '标题不能为空' });
   } else if (title.length > 120) {
     throw CreateError({ message: '标题不能大于120个字符' });
   }
 
-  // content
-  // content = xss(content, {
-  //   whiteList: {},
-  //   stripIgnoreTag: true,
-  //   onTagAttr: (tag, name, value, isWhiteAttr) => ''
-  // });
+  // 获取文本审核结果
+  let reviewResult = await textReview(title);
   
-  content_html = xss(content_html, {
-    whiteList: {
-      a: ['href', 'title', 'target', 'rel'],
-      img: ['src', 'alt'],
-      p: [], div: [], br: [], blockquote: [], li: [], ol: [], ul: [],
-      strong: [], em: [], u: [], pre: [], b: [], h1: [], h2: [], h3: [],
-      h4: [], h5: [], h6: [], h7: [], video: []
-    },
-    stripIgnoreTag: true,
-    onIgnoreTagAttr: function (tag: any, name: any, value: any, isWhiteAttr: any) {
-      if (tag == 'div' && name.substr(0, 5) === 'data-') {
-        // 通过内置的escapeAttrValue函数来对属性值进行转义
-        return name + '="' + xss.escapeAttrValue(value) + '"';
-      }
+  if (!reviewResult) {
+    throw CreateError({
+      message: '标题包了含敏感内容'
+    })
+  }
+  
+  content_html = HTMLXSS(content_html);
+
+  let _contentHTML = content_html;
+  _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1");
+  _contentHTML = _contentHTML.replace(/<[^>]+>/g,"");
+
+  if (_contentHTML) {
+    // 获取文本审核结果
+    let reviewResult = await textReview(_contentHTML);
+    
+    if (!reviewResult) {
+      throw CreateError({
+        message: '正文包了含敏感内容'
+      })
     }
-  });
+  }
 
   // topic
   [ err, result ] = await To(Topic.findOne({
@@ -463,7 +463,7 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
     update: { $inc: { 'posts_count': 1 } }
   }));
 
-  await To(User.update({
+  await To(User.updateOne({
     query: { _id: user._id },
     update: { $inc: { 'posts_count': 1 } }
   }));
@@ -490,7 +490,7 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   // 必须登陆用户才有权限
   if (!user) throw CreateError({ message: '请求被拒绝' });
   
-  let [err, query, content, result]:any = [];
+  let [err, query, content, result]:any = [], posts = null;
 
   // 获取查询条件
   [ err, query ] = getQuery({ args, model: Model.updatePosts, role });
@@ -515,15 +515,21 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   if (role != 'admin' && user._id + '' != result.user_id + '') {
     throw CreateError({ message: '无权修改' });
   }
-
+  
   if (role != 'admin') {
     // 帖子超过48小时，则不能被修改
-    if (new Date().getTime() - new Date(result.create_at).getTime() > 1000*60*60*24) {
-      throw CreateError({ message: '帖子超过24小时后，不能被修改' });
+    if (new Date().getTime() - new Date(result.create_at).getTime() > 1000*60*60*24*3) {
+      throw CreateError({ message: '帖子超过3天，不能被修改' });
     }
   }
+
+  posts = result;
   
   content.update_at = new Date();
+
+  if (content.content_html) {
+    content.content_html = HTMLXSS(content.content_html);
+  }
 
   // 更新
   [ err, result ] = await To(Posts.update({ query, update: content }));
@@ -561,14 +567,37 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
       });
     }
 
-  }
+    // 更新话题帖子累计数
+    await To(Topic.updateOne({
+      query: { _id: posts.topic_id },
+      update: { $inc: { 'posts_count': content.deleted ? -1 : 1 } }
+    }));
 
-  if (Reflect.has(content, 'recommend')) {
-    emit('member', { type: 'recommend-posts' });
+    // 更新用户帖子累计数
+    await To(User.updateOne({
+      query: { _id: posts.user_id },
+      update: { $inc: { 'posts_count': content.deleted ? -1 : 1 } }
+    }));
+
+    // 发送通知，帖子被删除
+    if (content.deleted) {
+      UserNotification.save({
+        sender_id: user._id,
+        addressee_id: posts.user_id,
+        posts_id: posts._id,
+        type: 'delete'
+      })
+    }
+
   }
+  
+  // if (Reflect.has(content, 'recommend')) {
+    // emit('member', { type: 'recommend-posts' });
+  // }
 
   return { success: true }
 }
+
 
 const viewPosts = async (root:any, args: any, context: any, schema: any) => {
 

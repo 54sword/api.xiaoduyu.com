@@ -1,7 +1,8 @@
-
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
+
+import { emit } from '../socket'
 
 const PostsSchema = new Schema({
   // 作者
@@ -48,6 +49,24 @@ const PostsSchema = new Schema({
   weaken: { type: Boolean, default: false },
   // 排序
   sort_by_date: { type: Date, default: Date.now }
+});
+
+// 查询收藏
+PostsSchema.index({ _id: 1, deleted: 1, weaken: 1, last_comment_at: -1 });
+// 首页发现posts查询
+PostsSchema.index({ deleted: 1, weaken: 1, sort_by_date: -1 });
+// 用户个人主页帖子查询
+PostsSchema.index({ user_id: 1, create_at: -1, deleted: 1 });
+
+PostsSchema.pre('save', function(next: any) {
+  const self: any = this;
+  
+  // 验证通过发送全量通知
+  if (self.verify) {
+    emit('all', { type: 'discover' });
+  }
+  
+  next();
 });
 
 mongoose.model('Posts', PostsSchema);

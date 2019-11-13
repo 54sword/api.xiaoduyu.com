@@ -1,5 +1,6 @@
-
 import mongoose from 'mongoose';
+import cache from '../common/cache';
+
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
@@ -26,6 +27,20 @@ const OauthSchema = new Schema({
   create_at: { type: Date, default: Date.now },
   deleted: { type: Boolean, default: false }
 });
+
+OauthSchema.pre('updateOne', async function(next) {
+  let self: any = this;
+  // 用户资料如果发生更新，从缓冲中删除用户的信息，让其重新从数据库中读取最新
+  if (self && self._conditions && self._conditions._id) {
+    await self.findOne({ _id: self._conditions._id })
+    .then((res: any)=>{
+      // 主要需要将objectId转换成string
+      cache.del(res.user_id+'');
+    })
+  }
+  next();
+});
+
 
 OauthSchema.index({ openid: 1 }, { unique: true });
 OauthSchema.index({ openid: 1, source: 1 }, { unique: true });

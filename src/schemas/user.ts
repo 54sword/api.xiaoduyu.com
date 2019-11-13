@@ -1,5 +1,5 @@
-
 import mongoose from 'mongoose';
+import cache from '../common/cache';
 
 import config from '../../config';
 
@@ -69,23 +69,37 @@ const UserSchema = new Schema({
   unread_message_at: { type: Date },
 
   // 最后一次查询帖子的日期
-  last_find_posts_at: { type: Date },
+  // last_find_posts_at: { type: Date },
 
   // 最近一次查询自己关注的feed的日期，用于有新的feed，与它比较是否有新的feed，显示小红点
   last_find_feed_at: { type: Date },
 
-  // 最近一次查询自己订阅帖子的日期
-  last_find_subscribe_at: { type: Date },
+  // 最近一次查询自己收藏帖子的日期
+  // last_find_subscribe_at: { type: Date },
+  last_find_favorite_at: { type: Date },
 
   // 最近一次查询优选帖子的日期
-  last_find_excellent_at: { type: Date },
+  // last_find_excellent_at: { type: Date },
 
   // 访问令牌
   access_token: { type: String },
   // 密码
   password: String,
-  // 主题(1亮色，2暗色)
-  theme: { type: Number, default: 0 }
+  // 主题(0自动，1亮色，2暗色)
+  theme: { type: Number, default: 0 },
+  // 用户封面图片
+  user_cover: { type: String }
+  // ad: { type: ObjectId, ref: 'AD' }
+});
+
+// https://mongoosejs.com/docs/middleware.html#pre
+UserSchema.pre('updateOne', function(next) {
+  let self: any = this;
+  // 用户资料如果发生更新，从缓冲中删除用户的信息，让其重新从数据库中读取最新
+  if (self && self._conditions && self._conditions._id) {
+    cache.del(self._conditions._id);
+  }
+  next();
 });
 
 UserSchema.virtual('avatar_url').get(function (this: any) {
@@ -93,7 +107,6 @@ UserSchema.virtual('avatar_url').get(function (this: any) {
   url += url.indexOf('thumbnail') != -1 ? '/quality/90' : '';
   return url;
 });
-
 
 UserSchema.set('toJSON', { getters: true });
 

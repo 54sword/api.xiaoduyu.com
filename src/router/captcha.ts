@@ -1,9 +1,8 @@
-
 import captchapng from 'captchapng'
+// import svgCaptcha from 'svg-captcha'
 
 import { Captcha } from '../models'
 import To from '../utils/to'
-
 
 // 显示验证码图片
 export const showImage = async (req: any, res: any, next: any) => {
@@ -20,7 +19,7 @@ export const showImage = async (req: any, res: any, next: any) => {
     return
   }
 
-  var p = new captchapng(80,30,result.captcha); // width,height,numeric captcha
+  var p = new captchapng(90,36,result.captcha); // width,height,numeric captcha
       p.color(0, 0, 0, 0);  // First color: background (red, green, blue, alpha)
       p.color(80, 80, 80, 255); // Second color: paint (red, green, blue, alpha)
 
@@ -29,21 +28,18 @@ export const showImage = async (req: any, res: any, next: any) => {
   res.writeHead(200, { 'Content-Type': 'image/png' });
 
   res.end(imgbase64);
-
-  // const { token, buffer } = await captcha()
-  // var imgbase64 = new Buffer(buffer,'base64');
-  // res.writeHead(200, { 'Content-Type': 'image/png' });
-  // res.end(imgbase64);
-
-
+  
   /*
-  var captcha = svgCaptcha.create({
-    size: 6,
-    text: '123333'
+  // svg 在app客户端中不支持
+  var captcha = svgCaptcha(result.captcha, {
+    width: 90,
+    height: 36,
+    fontSize: 45,
+    background: '#dbdbdb'
   });
 
-  res.type('svg'); // 使用ejs等模板时如果报错 res.type('html')
-	res.status(200).send(captcha.data);
+  res.type('svg');
+  res.status(200).send(captcha);
   */
 
 };

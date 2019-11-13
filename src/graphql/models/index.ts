@@ -22,8 +22,11 @@ import * as user from './user'
 import * as userNotification from './user-notification'
 import * as message from './message'
 import * as session from './session'
+import * as sitemap from './sitemap'
+import * as live from './live'
 
-export const typeDefs = [ `
+
+export const typeDefs = `
 
   ${account.typedefs.Schema}
   ${block.typedefs.Schema}
@@ -48,6 +51,8 @@ export const typeDefs = [ `
   ${userNotification.typedefs.Schema}
   ${message.typedefs.Schema}
   ${session.typedefs.Schema}
+  ${sitemap.typedefs.Schema}
+  ${live.typedefs.Schema}
 
   # 查询
   type Query {
@@ -74,6 +79,8 @@ export const typeDefs = [ `
     ${userNotification.typedefs.Query}
     ${message.typedefs.Query}
     ${session.typedefs.Query}
+    ${sitemap.typedefs.Query}
+    ${live.typedefs.Query}
   }
 
   # 增、删、改
@@ -101,6 +108,8 @@ export const typeDefs = [ `
     ${userNotification.typedefs.Mutation}
     ${message.typedefs.Mutation}
     ${session.typedefs.Mutation}
+    ${sitemap.typedefs.Mutation}
+    ${live.typedefs.Mutation}
   }
 
   schema {
@@ -108,7 +117,7 @@ export const typeDefs = [ `
     query: Query
   }
 
-`]
+`
 
 export const resolvers = {
   // 查询
@@ -135,7 +144,9 @@ export const resolvers = {
     ...user.resolvers.query,
     ...userNotification.resolvers.query,
     ...message.resolvers.query,
-    ...session.resolvers.query
+    ...session.resolvers.query,
+    ...sitemap.resolvers.query,
+    ...live.resolvers.query
   },
   // 修改
   Mutation: {
@@ -161,6 +172,8 @@ export const resolvers = {
     ...user.resolvers.mutation,
     ...userNotification.resolvers.mutation,
     ...message.resolvers.mutation,
-    ...session.resolvers.mutation
+    ...session.resolvers.mutation,
+    ...sitemap.resolvers.mutation,
+    ...live.resolvers.mutation
   }
 }

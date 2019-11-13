@@ -186,4 +186,11 @@ export const updateUser = {
     type: 'Int',
     desc:'主题（0自动，1亮色，2暗色）'
   }),
+  user_cover: (data: string) => ({
+    typename: 'save',
+    name: 'user_cover',
+    value: data,
+    type: 'String',
+    desc:'用户封面'
+  })
 }

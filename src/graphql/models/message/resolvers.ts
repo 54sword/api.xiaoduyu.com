@@ -3,7 +3,8 @@ import To from '../../../utils/to'
 import CreateError from '../../common/errors'
 import * as alicloud from '../../../common/alicloud';
 
-import xss from '../../../utils/xss'
+import HTMLXSS from '../../common/html-xss';
+import textReview from '../../common/text-review';
 
 import { emit } from '../../../socket'
 
@@ -119,7 +120,7 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
     });
   }
 
-  content_html = xss(content_html);
+  content_html = HTMLXSS(content_html);
 
   let _content_html = content_html || '';
 
@@ -130,6 +131,15 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
     throw CreateError({
       message: '私信内容不能为空'
     });
+  }
+
+  // 获取文本审核结果
+  let reviewResult = await textReview(_content_html);
+  
+  if (!reviewResult) {
+    throw CreateError({
+      message: '提交失败，消息包了含敏感内容'
+    })
   }
 
   [ err, res ] = await To(User.findOne({

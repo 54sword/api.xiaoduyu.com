@@ -1,12 +1,14 @@
 {
   "name": "xiaoduyu-api",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=development supervisor node ./dist/src/index.js",
+    "dev": "cross-env NODE_ENV=development supervisor node ./dist/src/index.js",
     "dist": "tsc",
     "watch-ts": "tsc -w",
     "pro": "node ./dist/src/index.js",
+    "install-to-server": "node ./scripts/install.js",
+    "update-to-server": "node ./scripts/update.js",
     "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/data/db"
   },
   "dependencies": {
@@ -23,7 +25,9 @@
     "@types/socket.io": "^2.1.2",
     "aliyun-sdk": "^1.12.0",
     "apollo-errors": "^1.9.0",
-    "apollo-server-express": "^2.3.3",
+    "apollo-server-cache-memcached": "^0.5.0",
+    "apollo-server-express": "^2.9.3",
+    "apollo-server-plugin-response-cache": "^0.2.4",
     "async": "^1.4.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
@@ -34,12 +38,13 @@
     "crypto-js": "^3.1.9-1",
     "express": "^4.16.4",
     "express-rate-limit": "^3.3.2",
-    "graphql": "^14.1.1",
+    "graphql": "^14.4.2",
     "graphql-tools": "^4.0.4",
     "helmet": "^3.15.0",
     "jsonwebtoken": "^8.4.0",
     "log4js": "^4.0.0",
-    "mongoose": "^5.4.8",
+    "lru-cache": "^5.1.1",
+    "mongoose": "^5.7.1",
     "morgan": "^1.5.3",
     "node-uuid": "^1.4.8",
     "nodemailer": "^0.7.1",
@@ -48,7 +53,8 @@
     "request": "^2.88.0",
     "sendcloud-client": "^0.1.1",
     "socket.io": "^2.2.0",
-    "xss": "^0.2.6"
+    "svg-captcha": "^1.4.0",
+    "xss": "^1.0.6"
   },
   "devDependencies": {}
 }

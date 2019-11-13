@@ -104,7 +104,7 @@ export default class OAuthClass {
     return new Promise(async resolve=>{
 
       let result = await checkToken({ token:user_access_token, role:'' });
-
+      
       if (result && result.user) {
         resolve(result.user)
       } else {
@@ -149,7 +149,7 @@ export default class OAuthClass {
       // 将已解除绑定的账号，重新绑定用户
       if (userId && oauth && oauth.deleted == true) {
 
-        let [ err ] = await To(Oauth.update({
+        let [ err ] = await To(Oauth.updateOne({
           query: { _id: oauth._id },
           update: {
             access_token: socialAccessToken.access_token,
@@ -248,7 +248,7 @@ export default class OAuthClass {
           return reject('create_oauth_failed');
         }
 
-        await To(Oauth.update({
+        await To(Oauth.updateOne({
           query: { _id: oauth._id },
           update: {
             user_id: user._id,

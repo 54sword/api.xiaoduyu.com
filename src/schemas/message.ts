@@ -26,6 +26,8 @@ const MessageSchema = new Schema({
   blocked: { type: Boolean, default: false },
   // 删除标记
   deleted: { type: Boolean, default: false }
-})
+});
+
+MessageSchema.index({ user_id: 1, addressee_id: 1, create_at: -1 });
 
 mongoose.model('Message', MessageSchema)

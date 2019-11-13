@@ -3,10 +3,6 @@ import { UserNotification, Notification, User } from '../../../models'
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
 
-
-// import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../../config';
-// let [ query, mutation, resolvers ] = [{},{},{}];
-
 import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
 
@@ -16,15 +12,8 @@ const userNotifications = async (root: any, args: any, context: any, schema: any
     throw CreateError({ message: '请求被拒绝' })
   }
 
-  // console.log(context.user);
-
-  const { user, role } = context
-  const { method } = args
+  const { user, role } = context;
   let select: any = {}, err, query: any, options: any, notificationList;
-  // let { query, options } = Querys({ args, model:'user-notification', role })
-
-  // [ err, query ] = getQuery({ args, model:'user-notification', role });
-  // [ err, options ] = getOption({ args, model:'user-notification', role });
 
   [ err, query ] = getQuery({ args, model: Model.userNotifications, role });
   [ err, options ] = getOption({ args, model: Model.userNotifications, role });
@@ -77,12 +66,7 @@ const userNotifications = async (root: any, args: any, context: any, schema: any
     })
   };
 
-  // console.log(query);
-  // console.log(select);
-
   [ err, notificationList ] = await To(UserNotification.find({ query, select, options }));
-
-  // console.log(notificationList);
 
   options = [];
 
@@ -199,7 +183,6 @@ const countUserNotifications = async (root: any, args: any, context: any, schema
 
   [ err, query ] = getQuery({ args, model: Model.userNotifications, role });
 
-
   //===
 
   // 请求用户的角色
@@ -245,7 +228,7 @@ const fetchUnreadUserNotification = async (root: any, args: any, context: any, s
   if (res && res.length > 0) {
 
     // 更新用户最近一次拉取通知的时间
-    [ err ] = await To(User.update({
+    [ err ] = await To(User.updateOne({
       query: { _id: user._id },
       update: { find_notification_at: res[0].create_at }
     }));
@@ -315,7 +298,7 @@ const updateUserNotifaction = async (root: any, args: any, context: any, schema:
   const { method } = args
   let options = {}, err, result, query, update;
   // let { error, query, update } = Updates({ args, model: 'user-notification', role });
-
+  
   [ err, query ] = getQuery({ args, model: Model.updateUserNotifaction, role });
   [ err, update ] = getSave({ args, model: Model.updateUserNotifaction, role });
 

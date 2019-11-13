@@ -3,7 +3,7 @@
  * Promise 异常处理
  * @param promise 
  */
-export default function to(promise: Promise<object>): any {
+export default function to(promise: any): any {
 
   if (!promise || !Promise.prototype.isPrototypeOf(promise)) {
     return new Promise((resolve, reject)=>{
@@ -13,6 +13,6 @@ export default function to(promise: Promise<object>): any {
     });
   }
 
-  return promise.then(data => [null, data]).catch(err => [err]);
+  return promise.then((data: any) => [null, data]).catch((err: any) => [err]);
   
 }

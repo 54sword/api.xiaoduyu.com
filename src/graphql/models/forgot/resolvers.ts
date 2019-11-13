@@ -80,7 +80,7 @@ const forgot = async (root: any, args: any, context: any, schema: any) => {
 
   [ err, hash ] = await To(User.generateHashPassword({ password: new_password }));
 
-  [ err ] = await To(User.update({
+  [ err ] = await To(User.updateOne({
     query: { _id: user.user_id },
     update: { password: hash }
   }));

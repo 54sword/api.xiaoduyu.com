@@ -1,5 +1,4 @@
 import { Comment, Like, Posts, User, UserNotification, Feed, Phone } from '../../../models';
-import xss from 'xss';
 
 import config from '../../../../config';
 const { debug } = config;
@@ -7,6 +6,8 @@ const { debug } = config;
 // import * as jpush from '../../../common/jpush';
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
+import HTMLXSS from '../../common/html-xss';
+import textReview from '../../common/text-review';
 import * as alicloud from '../../../common/alicloud';
 
 import * as Model from './arguments'
@@ -15,7 +16,8 @@ import { getQuery, getOption, getSave } from '../tools'
 const comments = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role, ip } = context
-  const { method } = args
+  const { method, reply_page_size = 3 } = args
+
   let select: any = {}, query, options, err, commentList: any = [], likeList: any = [];
 
   [ err, query ] = getQuery({ args, model:Model.comments, role });
@@ -88,7 +90,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
         options.populate.push({
           path: 'reply',
           // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
+          options: { limit: reply_page_size },
           match
         });
 
@@ -96,7 +98,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
         options.populate.push({
           path: 'reply',
           // select: { __v:0, content: 0, ip: 0, blocked: 0, deleted: 0, verify: 0, reply: 0 },
-          options: { limit: 3 },
+          options: { limit: reply_page_size },
           match: { deleted: false, weaken: false }
         });
       }
@@ -123,7 +125,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
 
   if (Reflect.has(select, 'user_id') && select.user_id) {
     options.populate.push([
-      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }, justOne: true }
+      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1, 'ad': 1 }, justOne: true }
     ])
   }
 
@@ -334,16 +336,17 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
     if (comment.user_id + '' != user._id + '') {
       throw CreateError({ message: '无权限编辑' });
     }
-  }
-
-  if (role != 'admin') {
     // 帖子超过48小时，则不能被修改
-    if (new Date().getTime() - new Date(comment.create_at).getTime() > 1000*60*60*1) {
-      throw CreateError({ message: '评论或回复，超过1小时后，不能被修改' });
+    if (new Date().getTime() - new Date(comment.create_at).getTime() > 1000*60*60*3) {
+      throw CreateError({ message: '评论或回复超过修改时限，不能被修改' });
     }
   }
-
+  
   update.update_at = new Date();
+
+  if (update.content_html) {
+    update.content_html = HTMLXSS(update.content_html);
+  }
 
   [ err, result ] = await To(Comment.update({ query, update }));
 
@@ -366,7 +369,6 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
       updateCommentReplyCount(comment.parent_id, comment.posts_id);
     }
 
-
     [ err ] = await To(Feed.update({
       query: { comment_id: query._id },
       update: { deleted: update.deleted }
@@ -377,6 +379,16 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
         message: 'Feed 更新失败',
         data: { errorInfo: err.message }
       });
+    }
+
+    // 发送通知，帖子被删除
+    if (update.deleted) {
+      UserNotification.save({
+        sender_id: user._id,
+        addressee_id: comment.user_id,
+        comment_id: comment._id,
+        type: 'delete'
+      })
     }
 
   }
@@ -512,46 +524,24 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     }
   }
 
-  content_html = xss(content_html, {
-    whiteList: {
-      a: ['href', 'title', 'target', 'rel'],
-      img: ['src', 'alt'],
-      p: [],
-      div: [],
-      br: [],
-      blockquote: [],
-      li: [],
-      ol: [],
-      ul: [],
-      strong: [],
-      em: [],
-      u: [],
-      pre: [],
-      b: [],
-      h1: [],
-      h2: [],
-      h3: [],
-      h4: [],
-      h5: [],
-      h6: [],
-      h7: []
-    },
-    stripIgnoreTag: true,
-    onIgnoreTagAttr: function (tag: string, name: string, value: any, isWhiteAttr: any) {
-      if (tag == 'div' && name.substr(0, 5) === 'data-') {
-        // 通过内置的escapeAttrValue函数来对属性值进行转义
-        return name + '="' + xss.escapeAttrValue(value) + '"';
-      }
-    }
-  });
+  content_html = HTMLXSS(content_html);
 
-  let _contentHTML = content_html
-  _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1")
-  _contentHTML = _contentHTML.replace(/<[^>]+>/g,"")
+  let _contentHTML = content_html;
+  _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1");
+  _contentHTML = _contentHTML.replace(/<[^>]+>/g,"");
 
   if (!content || !content_html || _contentHTML == '') {
     throw CreateError({
       message: '内容不能为空'
+    })
+  }
+
+  // 获取文本审核结果
+  let reviewResult = await textReview(_contentHTML);
+  
+  if (!reviewResult) {
+    throw CreateError({
+      message: '提交失败，你的评论或回复包了含敏感内容'
     })
   }
 
@@ -562,7 +552,8 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     content_html,
     posts_id,
     ip,
-    device
+    device,
+    verify: reviewResult
   }
 
   // 评论的回复
@@ -619,9 +610,9 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
       
     }
 
-    if (user._id + '' != posts.user_id + '') {
+    if (user._id + '' != posts.user_id + '' && reviewResult) {
 
-      // 发送通知邮件给帖子作者
+      // 发送通知给帖子作者
       await To(UserNotification.addOneAndSendNotification({
         data: {
           type: 'comment',
@@ -632,7 +623,23 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
       }));
 
       // 阿里云推送
-      let commentContent = result.content_html.replace(/<[^>]+>/g,"");
+      let commentContent = result.content_html;
+
+      let imgReg = /<img(.*?)>/gi;
+
+      let imgs = [];
+      let img;
+      while (img = imgReg.exec(commentContent)) {
+        imgs.push(img[0]);
+      }
+
+      imgs.map(item=>{
+        commentContent = commentContent.replace(item, '[图片] ');
+      });
+
+      commentContent = commentContent.replace(/<[^>]+>/g, '');
+      commentContent = commentContent.replace(/\r\n/g, ''); 
+      commentContent = commentContent.replace(/\n/g, '');
       
       let titleIOS = user.nickname + ': ' + commentContent;
       if (titleIOS.length > 40) titleIOS = titleIOS.slice(0, 40) + '...';
@@ -663,7 +670,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     await updatePostsCommentCount(posts_id);
 
     // 发送通知
-    if (reply.user_id + '' != user._id + '') {
+    if (reply.user_id + '' != user._id + '' && reviewResult) {
 
       await To(UserNotification.addOneAndSendNotification({
         data: {
@@ -783,7 +790,7 @@ function updateUserCommentCount(user_id: string) {
       query: { user_id: user_id, deleted: false, parent_id: { $exists: false } }
     }));
 
-    await To(User.update({
+    await To(User.updateOne({
       query: { _id: user_id },
       update: { comment_count: total }
     }));
@@ -825,4 +832,3 @@ function updateCommentReplyCount(comment_id: string, posts_id: string) {
   });
 
 };
-

@@ -1,6 +1,8 @@
 import socketIO from 'socket.io';
 
 import * as JWT from '../utils/jwt';
+import live from './live';
+import message from './message';
 
 // 总连接数
 let connectCount = 0,
@@ -10,14 +12,27 @@ let connectCount = 0,
     onlineVisitor: Array<string> = [],
     io: any;
 
-export default (server: any) => {
+export default function(server: any, Models: any) {
 
+  // io = socketIO(server);
   io = socketIO.listen(server);
   // io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);
   // io.set('origins', 'http://127.0.0.1:4000');
   
   // 广播在线用户
   const updateOnline = (sockets = io.sockets) => {
+    sockets.emit('all', {
+      type: 'online-user',
+      data: {
+        // 连接数
+        connect: connectCount,
+        // 在线会员
+        member: Array.from(new Set([...onlineMember])).length,
+        // 在线游客
+        visitor: Array.from(new Set([...onlineVisitor])).length
+      }
+    });
+    /*
     sockets.emit('online-user', {
       // 连接数
       connect: connectCount,
@@ -26,6 +41,7 @@ export default (server: any) => {
       // 在线游客
       visitor: Array.from(new Set([...onlineVisitor])).length
     });
+    */
   }
 
   let timer = function(){
@@ -38,8 +54,10 @@ export default (server: any) => {
 
   io.on('connection', function(socket: any){
 
+    // console.log(socket);
+
     // 获取客户端用户的id
-    const { accessToken } = socket.handshake.query;
+    const { accessToken, scenes, liveId } = socket.handshake.query;
 
     let userId = '';
     
@@ -49,20 +67,21 @@ export default (server: any) => {
       userId = res && res.user_id ? res.user_id : '';
     }
 
-    let address = '';
+    // 获取客户端ip
+    let address = socket.handshake.headers["x-real-ip"] || '';
 
-    try {
-      address = socket.handshake.headers["x-real-ip"];
-    } catch (err) {
-      console.log(err);
+    if (!address) {
       address = socket.handshake.address;
       address = address.replace(/^.*:/, '');
     }
-    
-    // 获取客户端ip
-    // let address = socket.handshake.address;
-    // console.log(address);
-    // address = address.replace(/^.*:/, '');
+
+    // try {
+    //   address = socket.handshake.headers["x-real-ip"];
+    // } catch (err) {
+    //   console.log(err);
+    //   address = socket.handshake.address;
+    //   address = address.replace(/^.*:/, '');
+    // }
     
     if (userId) {
       onlineMember.push(userId);
@@ -71,7 +90,8 @@ export default (server: any) => {
     }
     connectCount += 1;
 
-    // updateOnline();
+    const liveDisconnect = live({ ioSockets: io.sockets, socket, Models, userId, ip: address });
+    const messageDisconnect = message({ ioSockets: io.sockets, socket, Models });
 
     socket.on('disconnect', function(res: any){
 
@@ -95,7 +115,8 @@ export default (server: any) => {
         });
       }
 
-      // updateOnline();
+      liveDisconnect();
+      messageDisconnect();
 
     });
 
@@ -106,6 +127,10 @@ export default (server: any) => {
 
 export const emit = (target: string, params: object): void => {
   if (io) {
-    io.sockets.emit(target, JSON.stringify(params))
+    // io.sockets.to(target).emit(target, params, function(e: any){
+    //   console.log(e);
+    //   console.log('====');
+    // });
+    io.sockets.emit(target, params);
   } 
 }

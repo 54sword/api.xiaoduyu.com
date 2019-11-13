@@ -37,9 +37,9 @@ export const Schema = `
     detail: String
   }
 
-  # 修改密码
+  "修改密码"
   type addRepory {
-    # 结果
+    "结果"
     success: Boolean
   }
 
@@ -59,12 +59,12 @@ export const Schema = `
 `
 
 export const Query = `
-  reports(${getArguments(reports)}): [reports]
-  countReports(${getArguments(reports)}): countReports
+  reports(${getArguments(reports)}): [reports] @cacheControl(scope: PRIVATE)
+  countReports(${getArguments(reports)}): countReports @cacheControl(scope: PRIVATE)
   fetchReportTypes: fetchReportTypes
 `
 
 export const Mutation = `
-  # 修改密码
+  "添加举报"
   addReport(${getArguments(addReport)}): addRepory
 `

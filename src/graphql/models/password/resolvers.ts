@@ -58,7 +58,7 @@ const updatePassword = async (root: any, args: any, context: any, schema: any) =
 
   let hashPassword = await getHashPassword(new_password);
 
-  [ err, result ] = await To(User.update({
+  [ err, result ] = await To(User.updateOne({
     query: { _id: user._id },
     update: {
       password: hashPassword,

@@ -17,6 +17,8 @@ import Countries from '../../../../config/countries';
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
 
+import temporaryEmail from '../../../../config/temporary-email'
+
 // 通过id获取验证码「单元测试环境使用」
 const getCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
@@ -56,6 +58,10 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
   let { email, phone, area_code, type } = fields;
 
+  if (email && temporaryEmail.indexOf(email.split('@')[1]) != -1) {
+    throw CreateError({ message: '验证码获取失败，不支持该邮箱服务商，请尝试其他。' });
+  }
+
   // =========================
   // 给自己绑定的邮箱发送验证码
   if (type == 'email-unlock-token') {
@@ -65,7 +71,7 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
     if (err) throw CreateError({ message: err });
     if (!result) throw CreateError({ message: '未绑定邮箱' });
-
+    
     email = result.email;
   }
 
@@ -96,7 +102,7 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
   }
 
   // =========================
-  // 【找回密码】发送给手机账号
+  // 【找回密码】发送给邮箱
   if (type == 'forgot' && email) {
     [ err, result ] = await To(Account.findOne({ query: { email } }));
 
@@ -119,8 +125,8 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
       select: { _id: 1 },
       options: { sort:{ create_at: -1 } }
     }));
-
-    if (!result) return { success: true, _id: '', url: '' };
+    
+    if (!result) return { success: false };
 
     [ err, result ] = await To(Captcha.create({ ip, type }));
 
@@ -151,8 +157,6 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
 export const query = { getCaptcha }
 export const mutation = { addCaptcha }
-
-// export { query, mutation, resolvers }
 
 
 interface SendEmail {

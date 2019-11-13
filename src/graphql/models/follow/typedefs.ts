@@ -3,7 +3,7 @@ import { getArguments } from '../tools'
 
 export const Schema = `
 
-  # 添加关注
+  "添加关注"
   type addFollow {
     success: Boolean
   }
@@ -37,7 +37,7 @@ export const Schema = `
     brief: String
   }
 
-  # 关注
+  "关注"
   type follow {
     user_id: follow_people_id
     topic_id: follow_topic_id
@@ -54,14 +54,14 @@ export const Schema = `
 `
 
 export const Query = `
-  # 查询关注
-  findFollows(${getArguments(findFollows)}): [follow]
+  "查询关注"
+  findFollows(${getArguments(findFollows)}): [follow] @cacheControl(scope: PRIVATE)
 
-  # 获取关注的累计
-  countFindFollows(${getArguments(findFollows)}): countFindFollows
+  "获取关注的累计"
+  countFindFollows(${getArguments(findFollows)}): countFindFollows @cacheControl(scope: PRIVATE)
 `
 
 export const Mutation = `
-  # 添加关注
+  "添加关注"
   addFollow(${getArguments(addFollow)}): addFollow
 `

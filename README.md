@@ -51,7 +51,7 @@ npm run watch-ts
    
 8、另外再启动项目服务   
 ```
-npm run start
+npm run dev
 ```
 
 9、浏览器中打开 http://localhost:3000
@@ -64,7 +64,7 @@ npm run start
 npm run dist
 ```
 
-3、将 dist、public、logs、package.json、package-lock.json 上传到服务器，然后在服务器进入到项目目录，然后执行如下命令，安装依赖包  
+3、将 dist、public、logs、package.json、package-lock.json 上传到服务器，然后在服务器进入到项目目录，执行如下命令，安装依赖包  
 ```
 npm install
 ```

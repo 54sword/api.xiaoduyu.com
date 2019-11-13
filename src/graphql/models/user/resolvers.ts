@@ -50,47 +50,7 @@ const selfInfo = async (root: any, args: any, context: any, schema: any) => {
     });
   }
 
-  user = JSON.stringify(user);
-  user = JSON.parse(user);
-
-  if (!user) {
-    throw CreateError({
-      message: '无效获取',
-      data: {}
-    })
-  }
-
-  let err, result;
-
-  [ err, result ] = await To(Account.findOne({
-    query: { user_id: user._id }
-  }));
-  
-  if (result) {
-    var arr = result.email.split("@");
-    var email = changeString(arr[0])+'@'+arr[1];
-    user.email = email;
-  } else {
-    user.email = '';
-  }
-
-  [ err, result ] = await To(Oauth.fetchByUserIdAndSource(user._id, 'weibo'));
-  user.weibo = result && result.deleted == false ? true : false;
-
-  [ err, result ] = await To(Oauth.fetchByUserIdAndSource(user._id, 'qq'));
-  user.qq = result && result.deleted == false ? true : false;
-
-  [ err, result ] = await To(Oauth.fetchByUserIdAndSource(user._id, 'github'));
-  user.github = result && result.deleted == false ? true : false;
-
-  [ err, result ] = await To(Phone.findOne({ query: { user_id: user._id } }));
-  user.phone = result ? changeString(result.phone + '') : '';
-  user.area_code = result ? result.area_code : '';
-
-  user.has_password = user.password ? true : false;
-  
   return user;
-
 }
 
 const users = async (root: any, args: any, context: any, schema: any) => {
@@ -112,7 +72,9 @@ const users = async (root: any, args: any, context: any, schema: any) => {
 
   [ err, list ] = await To(User.find({ query, select, options }));
 
-  list = JSON.parse(JSON.stringify(list));
+  // console.log(list);
+
+  // list = JSON.parse(JSON.stringify(list));
 
   if (user) {
 
@@ -382,7 +344,7 @@ const updateUser = async (root: any, args: any, context: any, schema: any) => {
     throw CreateError({ message: '字符长度不能大于120个字符' });
   }
 
-  [ err, result ] = await To(User.update({ query, update, options }));
+  [ err, result ] = await To(User.updateOne({ query, update, options }));
 
   if (err) {
     throw CreateError({
@@ -424,5 +386,3 @@ const updateUser = async (root: any, args: any, context: any, schema: any) => {
 
 export const query = { selfInfo, users, countUsers }
 export const mutation = { addUser, updateUser }
-
-// export { query, mutation, resolvers }

@@ -13,8 +13,8 @@ import { getQuery, getSave } from '../tools'
 const signIn = async (root: any, args: any, context: any, schema: any) => {
 
   // 参数准备 ------------------------------------------------------------------
-  
-  const { role, ip } = context;
+
+  const { role, ip, req, res } = context;
 
   let query: any = {}, err: any, result: any, account: any;
 
@@ -179,7 +179,7 @@ const addEmail = async (root: any, args: any, context: any, schema: any) => {
   if (account && unlock_token) {
     // =======================
     // 更新邮箱
-    [ err, res ] = await To(Account.update({
+    [ err, res ] = await To(Account.updateOne({
       query: { _id: account._id },
       update: { email }
     }));

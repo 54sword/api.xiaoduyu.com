@@ -1,6 +1,6 @@
 
 export const Schema = `
-  # 话题
+  "话题"
   type qiniuToken {
     token: String
     url: String
@@ -8,7 +8,7 @@ export const Schema = `
 `
 
 export const Query = `
-  # 查询帖子
+  "查询帖子"
   qiniuToken: qiniuToken
 `
 

@@ -3,13 +3,13 @@ import { getArguments } from '../tools'
 
 export const Schema = `
   
-  # 用户
+  "用户"
   type User {
     _id: String
     nickname_reset_at: String
     create_at: String
     last_sign_at: String
-    blocked: Boolean
+    blocked: Boolean @cacheControl(scope: PRIVATE)
     role: Int
     avatar: String
     brief: String
@@ -28,10 +28,12 @@ export const Schema = `
     nickname: String
     banned_to_post: String
     avatar_url: String
-    follow: Boolean
+    follow: Boolean @cacheControl(scope: PRIVATE)
+    "用户封面"
+    user_cover: String
   }
 
-  # 获取自己的个人信息
+  "获取自己的个人信息"
   type SelfInfo {
     _id: String
     nickname_reset_at: String
@@ -63,25 +65,32 @@ export const Schema = `
     phone: String
     area_code: String
     find_notification_at: String
+    "已废弃的字段"
     last_find_posts_at: String
     last_find_feed_at: String
+    "已废弃的字段"
     last_find_subscribe_at: String
+    last_find_favorite_at: String
+    "已废弃的字段"
     last_find_excellent_at: String
     has_password: Boolean
     theme: Int
+    "用户封面"
+    user_cover: String
   }
 
-  # 更新用户返回
+  "更新用户返回"
   type updateUser {
     # 是否更新成功
     success: Boolean
   }
 
-  # 用户计数
+  "用户计数"
   type countUsers {
     count: Int
   }
 
+  "添加用户"
   type addUser {
     success: Boolean
   }
@@ -89,27 +98,23 @@ export const Schema = `
 `
 
 export const Query = `
-
-  # 查询用户
+  "查询用户"
   users(${getArguments(users)}): [User]
 
-  # 用户计数
+  "用户计数"
   countUsers(${getArguments(users)}): countUsers
 
-  # 查询用户
-  selfInfo(
-    # 随机字符串，让他始终从服务器获取
-    randomString: String
-  ): SelfInfo
+  "查询用户"
+  selfInfo: SelfInfo @cacheControl(maxAge: 0)
 
 `
 
 export const Mutation = `
 
-  # 添加用户
+  "添加用户，注册账号"
   addUser(${getArguments(addUser)}): addUser
 
-  # 更新用户
+  "更新用户"
   updateUser(${getArguments(updateUser)}): updateUser
 
 `

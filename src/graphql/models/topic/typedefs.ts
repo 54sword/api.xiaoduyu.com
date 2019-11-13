@@ -11,7 +11,7 @@ export const Schema = `
     avatar: String
   }
 
-  # 话题
+  "话题"
   type Topic {
     _id: String
     name: String
@@ -27,22 +27,22 @@ export const Schema = `
     language: Int
     recommend: Boolean
     user_id: String
-    follow: Boolean
+    follow: Boolean @cacheControl(scope: PRIVATE)
     parent_id: childrenTopic
     children: [childrenTopic]
   }
 
-  # 更新话题
+  "更新话题"
   type updateTopic {
     success: Boolean
   }
 
-  # 话题计数
+  "话题计数"
   type countTopics {
     count: Int
   }
 
-  # 添加话题
+  "添加话题"
   type addTopic {
     success: Boolean
   }
@@ -51,20 +51,20 @@ export const Schema = `
 
 export const Query = `
 
-  # 查询帖子
+  "查询话题"
   topics(${getArguments(topics)}): [Topic]
 
-  # 话题计数
+  "话题计数"
   countTopics(${getArguments(topics)}): countTopics
 
 `
 
 export const Mutation = `
 
-  # 添加话题
+  "添加话题"
   addTopic(${getArguments(addTopic)}): addTopic
 
-  # 更新话题
+  "更新话题"
   updateTopic(${getArguments(updateTopic)}): updateTopic
 
 `

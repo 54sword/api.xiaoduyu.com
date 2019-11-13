@@ -72,6 +72,13 @@ export const comments = {
     type: 'String',
     desc:'模式(user_follow)'
   }),
+  reply_page_size: (data: number): object => ({
+    typename: '',
+    name: '',
+    value: data,
+    type: 'Int',
+    desc:'回复数量'
+  }),
   page_number: (data: number): object => ({
     typename: 'option',
     name: 'skip',

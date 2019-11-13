@@ -57,6 +57,12 @@ const countSessions = async (root: any, args: any, context: any, schema: any) =>
   [ err, query ] = getQuery({ args, model:Model.sessions, role });
   [ err, options ] = getOption({ args, model:Model.sessions, role });
 
+  if (query._id) {
+  } else {
+    query.addressee_id = user._id;
+    query.last_message = { '$exists': true };
+  }
+
   [ err, count ] = await To(Session.count({ query, options }));
 
   return { count }
@@ -179,8 +185,7 @@ const readSession = async (root: any, args: any, context: any, schema: any) => {
           });
         });
       }
-
-      console.log(res);
+      
     });
       
     return {
