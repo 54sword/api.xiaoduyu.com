@@ -44,7 +44,7 @@
     "jsonwebtoken": "^8.4.0",
     "log4js": "^4.0.0",
     "lru-cache": "^5.1.1",
-    "mongoose": "^5.7.1",
+    "mongoose": "^5.7.5",
     "morgan": "^1.5.3",
     "node-uuid": "^1.4.8",
     "nodemailer": "^0.7.1",
