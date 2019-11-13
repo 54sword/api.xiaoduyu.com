@@ -36,7 +36,7 @@ const CommentSchema = new Schema({
   blocked: { type: Boolean, default: false },
   // 删除标记
   deleted: { type: Boolean, default: false },
-  // 是否是审核
+  // 内容校验是否成功
   verify: { type: Boolean, default: true },
   // 削弱
   weaken: { type: Boolean, default: false },

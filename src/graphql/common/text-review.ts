@@ -2,11 +2,39 @@ import https from 'https';
 import qs from 'querystring';
 import request from 'request';
 
-const param = qs.stringify({
-  'grant_type': 'client_credentials',
-  'client_id': 'AjDaWUnvnyR3MLm7uGzBXNNG',
-  'client_secret': 'h7GUlgDMKVhTB8iBmXtpui7gavDhutwN'
-});
+import config from '../../../config';
+
+let param: any = null;
+
+if (config.baidu && config.baidu.appKey && config.baidu.appSecret) {
+  param = qs.stringify({
+    'grant_type': 'client_credentials',
+    'client_id': config.baidu.appKey,
+    'client_secret': config.baidu.appSecret
+  });
+}
+
+// 文本内容审核
+export default function(content: string) {
+  return new Promise(async (resolve)=>{
+
+    // 没有提供百度配置
+    if (!param || !content) return resolve(true);
+    //  || config.debug
+
+    await getAccessToken();
+
+    spam(content).then((res)=>{
+      resolve(res);
+    }).catch(res=>{
+      // 如果审核异常，先认为审核通过
+      console.log(res);
+      resolve(true);
+    });
+    
+  })
+}
+
 
 let lastDate: number, data: any;
 
@@ -69,6 +97,8 @@ const spam = function(content: string) {
 
       if (body) body = JSON.parse(body);
 
+      // console.log(body.result);
+
       // +spam	int	请求中是否包含违禁，0表示非违禁，1表示违禁，2表示建议人工复审
       if (body && body.result && body.result.spam == 1) {
         resolve(false)
@@ -81,17 +111,3 @@ const spam = function(content: string) {
   })
 }
 
-export default function(content: string) {
-  return new Promise(async (resolve)=>{
-    await getAccessToken();
-
-    spam(content).then((res)=>{
-      resolve(res);
-    }).catch(res=>{
-      // 如果审核异常，先认为审核通过
-      console.log(res);
-      resolve(true);
-    });
-    
-  })
-}

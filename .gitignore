@@ -26,6 +26,7 @@ node_modules
 
 dist
 config/index.ts
+config/server.config.js
 config/index_*.ts
 *.DS_Store
 logs/*

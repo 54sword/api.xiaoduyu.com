@@ -10,8 +10,7 @@ export default ({ token = '', role = '' }): any => {
   return new Promise(async resolve=>{
 
     let decoded = JWT.decode(token);
-    let userId = decoded.user_id;
-    
+
     // 解析错误
     if (!decoded) return resolve({})
     
@@ -19,6 +18,8 @@ export default ({ token = '', role = '' }): any => {
     if (decoded && decoded.expires && decoded.expires < new Date().getTime()) {
       return resolve({})
     }
+
+    let userId = decoded.user_id;
 
     let err: any, result: any = cache.get(userId), user: any;
 

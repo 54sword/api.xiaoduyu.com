@@ -1,14 +1,15 @@
-import { Posts, User, Follow, Like, Topic, Feed, Phone, UserNotification } from '../../../models'
+import { Posts, User, Follow, Like, Topic, Feed, Phone, UserNotification } from '../../../models';
 
 import config from '../../../../config';
 const { debug } = config;
 
-import CreateError from '../../common/errors'
-import To from '../../../utils/to'
+import CreateError from '../../common/errors';
+import To from '../../../utils/to';
 import HTMLXSS from '../../common/html-xss';
+import textReview from '../../common/text-review';
 
-import * as Model from './arguments'
-import { getQuery, getOption, getSave } from '../tools'
+import * as Model from './arguments';
+import { getQuery, getOption, getSave } from '../tools';
 
 // 查询
 const posts = async (root: any, args: any, context: any, schema: any) => {
@@ -389,33 +390,31 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
     throw CreateError({ message: '标题不能大于120个字符' });
   }
 
-  // content
-  // content = xss(content, {
-  //   whiteList: {},
-  //   stripIgnoreTag: true,
-  //   onTagAttr: (tag, name, value, isWhiteAttr) => ''
-  // });
+  // 获取文本审核结果
+  let reviewResult = await textReview(title);
+  
+  if (!reviewResult) {
+    throw CreateError({
+      message: '标题包了含敏感内容'
+    })
+  }
   
   content_html = HTMLXSS(content_html);
 
-  /*
-  content_html = xss(content_html, {
-    whiteList: {
-      a: ['href', 'title', 'target', 'rel'],
-      img: ['src', 'alt'],
-      p: [], div: [], br: [], blockquote: [], li: [], ol: [], ul: [],
-      strong: [], em: [], u: [], pre: [], b: [], h1: [], h2: [], h3: [],
-      h4: [], h5: [], h6: [], h7: [], video: []
-    },
-    stripIgnoreTag: true,
-    onIgnoreTagAttr: function (tag: any, name: any, value: any, isWhiteAttr: any) {
-      if (tag == 'div' && name.substr(0, 5) === 'data-') {
-        // 通过内置的escapeAttrValue函数来对属性值进行转义
-        return name + '="' + xss.escapeAttrValue(value) + '"';
-      }
+  let _contentHTML = content_html;
+  _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1");
+  _contentHTML = _contentHTML.replace(/<[^>]+>/g,"");
+
+  if (_contentHTML) {
+    // 获取文本审核结果
+    let reviewResult = await textReview(_contentHTML);
+    
+    if (!reviewResult) {
+      throw CreateError({
+        message: '正文包了含敏感内容'
+      })
     }
-  });
-  */
+  }
 
   // topic
   [ err, result ] = await To(Topic.findOne({

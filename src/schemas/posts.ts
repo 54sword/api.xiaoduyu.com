@@ -60,7 +60,7 @@ PostsSchema.index({ user_id: 1, create_at: -1, deleted: 1 });
 
 PostsSchema.pre('save', function(next: any) {
   const self: any = this;
-
+  
   // 验证通过发送全量通知
   if (self.verify) {
     emit('all', { type: 'discover' });

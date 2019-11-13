@@ -7,6 +7,7 @@ const { debug } = config;
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
 import HTMLXSS from '../../common/html-xss';
+import textReview from '../../common/text-review';
 import * as alicloud from '../../../common/alicloud';
 
 import * as Model from './arguments'
@@ -335,16 +336,11 @@ const updateComment = async (root: any, args: any, context: any, schema: any) =>
     if (comment.user_id + '' != user._id + '') {
       throw CreateError({ message: '无权限编辑' });
     }
-  }
-  
-  /*
-  if (role != 'admin') {
     // 帖子超过48小时，则不能被修改
-    if (new Date().getTime() - new Date(comment.create_at).getTime() > 1000*60*60*1) {
-      throw CreateError({ message: '评论或回复，超过1小时后，不能被修改' });
+    if (new Date().getTime() - new Date(comment.create_at).getTime() > 1000*60*60*3) {
+      throw CreateError({ message: '评论或回复超过修改时限，不能被修改' });
     }
   }
-  */
   
   update.update_at = new Date();
 
@@ -530,48 +526,22 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
 
   content_html = HTMLXSS(content_html);
 
-  /*
-  content_html = xss(content_html, {
-    whiteList: {
-      a: ['href', 'title', 'target', 'rel'],
-      img: ['src', 'alt'],
-      p: [],
-      div: [],
-      br: [],
-      blockquote: [],
-      li: [],
-      ol: [],
-      ul: [],
-      strong: [],
-      em: [],
-      u: [],
-      pre: [],
-      b: [],
-      h1: [],
-      h2: [],
-      h3: [],
-      h4: [],
-      h5: [],
-      h6: [],
-      h7: []
-    },
-    stripIgnoreTag: true,
-    onIgnoreTagAttr: function (tag: string, name: string, value: any, isWhiteAttr: any) {
-      if (tag == 'div' && name.substr(0, 5) === 'data-') {
-        // 通过内置的escapeAttrValue函数来对属性值进行转义
-        return name + '="' + xss.escapeAttrValue(value) + '"';
-      }
-    }
-  });
-  */
-
-  let _contentHTML = content_html
-  _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1")
-  _contentHTML = _contentHTML.replace(/<[^>]+>/g,"")
+  let _contentHTML = content_html;
+  _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1");
+  _contentHTML = _contentHTML.replace(/<[^>]+>/g,"");
 
   if (!content || !content_html || _contentHTML == '') {
     throw CreateError({
       message: '内容不能为空'
+    })
+  }
+
+  // 获取文本审核结果
+  let reviewResult = await textReview(_contentHTML);
+  
+  if (!reviewResult) {
+    throw CreateError({
+      message: '提交失败，你的评论或回复包了含敏感内容'
     })
   }
 
@@ -582,7 +552,8 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     content_html,
     posts_id,
     ip,
-    device
+    device,
+    verify: reviewResult
   }
 
   // 评论的回复
@@ -639,9 +610,9 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
       
     }
 
-    if (user._id + '' != posts.user_id + '') {
+    if (user._id + '' != posts.user_id + '' && reviewResult) {
 
-      // 发送通知邮件给帖子作者
+      // 发送通知给帖子作者
       await To(UserNotification.addOneAndSendNotification({
         data: {
           type: 'comment',
@@ -699,7 +670,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     await updatePostsCommentCount(posts_id);
 
     // 发送通知
-    if (reply.user_id + '' != user._id + '') {
+    if (reply.user_id + '' != user._id + '' && reviewResult) {
 
       await To(UserNotification.addOneAndSendNotification({
         data: {

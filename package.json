@@ -7,6 +7,8 @@
     "dist": "tsc",
     "watch-ts": "tsc -w",
     "pro": "node ./dist/src/index.js",
+    "install-to-server": "node ./scripts/install.js",
+    "update-to-server": "node ./scripts/update.js",
     "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/data/db"
   },
   "dependencies": {

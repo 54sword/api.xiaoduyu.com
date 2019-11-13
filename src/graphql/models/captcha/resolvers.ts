@@ -71,7 +71,7 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
 
     if (err) throw CreateError({ message: err });
     if (!result) throw CreateError({ message: '未绑定邮箱' });
-
+    
     email = result.email;
   }
 
@@ -102,7 +102,7 @@ const addCaptcha = async (root: any, args: any, context: any, schema: any) => {
   }
 
   // =========================
-  // 【找回密码】发送给手机账号
+  // 【找回密码】发送给邮箱
   if (type == 'forgot' && email) {
     [ err, result ] = await To(Account.findOne({ query: { email } }));
 

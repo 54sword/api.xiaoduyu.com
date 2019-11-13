@@ -2,6 +2,10 @@
 export interface Config {
 	debug: boolean
 	mongodbDebug: boolean
+	cache: {
+		default: number
+		graphql: number
+	}
 	name: string
 	cookieSecret: string
 	jwtSecret: string
@@ -11,7 +15,7 @@ export interface Config {
 	port: number
 	domain: string
 	email: {
-		sendCloud: {
+		sendCloud?: {
 			from: string
 		  apiUser: string
 		  apiKey: string
@@ -45,7 +49,7 @@ export interface Config {
 		sms: {
 			signName: string
 			templateCode: string
-		},
+		}
 		push: {
 			androidAppKey: string
 			iOSAppKey: string
@@ -57,6 +61,11 @@ export interface Config {
 			text: string
 		}
 	}
+	baidu?: {
+		appKey: string
+		appSecret: string
+	}
+	IPWhitelist: Array<string>
 }
 
 let config:Config = {
@@ -64,6 +73,13 @@ let config:Config = {
 	debug: false,
 	// mongodb debug模式，如果打开会显示数据库的记录
 	mongodbDebug: false,
+
+	cache: {
+		// 用户信息缓存，解析accessToken成功后获取用户信息并缓存
+		default: 180,
+		graphql: 60
+	},
+
 	// 社区名称
 	name: '小度鱼API',
 	// cookie 配置 [必填，建议修改]
@@ -143,7 +159,16 @@ let config:Config = {
 			apikey: '',
 			text: '【XiaoDuYu】security code: {code}. Use this to finish verification.'
 		}
-	}
+	},
+
+	// 百度，文本审核
+	baidu: {
+		appKey: '',
+		appSecret: ''
+	},
+
+	// ip白名单，用于跳过每小时1500次请求的限制
+	IPWhitelist: ['::1','::ffff:127.0.0.1','::ffff:192.168.1.4']
 
 }
 

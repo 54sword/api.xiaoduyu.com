@@ -66,7 +66,7 @@ export const Schema = `
   type countUserNotifications {
     count: Int
   }
-
+  
   "获取未读的用户消息"
   type fetchUnreadUserNotification {
     ids: [String]
@@ -83,7 +83,7 @@ export const Query = `
   countUserNotifications(${getArguments(userNotifications)}): countUserNotifications @cacheControl(scope: PRIVATE)
 
   "获取未读的用户消息"
-  fetchUnreadUserNotification: fetchUnreadUserNotification
+  fetchUnreadUserNotification: fetchUnreadUserNotification @cacheControl(scope: PRIVATE)
 
 `
 
