@@ -45,7 +45,7 @@
     "log4js": "^4.0.0",
     "lru-cache": "^5.1.1",
     "mongoose": "^5.7.1",
-    "morgan": "^1.5.3",
+    "morgan": "^1.9.1",
     "node-uuid": "^1.4.8",
     "nodemailer": "^0.7.1",
     "qiniu": "^6.1.13",
