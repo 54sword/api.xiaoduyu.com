@@ -5,7 +5,7 @@ export default function(str: string): string {
   if (str) {
     
     str = decodeURIComponent(str);
-
+    
     str = xss(str, {
       whiteList: {
         a: ['href', 'title', 'target', 'rel'],

@@ -64,8 +64,19 @@ export const sortBy = function(data: string): any {
  * @return {Object} mongoose 查询语法
  */
 export const search = function(str: string): any {
+
   let s = (str+'').split(' ');
-  return { $regex: RegExp("("+s.join('|')+")","i") }
+
+  // s.map((item, index)=>{
+  //   s[index] = '(?='+item+')'
+  // })
+
+  return {
+    // $regex: RegExp("("+s.join('|')+")","i")
+    $regex: s.join('|'),
+    // $regex: s.join(''),
+    $options: 'i'
+  }
 }
 
 /*

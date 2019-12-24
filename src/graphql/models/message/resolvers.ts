@@ -124,6 +124,7 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
 
   let _content_html = content_html || '';
 
+  _content_html = _content_html.replace(/<img(.*)>/g,"1");
   _content_html = _content_html.replace(/<[^>]+>/g,"");
   _content_html = _content_html.replace(/(^\s*)|(\s*$)/g, "");
 
@@ -166,7 +167,7 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
       user_id: user._id,
       addressee_id,
       type,
-      content,
+      // content,
       content_html,
       device,
       ip

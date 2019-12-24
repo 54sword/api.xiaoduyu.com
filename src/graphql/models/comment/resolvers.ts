@@ -1,3 +1,4 @@
+import { ApolloError } from 'apollo-server-express'
 import { Comment, Like, Posts, User, UserNotification, Feed, Phone } from '../../../models';
 
 import config from '../../../../config';
@@ -12,6 +13,51 @@ import * as alicloud from '../../../common/alicloud';
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
+
+/*
+Comment.find({
+  query: {
+    link_type: { '$exists': true }
+  },
+  select: {},
+  options: {
+    populate: [
+      { path: 'link_id', select:{ 'user_id': 1, '_id': 0 }, justOne: true }
+    ]
+  } 
+})
+.then(res=>{
+  console.log(res)
+})
+*/
+
+/*
+Follow.aggregate([
+  {
+    $lookup: {
+      from: "posts",
+      localField: "posts_id",
+      foreignField: "_id",
+      as: "posts_id"
+    }
+  },
+  {
+    $match: {
+      posts_id: { '$exists': true },
+      'posts_id.type': 2
+    }
+  },
+  {
+    $project: {
+      // 'posts_id': 1,
+      'posts_id': { ip: 1 }
+    }
+  }
+]).then((res: any)=>{
+  console.log(res[0]);
+});
+*/
+
 
 const comments = async (root: any, args: any, context: any, schema: any) => {
 
@@ -125,7 +171,7 @@ const comments = async (root: any, args: any, context: any, schema: any) => {
 
   if (Reflect.has(select, 'user_id') && select.user_id) {
     options.populate.push([
-      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1, 'ad': 1 }, justOne: true }
+      { path: 'user_id', select:{ '_id': 1, 'nickname': 1, 'create_at': 1, 'avatar': 1 }, justOne: true }
     ])
   }
 
@@ -438,7 +484,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
     [ err, result ] = await To(Phone.findOne({
       query: { user_id: user._id }
     }));
-
+    
     if (!result) {
 
       // 一个用户只能评论一次
@@ -449,9 +495,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
         }));
         
         if (result) {
-          throw CreateError({
-            message: '每个帖子仅能评论一次，绑定手机号后解除限制'
-          });
+          throw new ApolloError('每个帖子仅能评论一次，绑定手机号后解除限制', 'BIND_PHONE')
         }
       }
 
@@ -461,6 +505,8 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
 
   let _content_html = content_html || '';
 
+  _content_html = _content_html.replace(/<img(.*)>/g,"1");
+  
   _content_html = _content_html.replace(/<[^>]+>/g,"");
   _content_html = _content_html.replace(/(^\s*)|(\s*$)/g, "");
 
@@ -530,7 +576,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
   _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1");
   _contentHTML = _contentHTML.replace(/<[^>]+>/g,"");
 
-  if (!content || !content_html || _contentHTML == '') {
+  if (!content_html || _contentHTML == '') {
     throw CreateError({
       message: '内容不能为空'
     })
@@ -548,7 +594,7 @@ const addComment = async (root: any, args: any, context: any, schema: any) => {
   // 储存
   let data: any = {
     user_id: user._id,
-    content,
+    // content,
     content_html,
     posts_id,
     ip,

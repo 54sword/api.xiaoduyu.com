@@ -96,9 +96,7 @@ const spam = function(content: string) {
     }, function(err: any, response: any, body: any){
 
       if (body) body = JSON.parse(body);
-
-      // console.log(body.result);
-
+      
       // +spam	int	请求中是否包含违禁，0表示非违禁，1表示违禁，2表示建议人工复审
       if (body && body.result && body.result.spam == 1) {
         resolve(false)

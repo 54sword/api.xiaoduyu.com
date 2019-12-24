@@ -2,7 +2,7 @@
 import SMSClient from '@alicloud/sms-sdk'
 import ALY from 'aliyun-sdk'
 import config from '../../config'
-const { alicloud } = config
+const { alicloud, debug } = config
 
 // 短信
 if (alicloud.sms && alicloud.accessKeyId && alicloud.secretAccessKey) {
@@ -105,14 +105,14 @@ export const pushToAccount = ({ userId, title, body, summary, params }: pushToAc
     // iOSBadge: 5,//iOS应用图标右上角角标
     iOSSilentNotification: false,//是否开启静默通知
     iOSMusic: 'default',//iOS通知声音
-    iOSApnsEnv: config.debug ? 'DEV' : 'PRODUCT',//iOS的通知是通过APNs中心来发送的，需要填写对应的环境信息。"DEV" : 表示开发环境 "PRODUCT" : 表示生产环境
+    iOSApnsEnv: debug ? 'DEV' : 'PRODUCT',//iOS的通知是通过APNs中心来发送的，需要填写对应的环境信息。"DEV" : 表示开发环境 "PRODUCT" : 表示生产环境
     iOSRemind: true,//消息推送时设备不在线（既与移动推送的服务端的长连接通道不通），则这条推送会做为通知，通过苹果的APNs通道送达一次。注意：离线消息转通知仅适用于生产环境
     iOSRemindBody: "iOSReminfBody",//iOS消息转通知时使用的iOS通知内容，仅当iOSApnsEnv=PRODUCT && iOSRemind为true时有效
     iOSExtParameters: JSON.stringify(params),//通知的扩展属性(注意 : 该参数要以json map的格式传入,否则会解析出错)
     
   }, function (err: any, res: any) {
     if (err) console.log(err);
-    // console.log(err, res);
+    if (debug) console.log(err, res);
   });
 
 
@@ -153,7 +153,7 @@ export const pushToAccount = ({ userId, title, body, summary, params }: pushToAc
     StoreOffline: true//离线消息是否保存,若保存, 在推送时候，用户即使不在线，下一次上线则会收到
   }, function (err: any, res: any) {
     if (err) console.log(err);
-    // console.log(err, res);
+    if (debug) console.log(err, res);
   });
   
 }

@@ -292,7 +292,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
     [ err ] = await To(Email.send(mailOptions));
     
     if (err) {
-      reject(res);
+      reject(err);
     } else {
       resolve();
     }

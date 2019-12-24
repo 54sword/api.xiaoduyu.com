@@ -53,7 +53,7 @@ export const Schema = `
     "标题"
     title: String 
     "内容Draft JSON"
-    content: String
+    content: String @cacheControl(scope: PRIVATE)
     "内容HTML"
     content_html: String
     "创建日期"

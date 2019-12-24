@@ -41,6 +41,7 @@ export const send = (param: Param): Promise<any> => {
     if (res && res.message && res.message == 'success') {
       resolve();
     } else {
+      // reject(`SendClund Error: ${res.errors.join(',')}`);
       reject(JSON.stringify(res));
     }
 

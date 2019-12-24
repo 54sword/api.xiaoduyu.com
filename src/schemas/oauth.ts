@@ -28,6 +28,16 @@ const OauthSchema = new Schema({
   deleted: { type: Boolean, default: false }
 });
 
+OauthSchema.pre('save', async function(next) {
+  let self: any = this;
+  // 用户资料如果发生更新，从缓冲中删除用户的信息，让其重新从数据库中读取最新
+  if (self && self.user_id) {
+    // 主要需要将objectId转换成string
+    cache.del(self.user_id+'');
+  }
+  next();
+});
+
 OauthSchema.pre('updateOne', async function(next) {
   let self: any = this;
   // 用户资料如果发生更新，从缓冲中删除用户的信息，让其重新从数据库中读取最新
@@ -40,7 +50,6 @@ OauthSchema.pre('updateOne', async function(next) {
   }
   next();
 });
-
 
 OauthSchema.index({ openid: 1 }, { unique: true });
 OauthSchema.index({ openid: 1, source: 1 }, { unique: true });
