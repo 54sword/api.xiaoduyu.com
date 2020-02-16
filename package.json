@@ -51,7 +51,7 @@
     "nodemailer": "^0.7.1",
     "qiniu": "^6.1.13",
     "rate-limit-mongo": "^1.0.3",
-    "request": "^2.88.0",
+    "request": "^2.88.2",
     "sendcloud-client": "^0.1.1",
     "socket.io": "^2.2.0",
     "svg-captcha": "^1.4.0",
