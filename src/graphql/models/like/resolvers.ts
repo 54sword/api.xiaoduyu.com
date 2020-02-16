@@ -1,11 +1,75 @@
-
 import { Posts, UserNotification, Comment, Like } from '../../../models';
 
 import To from '../../../utils/to';
 import CreateError from '../../common/errors';
 
 import * as aModel from './arguments'
-import { getSave } from '../tools'
+import { getQuery, getOption, getSave } from '../tools'
+
+const likes = async (root: any, args: any, context: any, schema: any) => {
+
+  const { user, role } = context;
+  
+  let select: any = {}, err, list: any, query, options;
+
+  [ err, query ] = getQuery({ args, model: aModel.likes, role });
+  [ err, options ] = getOption({ args, model: aModel.likes, role });
+
+  // select
+  schema.fieldNodes[0].selectionSet.selections.map((item:any)=>select[item.name.value] = 1);
+
+  // 如果不是管理员，默认不显示取消的点赞
+  if (!role || role != 'admin') {
+    query.deleted = false;
+  }
+
+  if (!options.populate) options.populate = [];
+  if (select.user_id) {
+    options.populate.push({
+      path: 'user_id',
+      justOne: true
+    })
+  }
+
+  [ err, list ] = await To(Like.find({ query, select, options }));
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  return list;
+
+}
+
+const countLikes = async (root: any, args: any, context: any, schema: any) => {
+
+  const { role } = context;
+
+  let count: number, err, query;
+
+  [ err, query ] = getQuery({ args, model: aModel.likes, role });
+  [ err, count ] = await To(Like.count({ query }));
+
+  // 如果不是管理员，默认不显示取消的点赞
+  if (!role || role != 'admin') {
+    query.deleted = false;
+  }
+
+  if (err) {
+    throw CreateError({
+      message: '查询失败',
+      data: { errorInfo: err.message }
+    });
+  }
+
+  return {
+    count
+  }
+
+}
 
 // 还缺少通知
 const like = async (root: any, args: any, context: any, schema: any) => {
@@ -149,5 +213,5 @@ const like = async (root: any, args: any, context: any, schema: any) => {
   }
 }
 
-export const query = { }
+export const query = { likes, countLikes }
 export const mutation = { like }

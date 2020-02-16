@@ -1,3 +1,4 @@
+import { ApolloError } from 'apollo-server-express';
 import { Posts, User, Follow, Like, Topic, Feed, Phone, UserNotification } from '../../../models';
 
 import config from '../../../../config';
@@ -36,7 +37,7 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
     if (select.ip) delete select.ip;
     query.deleted = false;
   }
-
+  
   // 增加屏蔽条件
   // 1、如果是登陆状态，那么增加屏蔽条件
   // 2、如果通过posts id查询，那么不增加屏蔽条件
@@ -372,9 +373,7 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
       }
 
       if (result) {
-        throw CreateError({
-          message: '一天仅能发布一次帖子，绑定手机号后解除限制'
-        })
+        throw new ApolloError('一天仅能发布一次帖子，绑定手机号后解除限制', 'BIND_PHONE')
       }
       
     }
@@ -460,7 +459,7 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
   // 更新
   await To(Topic.update({
     query: { _id: topic_id },
-    update: { $inc: { 'posts_count': 1 } }
+    update: { $inc: { 'posts_count': 1 }, last_posts_at: new Date() }
   }));
 
   await To(User.updateOne({
@@ -499,7 +498,7 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   // 获取更新内容
   [ err, content ] = getSave({ args, model: Model.updatePosts, role });
   if (err) throw CreateError({ message: err });
-
+  
   // 判断帖子是否存在
   [ err, result ] = await To(Posts.findOne({ query }));
   if (err) {

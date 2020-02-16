@@ -35,7 +35,7 @@ log4js(app);
 app.use(helmet());
 
 // 开发环境生产,在控制台打印出请求记录
-// if (config.debug) app.use(logger('dev'));
+if (config.debug) app.use(logger('dev'));
 
 // http://www.cnblogs.com/vipstone/p/4865079.html
 app.use(bodyParser.json({limit: '20mb'}));

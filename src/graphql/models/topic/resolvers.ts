@@ -10,8 +10,8 @@ import { getQuery, getSave, getOption } from '../tools'
 
 const topics = async (root: any, args: any, context: any, schema: any) => {
 
-  const { user, role } = context
-  const { method } = args
+  const { user, role } = context;
+  const { method } = args;
   let select: any = {}, err, res, query = {}, options: any = {}, topicList;
 
   [ err, query ] = getQuery({ args, model: Model.topics, role });

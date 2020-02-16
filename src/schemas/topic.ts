@@ -33,9 +33,9 @@ const TopicSchema = new Schema({
   // 推荐节点
   recommend: { type: Boolean, default: false },
   // 子
-  children: [{ type: ObjectId, ref: 'Topic' }]
+  children: [{ type: ObjectId, ref: 'Topic' }],
   // 最近一次发帖的日期
-  // last_posts_at: { type: Date }
+  last_posts_at: { type: Date }
 });
 
 mongoose.model('Topic', TopicSchema);

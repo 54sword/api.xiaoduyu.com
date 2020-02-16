@@ -112,7 +112,7 @@ export const addPosts = {
     typename: 'save',
     name: 'content',
     value: data,
-    type: 'String!',
+    type: 'String',
     desc:'正文JSON'
   }),
   content_html: (data: string) => ({

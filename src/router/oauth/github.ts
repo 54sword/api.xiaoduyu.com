@@ -120,10 +120,13 @@ class GithubClass extends OauthClass {
     return new Promise((resolve, reject)=>{
 
       var options = {
-        url: 'https://api.github.com/user?access_token='+access_token,
+        // the `access_token` query parameter is deprecated.
+        // url: 'https://api.github.com/user?access_token='+access_token,
+        url: 'https://api.github.com/user',
         headers: {
           'Accept': 'application/json',
-          'User-Agent': req.headers['user-agent']
+          'User-Agent': req.headers['user-agent'],
+          'Authorization': 'token '+access_token
         }
       };
     

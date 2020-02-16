@@ -1,3 +1,4 @@
+import { ForbiddenError, ApolloError, AuthenticationError } from 'apollo-server-express';
 import { User, Account, Oauth, Phone, Captcha, Follow, Feed } from '../../../models';
 
 import xss from 'xss';
@@ -44,10 +45,7 @@ const selfInfo = async (root: any, args: any, context: any, schema: any) => {
   let { user } = context;
 
   if (!user) {
-    throw CreateError({
-      message: '没有权限访问',
-      data: { }
-    });
+    throw new ForbiddenError('没有权限访问');
   }
 
   return user;

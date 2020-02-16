@@ -40,7 +40,9 @@ const get = (type: string)=>{
       }
 
       if (result.name) {
-        if (typeof result.value == 'object') {
+        if (result.value instanceof Array) {
+          params[result.name] = result.value;
+        } else if (typeof result.value == 'object') {
           if (!params[result.name]) params[result.name] = {};
           for (let n in result.value) params[result.name][n] = result.value[n];
         } else {

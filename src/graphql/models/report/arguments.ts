@@ -100,7 +100,7 @@ export const addReport = {
   detail: (data: string) => ({
     typename: 'save',
     name: 'detail',
-    value: data,
+    value: decodeURIComponent(data+''),
     type: 'String',
     desc:'详情'
   })

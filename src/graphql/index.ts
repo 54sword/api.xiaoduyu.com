@@ -1,5 +1,6 @@
-import { ApolloServer, gql, AuthenticationError } from 'apollo-server-express'
+import { ApolloServer, gql, AuthenticationError, UserInputError } from 'apollo-server-express'
 import responseCachePlugin from 'apollo-server-plugin-response-cache';
+// import CreateError from './common/errors';
 
 import checkToken from './common/check-token'
 import { typeDefs, resolvers } from './models/index'
@@ -14,32 +15,31 @@ export default (app: any): void => {
   
   // https://www.apollographql.com/docs/apollo-server/whats-new/
   const server = new ApolloServer({
+    debug: false,//config.debug,
     // schema,
     typeDefs: gql(typeDefs),
     resolvers,
+    
+    // https://www.apollographql.com/docs/apollo-server/data/errors/#gatsby-focus-wrapper
     formatError: (err: any) => {
 
       // 自定义一些错误
       if (err.message == "Context creation failed: invalid token") {
-        return {
-          errors: [{ message: "invalid token" }]
-        };
+        return { message: "invalid token" }
       } else if (err.message == "Context creation failed: blocked") {
-        return {
-          errors: [{ message: "您的账号被禁止使用", blocked: true }]
-        };
+        return { message: "您的账号被禁止使用", blocked: true }
       }
 
       return err;
     },
+
     context: async ({ req, res }: any) => {
 
       // console.log(req.body.query.indexOf('mutation{'));
 
       // if (req.body && req.body.query && req.body.query.indexOf('mutation{')) {
-
       // }
-      
+
       // 如果header中，包含access token，那么判断是否有效，无效则拒绝请求
       let token = req.headers.accesstoken || '';
       let role = req.headers.role || '';
@@ -49,6 +49,8 @@ export default (app: any): void => {
       if (token) {
 
         let result = await checkToken({ token, role });
+
+        
         
         if (!result.user) {
           throw new AuthenticationError('invalid token'); 
