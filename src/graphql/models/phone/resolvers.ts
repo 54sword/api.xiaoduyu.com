@@ -69,8 +69,8 @@ const addPhone = async (root: any, args: any, context: any, schema: any) => {
   if (phoneAccount && unlock_token) {
 
     // =======================
-    // 更新邮箱
-    [ err, res ] = await To(Phone.update({
+    // 更新
+    [ err, res ] = await To(Phone.updateOne({
       query: { _id: phoneAccount._id },
       update: { phone, area_code }
     }));

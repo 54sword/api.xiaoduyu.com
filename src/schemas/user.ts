@@ -104,7 +104,7 @@ UserSchema.pre('updateOne', function(next) {
 
 UserSchema.virtual('avatar_url').get(function (this: any) {
   let url = this.avatar ? this.avatar : config.defaultAvatar;
-  url += url.indexOf('thumbnail') != -1 ? '/quality/90' : '';
+  url += url.indexOf('thumbnail') != -1 ? '/quality/90' : '?imageMogr2/crop/!516x516a0a0/thumbnail/!200/quality/90';
   return url;
 });
 

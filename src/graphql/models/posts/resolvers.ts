@@ -459,7 +459,7 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
   // 更新
   await To(Topic.update({
     query: { _id: topic_id },
-    update: { $inc: { 'posts_count': 1 } }
+    update: { $inc: { 'posts_count': 1 }, last_posts_at: new Date() }
   }));
 
   await To(User.updateOne({

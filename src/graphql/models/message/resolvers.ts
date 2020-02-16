@@ -182,6 +182,32 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
   }
 
   // 阿里云推送
+  let commentContent = content_html;
+
+  let imgReg = /<img(.*?)>/gi;
+
+  let imgs = [];
+  let img;
+  while (img = imgReg.exec(commentContent)) {
+    imgs.push(img[0]);
+  }
+
+  imgs.map(item=>{
+    commentContent = commentContent.replace(item, '[图片] ');
+  });
+
+  commentContent = commentContent.replace(/<[^>]+>/g, '');
+  commentContent = commentContent.replace(/\r\n/g, ''); 
+  commentContent = commentContent.replace(/\n/g, '');
+      
+  let titleIOS = user.nickname + ': ' + commentContent;
+  if (titleIOS.length > 40) titleIOS = titleIOS.slice(0, 40) + '...';
+  
+  let body = commentContent;
+  if (body.length > 40) body = body.slice(0, 40) + '...';
+
+  /*
+  // 阿里云推送
   let commentContent = content_html.replace(/<[^>]+>/g,"");
       
   let titleIOS = user.nickname + ': ' + commentContent;
@@ -189,6 +215,7 @@ const addMessage = async (root: any, args: any, context: any, schema: any) => {
   
   let body = commentContent;
   if (body.length > 40) body = body.slice(0, 40) + '...';
+  */
 
   alicloud.pushToAccount({
     userId: addressee_id,

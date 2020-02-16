@@ -14,6 +14,16 @@ const AccountSchema = new Schema({
   deleted: { type: Boolean, default: false }
 });
 
+AccountSchema.pre('save', async function(next) {
+  let self: any = this;
+  // 用户资料如果发生更新，从缓冲中删除用户的信息，让其重新从数据库中读取最新
+  if (self && self.user_id) {
+    // 主要需要将objectId转换成string
+    cache.del(self.user_id+'');
+  }
+  next();
+});
+
 AccountSchema.pre('updateOne', async function(next) {
   let self: any = this;
   // 用户资料如果发生更新，从缓冲中删除用户的信息，让其重新从数据库中读取最新

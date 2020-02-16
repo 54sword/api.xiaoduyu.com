@@ -14,6 +14,7 @@ export const Schema = `
     comment_count: Int
     fans_count: Int
     follow_people_count: Int
+    user_cover: String
     "关注 [PRIVATE]"
     follow: Boolean @cacheControl(scope: PRIVATE)
   }

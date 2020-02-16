@@ -9,7 +9,7 @@
     "pro": "node ./dist/src/index.js",
     "install-to-server": "node ./scripts/install.js",
     "update-to-server": "node ./scripts/update.js",
-    "mongodb": "/Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/bin/mongod --dbpath /Users/wushijian/Documents/mongodb-osx-x86_64-4.0.6/data/db"
+    "mongodb": "/Users/wuseijian/mongodb-3.6.2/bin/mongod --dbpath /Users/wuseijian/mongodb-3.6.2/data/db"
   },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.0.2",
@@ -24,7 +24,7 @@
     "@types/node-uuid": "0.0.28",
     "@types/request": "^2.48.1",
     "@types/socket.io": "^2.1.2",
-    "aliyun-sdk": "^1.12.0",
+    "aliyun-sdk": "^1.12.3",
     "apollo-errors": "^1.9.0",
     "apollo-server-cache-memcached": "^0.5.0",
     "apollo-server-express": "^2.9.14",

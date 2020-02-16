@@ -15,7 +15,7 @@ const ObjectId = Schema.Types.ObjectId;
  */
 
 const LikeSchema = new Schema({
-  user_id: { type: ObjectId },
+  user_id: { type: ObjectId, ref: 'User' },
   type: { type: String },
   target_id: { type: ObjectId },
   mood: { type: Number, default: 0 },
