@@ -6,7 +6,7 @@ import * as alicloud from '../../../common/alicloud';
 import HTMLXSS from '../../common/html-xss';
 import textReview from '../../common/text-review';
 
-import { emit } from '../../../socket'
+import { emitByUserId } from '../../../socket'
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
@@ -273,7 +273,16 @@ const updateSession = async (userId: string, addresseeId: string, messageId: str
       unread_count: count
     }
   });
+  
+  emitByUserId(session.addressee_id, addresseeId, {
+    type: 'new-session',
+    data: {
+      sessionId: session._id,
+      messageId
+    }
+  });
 
+  /*
   emit(addresseeId, {
     type: 'new-session',
     data: {
@@ -281,6 +290,7 @@ const updateSession = async (userId: string, addresseeId: string, messageId: str
       messageId
     }
   });
+  */
 
 }
 

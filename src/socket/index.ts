@@ -21,6 +21,7 @@ export default function(server: any, Models: any) {
   
   // 广播在线用户
   const updateOnline = (sockets = io.sockets) => {
+
     sockets.emit('all', {
       type: 'online-user',
       data: {
@@ -54,8 +55,6 @@ export default function(server: any, Models: any) {
 
   io.on('connection', function(socket: any){
 
-    // console.log(socket);
-
     // 获取客户端用户的id
     const { accessToken, scenes, liveId } = socket.handshake.query;
 
@@ -85,6 +84,9 @@ export default function(server: any, Models: any) {
     
     if (userId) {
       onlineMember.push(userId);
+      // 加入自己的房间
+      socket.join(userId, () => {});
+
     } else {
       onlineVisitor.push(address);
     }
@@ -98,6 +100,9 @@ export default function(server: any, Models: any) {
       connectCount -= 1;
 
       if (userId) {
+        // 离开自己的房间
+        socket.leave(userId, () => {});
+
         onlineMember.some((id, index)=>{
           if (id == userId) {
             onlineMember.splice(index, 1);
@@ -123,14 +128,18 @@ export default function(server: any, Models: any) {
     updateOnline(socket);
 
   });
+
 }
 
 export const emit = (target: string, params: object): void => {
   if (io) {
-    // io.sockets.to(target).emit(target, params, function(e: any){
-    //   console.log(e);
-    //   console.log('====');
-    // });
     io.sockets.emit(target, params);
+  } 
+}
+
+// 发送给某个用户的房间
+export const emitByUserId = (userId: string, target: string, params: object): void => {
+  if (io) {
+    io.sockets.to(userId).emit(target, params);
   } 
 }
