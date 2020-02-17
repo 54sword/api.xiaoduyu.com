@@ -95,11 +95,12 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
         if (liveId) {
 
           socket.leave(liveId, ()=>{
-            var index = roomList[liveId].indexOf(socket.id);
-            if (index !== -1) {
-              roomList[liveId].splice(index, 1);
+            if (roomList[liveId]) {
+              var index = roomList[liveId].indexOf(socket.id);
+              if (index !== -1) {
+                roomList[liveId].splice(index, 1);
+              }
             }
-            // console.log(roomList);
           });
 
           // Models.Live.update({
@@ -119,11 +120,15 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
     if (rooms.length >= 2) {
       let liveId = rooms[1];
       socket.leave(liveId, ()=>{
-        var index = roomList[liveId].indexOf(socket.id);
-        if (index !== -1) {
-          roomList[liveId].splice(index, 1);
+
+        if (roomList[liveId]) {
+          var index = roomList[liveId].indexOf(socket.id);
+          if (index !== -1) {
+            roomList[liveId].splice(index, 1);
+          }
+          ioSockets.emit(liveId, { type: 'remove-audience' });
         }
-        ioSockets.emit(liveId, { type: 'remove-audience' });
+
       });
     }
 
