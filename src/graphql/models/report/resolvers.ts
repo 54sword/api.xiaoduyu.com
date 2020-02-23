@@ -1,9 +1,9 @@
 
-import { Report, User, Posts, Comment } from '../../../models'
+import { Report, User, Posts, Comment } from '@src/models'
 
-import To from '../../../utils/to'
+import To from '@src/utils/to'
 import CreateError from '../../common/errors';
-import reportList from '../../../../config/report'
+import reportList from '@config/report'
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'

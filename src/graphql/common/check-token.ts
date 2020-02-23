@@ -1,10 +1,9 @@
-import * as JWT from '../../utils/jwt';
-import coverString from '../../utils/cover-string';
-import { Token, User, Account, Oauth, Phone } from '../../models';
+import * as JWT from '@src/utils/jwt';
+import coverString from '@src/utils/cover-string';
+import { Token, User, Account, Oauth, Phone } from '@src/models';
 
-
-import To from '../../utils/to';
-import cache from '../../common/cache';
+import To from '@src/utils/to';
+import cache from '@src/common/cache';
 
 export default ({ token = '', role = '' }): any => {
   return new Promise(async resolve=>{

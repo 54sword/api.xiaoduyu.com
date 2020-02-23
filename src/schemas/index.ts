@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import config from '../../config'
+import config from '@config'
 const { mongodbDebug, mongodbURI } = config
 
 if (mongodbDebug) mongoose.set('debug', true)

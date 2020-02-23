@@ -1,8 +1,8 @@
 import captchapng from 'captchapng'
 // import svgCaptcha from 'svg-captcha'
 
-import { Captcha } from '../models'
-import To from '../utils/to'
+import { Captcha } from '@src/models'
+import To from '@src/utils/to'
 
 // 显示验证码图片
 export const showImage = async (req: any, res: any, next: any) => {

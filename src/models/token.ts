@@ -1,6 +1,6 @@
 import { Token } from '../schemas'
 import baseMethod from './base-method'
-import * as JWT from '../utils/jwt'
+import * as JWT from '@src/utils/jwt'
 
 interface Create {
   userId: string,

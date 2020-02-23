@@ -1,6 +1,6 @@
-import { Posts, UserNotification, Comment, Like } from '../../../models';
+import { Posts, UserNotification, Comment, Like } from '@src/models';
 
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 
 import * as aModel from './arguments'

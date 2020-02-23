@@ -2,7 +2,7 @@ import https from 'https';
 import qs from 'querystring';
 import request from 'request';
 
-import config from '../../../config';
+import config from '@config';
 
 let param: any = null;
 

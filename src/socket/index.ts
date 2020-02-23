@@ -1,6 +1,6 @@
 import socketIO from 'socket.io';
 
-import * as JWT from '../utils/jwt';
+import * as JWT from '@src/utils/jwt';
 import live from './live';
 import message from './message';
 
@@ -97,6 +97,11 @@ export default function(server: any, Models: any) {
 
     socket.on('disconnect', function(res: any){
 
+      
+
+      // console.log(socket.adapter.rooms);
+      // console.log(socket.rooms);
+
       connectCount -= 1;
 
       if (userId) {
@@ -138,8 +143,16 @@ export const emit = (target: string, params: object): void => {
 }
 
 // 发送给某个用户的房间
-export const emitByUserId = (userId: string, target: string, params: object): void => {
+export const emitByUserId = (userId: string, target: string, params: object): boolean => {
+  
   if (io) {
-    io.sockets.to(userId).emit(target, params);
-  } 
+    // If the room is exist, then emit a message
+    if (io.sockets.adapter.rooms[userId]) {
+      io.sockets.to(userId).emit(target, params);
+      return true;
+    }
+  }
+
+  // Meit failed
+  return false;
 }

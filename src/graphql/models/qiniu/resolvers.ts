@@ -3,8 +3,8 @@ import qiniu from 'qiniu'
 import fs from 'fs'
 import uuid from 'node-uuid'
 
-import Download from '../../../utils/download'
-import config from '../../../../config'
+import Download from '@src/utils/download'
+import config from '@config'
 
 //需要填写你的 Access Key 和 Secret Key
 qiniu.conf.ACCESS_KEY = config.qiniu.accessKey;
@@ -19,7 +19,7 @@ const uptoken = (bucket: string) => {
   return putPolicy.token();
 }
 
-import To from '../../../utils/to'
+// import To from '@src/utils/to'
 import CreateError from '../../common/errors';
 
 const qiniuToken = async (root: any, args: any, context: any, schema: any) => {

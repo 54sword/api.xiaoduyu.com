@@ -1,5 +1,5 @@
-import { Feed, Follow, Like, User } from '../../../models';
-import To from '../../../utils/to';
+import { Feed, Follow, Like, User } from '@src/models';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 
 import * as Model from './arguments'

@@ -31,7 +31,7 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
           })
           .then(({ _id } : { _id: String })=>{
             if (!_id || _id + '' != liveId) return;
-            roomList[liveId] = [];
+            roomList[liveId] = 0;
             viewList[liveId] = 0;
 
             Models.Live.update({
@@ -54,7 +54,7 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
           .then(({ _id } : { _id: String })=>{
             if (!_id || _id + '' != liveId) return;
 
-            roomList[liveId] = [];
+            roomList[liveId] = 0;
             viewList[liveId] = 0;
 
             Models.Live.update({
@@ -63,8 +63,7 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
             });
           })
 
-          socket.leave(liveId, ()=>{
-          });
+          socket.leave(liveId, ()=>{});
         }
         break;
       
@@ -72,21 +71,18 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
       case 'join-room':  
         if (liveId) {
 
-          if (!roomList[liveId]) roomList[liveId] = [];
+          if (!roomList[liveId]) roomList[liveId] = 0;
           if (!viewList[liveId]) viewList[liveId] = 0;
           
           socket.join(liveId, ()=>{
-            roomList[liveId].push(socket.id);
+            roomList[liveId] = roomList[liveId] + 1;
             viewList[liveId] = viewList[liveId] + 1;
+            ioSockets.in(liveId).emit(liveId, { 
+              type: 'live-info', 
+              audience_count: getAudienceCountByLiveId(liveId),
+              view_count: getViewCountByLiveId(liveId)
+            });
           });
-
-          // Models.Live.update({
-          //   query: { _id: liveId },
-          //   update: { $addToSet: { audience: ip }, $inc: { view_count: 1 } }
-          // });
-          // ioSockets.to(liveId).emit(liveId, { type: 'add-audience' });
-          ioSockets.to(liveId).emit(liveId, { type: 'add-audience' });
-          // ioSockets.emit(liveId, { type: 'add-audience' });
         }
         break;
       
@@ -96,41 +92,36 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
 
           socket.leave(liveId, ()=>{
             if (roomList[liveId]) {
-              var index = roomList[liveId].indexOf(socket.id);
-              if (index !== -1) {
-                roomList[liveId].splice(index, 1);
-              }
+              roomList[liveId] = roomList[liveId] - 1;
             }
+            ioSockets.in(liveId).emit(liveId, {
+              type: 'live-info', 
+              audience_count: getAudienceCountByLiveId(liveId),
+              view_count: getViewCountByLiveId(liveId)
+            });
           });
-
-          // Models.Live.update({
-          //   query: { _id: liveId },
-          //   update: { $pull: { audience: ip } }
-          // });
-          ioSockets.emit(liveId, { type: 'remove-audience' });
         }
         break;
     }
     
   });
-
+  
   socket.on('disconnecting', (reason: any) => {
+
     let rooms = Object.keys(socket.rooms);
 
-    if (rooms.length >= 2) {
-      let liveId = rooms[1];
-      socket.leave(liveId, ()=>{
+    rooms.map(item=>{
+      if (!roomList[item]) return;
 
-        if (roomList[liveId]) {
-          var index = roomList[liveId].indexOf(socket.id);
-          if (index !== -1) {
-            roomList[liveId].splice(index, 1);
-          }
-          ioSockets.emit(liveId, { type: 'remove-audience' });
-        }
-
+      roomList[item] = roomList[item] - 1;
+      socket.leave(item, ()=>{
+        ioSockets.in(item).emit(item, {
+          type: 'live-info', 
+          audience_count: getAudienceCountByLiveId(item),
+          view_count: getViewCountByLiveId(item)
+        });
       });
-    }
+    });
 
   });
 
@@ -149,7 +140,7 @@ export default function({ ioSockets, socket, Models, userId, ip }: Props) {
 
 // 获取访问观众总数
 export const getAudienceCountByLiveId = function(liveId: string) {
-  return roomList[liveId] ? roomList[liveId].length : 0;
+  return roomList[liveId] || 0;
 }
 
 // 获取查看次数

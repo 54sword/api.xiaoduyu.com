@@ -1,8 +1,8 @@
 
-import { Token } from '../../../models';
+import { Token } from '@src/models';
 
-import * as JWT from '../../../utils/jwt';
-import To from '../../../utils/to';
+import * as JWT from '@src/utils/jwt';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 
 const exchangeNewToken = async (root: any, args: any, context: any, schema: any) => {

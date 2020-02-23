@@ -1,7 +1,7 @@
-import { Topic } from '../../../models'
+import { Topic } from '@src/models'
 
 // tools
-import To from '../../../utils/to'
+import To from '@src/utils/to'
 import CreateError from '../../common/errors';
 
 import * as Model from './arguments'

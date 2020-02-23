@@ -1,6 +1,6 @@
-import { UserNotification, Notification, User } from '../../../models'
+import { UserNotification, Notification, User } from '@src/models'
 
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 
 import * as Model from './arguments'

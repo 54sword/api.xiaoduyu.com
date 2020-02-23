@@ -1,23 +1,22 @@
+import { Captcha, Account, Phone } from '@src/models'
 
-import { Captcha, Account, Phone } from '../../../models';
-import config from '../../../../config';
-const { domain, debug } = config;
+import * as Email from '@src/common/email'
+import * as alicloud from '@src/common/alicloud'
+import * as yunpian from '@src/common/yunpian'
+import emailTemplate from '@src/common/email-template'
+import To from '@src/utils/to'
+import Validate from '@src/utils/validate'
 
-// tools
-import To from '../../../utils/to';
-import CreateError from '../../common/errors';
-import Validate from '../../../utils/validate';
-import * as Email from '../../../common/email';
-import * as alicloud from '../../../common/alicloud';
-import * as yunpian from '../../../common/yunpian';
+// config
+import Countries from '@config/countries'
+import temporaryEmail from '@config/temporary-email'
+import config from '@config'
+const { domain, debug } = config
 
-// data
-import Countries from '../../../../config/countries';
-
+// graphql
+import CreateError from '@src/graphql/common/errors'
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
-
-import temporaryEmail from '../../../../config/temporary-email'
 
 // 通过id获取验证码「单元测试环境使用」
 const getCaptcha = async (root: any, args: any, context: any, schema: any) => {
@@ -202,7 +201,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
       [ err, res ] = await To(Captcha.create(data));
 
       title = '请输入验证码 '+res.captcha+' 完成绑定邮箱';
-      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
+      content = '<div style="font-size:18px;">'+nickname+'，您好！</div>'+
                       '<div>您正在绑定小度鱼账号，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的注册验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
@@ -218,7 +217,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
       [ err, res ] = await To(Captcha.create(data));
 
       title = '请输入验证码 '+res.captcha+' 完成账号注册';
-      content = '<div style="font-size:18px;">尊敬的用户，您好！</div>'+
+      content = '<div style="font-size:18px;">您好！</div>'+
                       '<div>您正在注册小度鱼账号，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的注册验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
@@ -235,7 +234,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
       [ err, res ] = await To(Captcha.create(data));
 
       title = '请输入验证码 '+res.captcha+' 完成绑定邮箱';
-      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
+      content = '<div style="font-size:18px;">'+nickname+'，您好！</div>'+
                       '<div>您正在绑定新的小度鱼账号邮箱，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
@@ -250,7 +249,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
       [ err, res ] = await To(Captcha.create(data));
 
       title = '请输入验证码 '+res.captcha+' 完成找回密码';
-      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
+      content = '<div style="font-size:18px;">'+nickname+'，您好！</div>'+
                       '<div>您正在操作小度鱼账号密码找回，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的注册验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
@@ -264,7 +263,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
       [ err, res ] = await To(Captcha.create(data));
 
       title = '请输入验证码 '+res.captcha+' 完成身份验证';
-      content = '<div style="font-size:18px;">尊敬的 '+nickname+'，您好！</div>'+
+      content = '<div style="font-size:18px;">'+nickname+'，您好！</div>'+
                       '<div>您正在小度鱼操作验证身份，若不是您本人操作，请忽略此邮件。</div>'+
                       '如下是您的注册验证码:<br />'+
                       '<span style="background:#eaffd2; padding:10px; border:1px solid #cbf59e; color:#68a424; font-size:30px; display:block; margin:10px 0 10px 0;">'+
@@ -275,7 +274,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
     } else {
       return reject('类型错误');
     }
-
+    
     // 测试环境不发送短信
     if (debug) {
       reject(`测试环境不直接发送邮件，本次验证码为：${res.captcha}`);
@@ -286,7 +285,7 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
       to: email,
       subject: title,
       text: content,
-      html: generateEmailHTMLContent(content)
+      html: emailTemplate(content)
     };
 
     [ err ] = await To(Email.send(mailOptions));
@@ -299,69 +298,6 @@ const sendEmail = ({ user, email, type }:SendEmail) => {
 
   });
 }
-
-const generateEmailHTMLContent = (content: string) => {
-  return '<table width="100%" height="100%" bgcolor="#e0e0e0" style="min-width: 348px; font-family: \'Helvetica Neue\', \'Luxi Sans\', \'DejaVu Sans\', Tahoma, \'Hiragino Sans GB\', \'Microsoft Yahei\', sans-serif;" border="0" cellspacing="0" cellpadding="0">'+
-    '<tr height="32px"></tr>'+
-    '<tr align="center">'+
-      '<td width="32px"></td>'+
-      '<td>'+
-        '<table style="max-width: 600px;" width="100%" border="0" cellspacing="0" cellpadding="0">'+
-          '<tr>'+
-            '<td>'+
-              '<table style="border-top-left-radius: 3px; border-top-right-radius: 3px;" bgcolor="#25a716" width="100%" border="0" cellspacing="0" cellpadding="0">'+
-                '<tr><td height="25px"></td></tr>'+
-                '<tr>'+
-                  '<td width="32px"></td>'+
-                  '<td style="font-size:24px; color:#fff;">'+
-                    config.name+
-                  '</td>'+
-                  '<td width="100px" align="center">'+
-                  '</td>'+
-                '</tr>'+
-                '<tr><td height="15px"></td></tr>'+
-              '</table>'+
-            '</td>'+
-          '</tr>'+
-          '<tr>'+
-            '<td>'+
-              '<table style="border-bottom: 1px solid #eeeeee;" bgcolor="#fff"  width="100%" border="0" cellspacing="0" cellpadding="0">'+
-                '<tr><td height="30px"></td></tr>'+
-                '<tr>'+
-                  '<td width="32px"></td>'+
-                  '<td style="padding:0px; font-size:14px; color:#888;">'+
-                    content+
-                  '</td>'+
-                  '<td width="32px"></td>'+
-                '</tr>'+
-                '<tr><td height="30px"></td></tr>'+
-              '</table>'+
-            '</td>'+
-          '</tr>'+
-          '<tr>'+
-            '<td>'+
-              '<table style="border-bottom-left-radius: 3px; border-bottom-right-radius: 3px;" bgcolor="#fdfdfd" width="100%" border="0" cellspacing="0" cellpadding="0">'+
-                '<tr><td height="20px"></td></tr>'+
-                '<tr>'+
-                  '<td width="32px"></td>'+
-                  '<td style="font-size:12px; color:#888; line-height:22px; word-break:break-all;">'+
-                    '此电子邮件地址无法接收回复。要就此提醒向我们提供反馈，<a href="mailto:54sword@gmail.com?subject=问题反馈[小度鱼]" style="color:#14a0f0; text-decoration: none;" target="_blank">请点击此处。</a><br />'+
-                    '如需更多信息，请访问 <a href="http://www.xiaoduyu.com" style="color:#14a0f0; text-decoration: none;" target="_blank">小度鱼</a>。'+
-                  '</td>'+
-                  '<td width="32px"></td>'+
-                '</tr>'+
-                '<tr><td height="20px"></td></tr>'+
-              '</table>'+
-            '</td>'+
-          '</tr>'+
-        '</table>'+
-      '</td>'+
-      '<td width="32px"></td>'+
-    '</tr>'+
-    '<tr height="32px"></tr>'+
-  '</table>';
-}
-
 
 interface SendSMS {
   user: any

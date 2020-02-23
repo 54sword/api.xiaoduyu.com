@@ -1,13 +1,12 @@
+import { Follow, Topic, User, Posts, UserNotification } from '@src/models';
 
-import { Follow, Topic, User, Posts, UserNotification } from '../../../models';
-
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 
 import * as Model from './arguments'
 import { getQuery, getSave, getOption } from '../tools'
 
-import cache from '../../../common/cache';
+import cache from '@src/common/cache';
 
 /*
 Follow.aggregate([

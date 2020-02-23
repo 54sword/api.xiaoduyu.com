@@ -1,10 +1,9 @@
+import { Oauth } from '@src/models';
 
-import { Oauth } from '../../../models';
-
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 
-import * as QQ from '../../../router/oauth/qq'
+import * as QQ from '@src/router/oauth/qq'
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'

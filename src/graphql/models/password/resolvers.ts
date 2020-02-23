@@ -1,13 +1,13 @@
 import bcrypt from 'bcryptjs';
 import uuid from 'node-uuid';
 
-import { User } from '../../../models';
+import { User } from '@src/models';
 
 // tools
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
-import Validate from '../../../utils/validate';
-import * as JWT from '../../../utils/jwt';
+import Validate from '@src/utils/validate';
+import * as JWT from '@src/utils/jwt';
 
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'

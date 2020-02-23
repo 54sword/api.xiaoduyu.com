@@ -1,15 +1,14 @@
 import { ApolloError } from 'apollo-server-express'
-import { Comment, Like, Posts, User, UserNotification, Feed, Phone } from '../../../models';
+import { Comment, Like, Posts, User, UserNotification, Feed, Phone } from '@src/models';
 
-import config from '../../../../config';
+import config from '@config';
 const { debug } = config;
 
-// import * as jpush from '../../../common/jpush';
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 import HTMLXSS from '../../common/html-xss';
 import textReview from '../../common/text-review';
-import * as alicloud from '../../../common/alicloud';
+import * as alicloud from '@src/common/alicloud';
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'

@@ -1,11 +1,11 @@
 
-import { Phone, Captcha } from '../../../models'
+import { Phone, Captcha } from '@src/models'
 
 // tools
-import Countries from '../../../../config/countries'
-import To from '../../../utils/to'
+import Countries from '@config/countries'
+import To from '@src/utils/to'
 import CreateError from '../../common/errors'
-import * as JWT from '../../../utils/jwt'
+import * as JWT from '@src/utils/jwt'
 
 import * as Model from './arguments'
 import { getSave } from '../tools'

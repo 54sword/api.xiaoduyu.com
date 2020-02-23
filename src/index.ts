@@ -17,15 +17,12 @@ import rateLimit from 'express-rate-limit'
 import MongoStore from 'rate-limit-mongo'
 
 // 日志记录
-import log4js from './utils/log4js'
-
-import config from '../config'
-
-import graphql from './graphql'
-import router from './router'
-import socket from './socket'
-
-import * as Models from './models';
+import log4js from '@src/utils/log4js'
+import config from '@config'
+import graphql from '@src/graphql'
+import router from '@src/router'
+import socket from '@src/socket'
+import * as Models from '@src/models'
 
 const app = express();
 
@@ -143,8 +140,6 @@ app.use(function(req, res, next) {
 	res.status(404);
 	res.send('404 not found');
 });
-
-
 
 // 启动 websocket
 

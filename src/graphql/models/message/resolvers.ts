@@ -1,12 +1,12 @@
-import { Message, Session, User} from '../../../models'
-import To from '../../../utils/to'
+import { Message, Session, User} from '@src/models'
+import To from '@src/utils/to'
 import CreateError from '../../common/errors'
-import * as alicloud from '../../../common/alicloud';
+import * as alicloud from '@src/common/alicloud';
 
 import HTMLXSS from '../../common/html-xss';
 import textReview from '../../common/text-review';
 
-import { emitByUserId } from '../../../socket'
+import { emitByUserId } from '@src/socket'
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'

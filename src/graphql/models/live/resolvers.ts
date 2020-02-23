@@ -1,13 +1,12 @@
-import { User, Live } from '../../../models'
+import { User, Live } from '@src/models'
 
-import To from '../../../utils/to'
+import To from '@src/utils/to'
 import CreateError from '../../common/errors';
-// import reportList from '../../../../config/report'
 
 import * as Model from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
-import { getAudienceCountByLiveId, getViewCountByLiveId } from '../../../socket/live';
-import { getTalkCountByLiveId } from '../../../socket/message';
+import { getAudienceCountByLiveId, getViewCountByLiveId } from '@src/socket/live';
+import { getTalkCountByLiveId } from '@src/socket/message';
 
 const live = async (root: any, args: any, context: any, schema: any) => {
 

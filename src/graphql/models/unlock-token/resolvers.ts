@@ -1,8 +1,8 @@
 
-import { Account, Phone, User, Captcha, Token } from '../../../models';
+import { Account, Phone, User, Captcha, Token } from '@src/models';
 
 // tools
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 // import JWT from '../../common/jwt';
 

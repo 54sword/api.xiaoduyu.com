@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import cache from '../common/cache';
+import cache from '@src/common/cache';
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;

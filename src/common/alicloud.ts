@@ -1,7 +1,7 @@
 // 大鱼短信sdk
 import SMSClient from '@alicloud/sms-sdk'
 import ALY from 'aliyun-sdk'
-import config from '../../config'
+import config from '@config'
 const { alicloud, debug } = config
 
 // 短信

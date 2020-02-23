@@ -1,11 +1,11 @@
 {
   "name": "xiaoduyu-api",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development supervisor node ./dist/src/index.js",
-    "dist": "tsc",
-    "watch-ts": "tsc -w",
+    "dist": "ttsc",
+    "watch-ts": "ttsc -w",
     "pro": "node ./dist/src/index.js",
     "install-to-server": "node ./scripts/install.js",
     "update-to-server": "node ./scripts/update.js",
@@ -45,6 +45,7 @@
     "jsonwebtoken": "^8.4.0",
     "log4js": "^6.1.0",
     "lru-cache": "^5.1.1",
+    "module-alias": "^2.2.2",
     "mongoose": "^5.7.11",
     "morgan": "^1.9.1",
     "node-uuid": "^1.4.8",
@@ -57,5 +58,10 @@
     "svg-captcha": "^1.4.0",
     "xss": "^1.0.6"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "^13.7.4",
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.8.2",
+    "typescript-transform-paths": "^1.1.14"
+  }
 }

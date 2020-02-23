@@ -5,9 +5,9 @@ import * as qq from './oauth/qq'
 import * as github from './oauth/github'
 import * as wechat from './oauth/wechat'
 
-import config from '../../config'
+import config from '@config'
 
-import * as Models from '../models';
+// import * as Models from '../models';
 
 const { debug, oauth } = config
 

@@ -1,13 +1,13 @@
 import { ForbiddenError, ApolloError, AuthenticationError } from 'apollo-server-express';
-import { User, Account, Oauth, Phone, Captcha, Follow, Feed } from '../../../models';
+import { User, Account, Oauth, Phone, Captcha, Follow, Feed } from '@src/models';
 
 import xss from 'xss';
 import uuid from 'node-uuid';
 
-import Countries from '../../../../config/countries';
-import Validate from '../../../utils/validate';
+import Countries from '@src/../config/countries';
+import Validate from '@src/utils/validate';
 
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import CreateError from '../../common/errors';
 
 // import { getQuery, getOption, getUpdateQuery, getUpdateContent, getSaveFields } from '../config';

@@ -1,7 +1,6 @@
-
 import request from 'request'
-import config from '../../config'
-import synthesis from '../utils/synthesis'
+import config from '@config'
+import synthesis from '@src/utils/synthesis'
 
 const { yunpian } = config
 

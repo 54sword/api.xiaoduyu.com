@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
-import { emit } from '../socket'
+import { emit } from '@src/socket'
 
 // 动态流
 const Feed = new Schema({

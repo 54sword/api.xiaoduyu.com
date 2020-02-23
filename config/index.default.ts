@@ -7,6 +7,7 @@ export interface Config {
 		graphql: number
 	}
 	name: string
+	officialWebsite: string
 	cookieSecret: string
 	jwtSecret: string
 	defaultAvatar: string
@@ -15,6 +16,7 @@ export interface Config {
 	port: number
 	domain: string
 	email: {
+		feedback: string
 		sendCloud?: {
 			from: string
 		  apiUser: string
@@ -81,7 +83,9 @@ let config:Config = {
 	},
 
 	// 社区名称
-	name: '小度鱼API',
+	name: '小度鱼',
+	// 官网网站
+	officialWebsite: 'https://www.xiaoduyu.com',
 	// cookie 配置 [必填，建议修改]
 	cookieSecret: 'cookie_secret_xiaoduyu',
 	// jwt配置 [必填，建议修改]
@@ -100,6 +104,9 @@ let config:Config = {
 	
 	// 第三方发送邮件服务
 	email: {
+		// get the user feedback by email
+		feedback: 'feedback@xxx.com',
+
 		// SendCloud配置信息，用于发送邮件 [必填, 否则将不能发送邮件]
 		// https://sendcloud.sohu.com
 		sendCloud: {
@@ -178,6 +185,8 @@ if (process.env.NODE_ENV == 'development') {
 	config.port = 3000;
 	config.mongodbURI = 'mongodb://localhost:27017/xiaoduyu';
 	config.domain = 'http://localhost:3000';
+	config.alicloud.accessKeyId = '';
+	config.alicloud.secretAccessKey = '';
 }
 
 export default config;

@@ -1,7 +1,6 @@
+import { Block, Comment, Posts, User } from '@src/models'
 
-import { Block, Comment, Posts, User } from '../../../models'
-
-import To from '../../../utils/to'
+import To from '@src/utils/to'
 import CreateError from '../../common/errors'
 
 import * as Model from './arguments'

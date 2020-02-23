@@ -1,11 +1,11 @@
 import { ApolloError } from 'apollo-server-express';
-import { Posts, User, Follow, Like, Topic, Feed, Phone, UserNotification } from '../../../models';
+import { Posts, User, Follow, Like, Topic, Feed, Phone, UserNotification } from '@src/models';
 
-import config from '../../../../config';
+import config from '@config';
 const { debug } = config;
 
 import CreateError from '../../common/errors';
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 import HTMLXSS from '../../common/html-xss';
 import textReview from '../../common/text-review';
 

@@ -1,4 +1,4 @@
-import config from '../../config'
+import config from '@config'
 
 var LRU = require("lru-cache")
   , options = { max: 1000, maxAge: 1000 * config.cache.default }

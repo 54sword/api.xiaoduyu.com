@@ -1,16 +1,16 @@
 import xss from 'xss'
 
-import config from '../../../config'
-import { User, Oauth, Token } from '../../models'
-import synthesis from '../../utils/synthesis'
-import To from '../../utils/to'
-import social from '../../../config/social'
+import config from '@config'
+import { User, Oauth, Token } from '@src/models'
+import synthesis from '@src/utils/synthesis'
+import To from '@src/utils/to'
+import social from '@config/social'
 
-import { getIP } from '../../utils/tools';
+import { getIP } from '@src/utils/tools';
 
-import checkToken from '../../graphql/common/check-token'
+import checkToken from '@src/graphql/common/check-token'
 
-import { downloadImgAndUploadToQiniu } from '../../graphql/models/qiniu/resolvers';
+import { downloadImgAndUploadToQiniu } from '@src/graphql/models/qiniu/resolvers';
 
 interface Data {
   name: string

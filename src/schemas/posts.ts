@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
-import { emit } from '../socket'
+import { emit } from '@src/socket'
 
 const PostsSchema = new Schema({
   // 作者

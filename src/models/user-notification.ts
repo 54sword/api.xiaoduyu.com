@@ -1,6 +1,6 @@
 import { UserNotification } from '../schemas'
 import baseMethod from './base-method'
-import To from '../utils/to'
+import To from '@src/utils/to'
 
 import { emit } from '../socket'
 

@@ -1,6 +1,6 @@
-import { Posts, Topic } from '../../../models';
+import { Posts, Topic } from '@src/models';
 
-import To from '../../../utils/to';
+import To from '@src/utils/to';
 
 // import * as Model from './arguments'
 // import { getOption } from '../tools'

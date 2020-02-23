@@ -1,5 +1,4 @@
-
-import config from '../../config'
+import config from '@config'
 import SendCloud from 'sendcloud-client'
 
 let sendCloudConfig = config.email.sendCloud

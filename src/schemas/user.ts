@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import cache from '../common/cache';
+import cache from '@src/common/cache';
 
-import config from '../../config';
+import config from '@config';
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;

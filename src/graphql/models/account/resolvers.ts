@@ -1,10 +1,10 @@
-import { Account, User, Captcha, Phone, Token } from '../../../models'
+import { Account, User, Captcha, Phone, Token } from '@src/models'
 
 // tools
-import * as JWT from '../../../utils/jwt'
-import To from '../../../utils/to'
+import * as JWT from '@src/utils/jwt'
+import To from '@src/utils/to'
 import CreateError from '../../common/errors'
-import Validate from '../../../utils/validate'
+import Validate from '@src/utils/validate'
 
 import * as Model from './arguments'
 import { getQuery, getSave } from '../tools'
