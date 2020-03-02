@@ -8,6 +8,7 @@ import CreateError from '../../common/errors';
 import To from '@src/utils/to';
 import HTMLXSS from '../../common/html-xss';
 import textReview from '../../common/text-review';
+import converterHtml from '../../common/converter-hrml';
 
 import * as Model from './arguments';
 import { getQuery, getOption, getSave } from '../tools';
@@ -22,6 +23,8 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
 
   [ err, query ] = getQuery({ args, model: Model.posts, role });
   [ err, options ] = getOption({ args, model: Model.posts, role });
+
+  // console.log(query);
 
   // 未登陆用户，不能使用method方式查询
   if (!user && method) throw CreateError({ message: '请求被拒绝' })
@@ -328,8 +331,14 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
 
   if (err) throw CreateError({ message: err });
 
+  // console.log(fields);
+
   // 开始逻辑
-  let { title, content, content_html, topic_id, device_id = 1, type = 1 } = fields;
+  let { title, markdown, content, content_html, topic_id, device_id = 1, type = 1 } = fields;
+
+  if (!content && content_html) {
+    content = content_html;
+  }
 
   if (!ip) throw CreateError({ message: '无效的ip' });
   if (type > 1) throw CreateError({ message: 'type 无效' });
@@ -398,9 +407,9 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
     })
   }
   
-  content_html = HTMLXSS(content_html);
+  content = HTMLXSS(content);
 
-  let _contentHTML = content_html;
+  let _contentHTML = content;
   _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1");
   _contentHTML = _contentHTML.replace(/<[^>]+>/g,"");
 
@@ -438,8 +447,9 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
     data: {
       user_id: user._id,
       title,
+      markdown,
       content,
-      content_html,
+      content_html: markdown ? converterHtml(content) : content,
       topic_id,
       ip,
       device: device_id,
@@ -526,8 +536,31 @@ const updatePosts = async (root: any, args: any, context: any, schema: any) => {
   
   content.update_at = new Date();
 
-  if (content.content_html) {
-    content.content_html = HTMLXSS(content.content_html);
+  if (content.content || content.content_html) {
+
+    let content_html;
+
+    // 获取文本审核结果
+    let reviewResult;
+
+    // is not markdown
+    if (!posts.markdown) {
+      let html = content.content;
+      html = html.replace(/<img[^>]+>/g,"1");
+      html = html.replace(/<[^>]+>/g,"");
+      reviewResult = await textReview(html);
+
+      content_html = HTMLXSS(content.content);
+    } else {
+      reviewResult = await textReview(content.content);
+      content_html = converterHtml(content.content)
+    }
+    
+    if (!reviewResult) {
+      throw CreateError({ message: '正文包了含敏感内容' })
+    }
+    
+    content.content_html = content_html;
   }
 
   // 更新

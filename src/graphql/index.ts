@@ -5,7 +5,7 @@ import responseCachePlugin from 'apollo-server-plugin-response-cache';
 import checkToken from './common/check-token'
 import { typeDefs, resolvers } from './models/index'
 
-import config from '../../config'
+import config from '@config'
 
 /**
  * 启动 graphql

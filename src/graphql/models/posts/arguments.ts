@@ -108,18 +108,25 @@ export const addPosts = {
     type: 'String!',
     desc:'标题'
   }),
+  markdown: (data: string) => ({
+    typename: 'save',
+    name: 'markdown',
+    value: data,
+    type: 'Boolean',
+    desc:'表示content是否是markdown'
+  }),
   content: (data: string) => ({
     typename: 'save',
     name: 'content',
-    value: data,
+    value: decodeURIComponent(data),
     type: 'String',
-    desc:'正文JSON'
+    desc:'原始的文本，编辑器中使用'
   }),
   content_html: (data: string) => ({
     typename: 'save',
     name: 'content_html',
     value: data,
-    type: 'String!',
+    type: 'String',
     desc:'文本HTML'
   }),
   topic_id: (data: string) => ({
@@ -194,9 +201,9 @@ export const updatePosts = {
   content: (data: string) => ({
     typename: 'save',
     name: 'content',
-    value: data,
+    value: decodeURIComponent(data),
     type: 'String',
-    desc:'正文JSON Draft'
+    desc:'原始的文本，编辑器中使用'
   }),
   content_html: (data: string) => ({
     typename: 'save',

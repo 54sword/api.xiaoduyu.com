@@ -65,17 +65,23 @@ export const sortBy = function(data: string): any {
  */
 export const search = function(str: string): any {
 
+  if (!str) {
+    return {}
+  }
+
   let s = (str+'').split(' ');
 
-  // s.map((item, index)=>{
-  //   s[index] = '(?='+item+')'
-  // })
+  s.map((item, index)=>{
+    let arr = encodeURIComponent(item).split('%');
+    s[index] = decodeURIComponent(arr.join('%2F%'))
+  });
+
+  var re = new RegExp("(?:" + s.join('|') + ")","gim");
 
   return {
-    // $regex: RegExp("("+s.join('|')+")","i")
-    $regex: s.join('|'),
-    // $regex: s.join(''),
-    $options: 'i'
+    $regex: re
+    // $regex: s.join('|'),
+    // $options: 'i'
   }
 }
 

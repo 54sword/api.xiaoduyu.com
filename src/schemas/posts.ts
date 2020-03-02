@@ -13,6 +13,8 @@ const PostsSchema = new Schema({
   type: { type: Number, default: 0 },
   // 标题
   title: { type: String, default: '' },
+  // content是否是markdown原格式
+  markdown: { type: Boolean, default: false },
   // 内容
   content: { type: String, default: '' },
   // 内容转化后的HTML格式

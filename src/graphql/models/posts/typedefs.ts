@@ -53,7 +53,9 @@ export const Schema = `
     type: String
     "标题"
     title: String 
-    "内容Draft JSON"
+    "是否是markdown格式"
+    markdown: Boolean
+    "内容原始格式，编辑器中使用"
     content: String @cacheControl(scope: PRIVATE)
     "内容HTML"
     content_html: String
