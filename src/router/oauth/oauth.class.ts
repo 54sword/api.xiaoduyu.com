@@ -30,6 +30,7 @@ interface SocialInfo {
 }
 
 interface SocialAccessToken {
+  unionid?: string
   openid: string
   access_token: string
   expires_in?: number
@@ -134,9 +135,38 @@ export default class OAuthClass {
     return new Promise(async (resolve, reject)=>{
 
       let err, oauth;
-      
-      // 通过 openid 获取 oauth
-      [ err, oauth ] = await To(Oauth.fetchByOpenIdAndSource(socialAccessToken.openid, source));
+
+      //  || source == 'weixin'
+      if (source == 'qq') {
+        
+        if (!socialAccessToken.unionid) {
+          reject("don't have unionid");
+          return;
+        }
+
+        // 通过 unionid 获取 oauth
+        [ err, oauth ] = await To(Oauth.fetchByUnionIdAndSource(socialAccessToken.unionid, source));
+
+        // 对于没有之前老账号，没有unionid的数据，补充unionid的数据
+        if (!oauth) {
+          // 通过 openid 获取 oauth
+          [ err, oauth ] = await To(Oauth.fetchByOpenIdAndSource(socialAccessToken.openid, source));
+
+          // 如果openid可以查询到用户，说明用户之前已创建，那么储存unionid，下次都unionid启动
+          if (oauth) {
+            let [ err ] = await To(Oauth.updateOne({
+              query: { _id: oauth._id },
+              update: {
+                unionid: socialAccessToken.unionid
+              }
+            }));
+          }
+        }
+
+      } else {
+        // 通过 openid 获取 oauth
+        [ err, oauth ] = await To(Oauth.fetchByOpenIdAndSource(socialAccessToken.openid, source));
+      }
 
       if (err) console.log(err);
       

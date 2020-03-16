@@ -86,6 +86,8 @@ export const pushToAccount = ({ userId, title, body, summary, params }: pushToAc
 
   // https://github.com/aliyun/alicloud-ams-demo/blob/master/OpenApi2.0/push-openapi-nodejs-demo/Push.js
   
+  try {
+
   // ios
   push.push({
     AppKey: alicloud.push.iOSAppKey,
@@ -167,7 +169,10 @@ export const pushToAccount = ({ userId, title, body, summary, params }: pushToAc
     }
   });
   
-  
+    
+  } catch (err) {
+    console.log(err);
+  }
   
 /*
  push.push({

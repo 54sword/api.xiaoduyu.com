@@ -14,6 +14,14 @@ export const QQOAuth = {
     type: 'String',
     desc:'openid'
   }),
+
+  unionid: (data: string) => ({
+    typename: 'save',
+    name: 'unionid',
+    value: data,
+    type: 'String',
+    desc: 'unionid'
+  }),
   
   access_token: (data: string) => ({
     typename: 'save',

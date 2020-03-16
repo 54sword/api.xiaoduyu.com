@@ -6,6 +6,7 @@ import CreateError from '../../common/errors';
 import * as aModel from './arguments'
 import { getQuery, getOption, getSave } from '../tools'
 
+
 const likes = async (root: any, args: any, context: any, schema: any) => {
 
   const { user, role } = context;

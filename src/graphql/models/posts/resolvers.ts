@@ -24,11 +24,9 @@ const posts = async (root: any, args: any, context: any, schema: any) => {
   [ err, query ] = getQuery({ args, model: Model.posts, role });
   [ err, options ] = getOption({ args, model: Model.posts, role });
 
-  // console.log(query);
-
   // 未登陆用户，不能使用method方式查询
   if (!user && method) throw CreateError({ message: '请求被拒绝' })
-
+  
   // 每页数量
   let limit = options.limit;
 
@@ -407,12 +405,12 @@ const addPosts = async (root: any, args: any, context: any, schema: any) => {
     })
   }
   
-  content = HTMLXSS(content);
+  // content = HTMLXSS(content);
 
-  let _contentHTML = content;
+  let _contentHTML = HTMLXSS(content);
   _contentHTML = _contentHTML.replace(/<img[^>]+>/g,"1");
   _contentHTML = _contentHTML.replace(/<[^>]+>/g,"");
-
+  
   if (_contentHTML) {
     // 获取文本审核结果
     let reviewResult = await textReview(_contentHTML);

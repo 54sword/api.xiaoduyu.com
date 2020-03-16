@@ -160,6 +160,9 @@ export default class Model {
    */
   aggregate (query: any): Promise<object> {
     return this.schema.aggregate(query);
+    // return new Promise((resolve, reject) => {
+    //   return this.schema.aggregate(query, this.callback(resolve, reject));
+    // });
   }
 
 }

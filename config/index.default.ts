@@ -12,6 +12,16 @@ export interface Config {
 	jwtSecret: string
 	defaultAvatar: string
 	mongodbURI: string
+	mongodb: {
+		userName: string
+		password: string
+		address: string
+		port: number
+		database: string
+		path: string
+		backupPath: string
+		restorePath: string
+	},
 	host: string
 	port: number
 	domain: string
@@ -93,8 +103,28 @@ let config:Config = {
 	jwtSecret: 'jwt_secret_xiaoduyu',
 	// 默认用户头像
 	defaultAvatar: '//img.xiaoduyu.com/default_avatar.jpg',
+
 	// mongodb配置 [必填]
-	mongodbURI: 'mongodb://localhost:27017/xiaoduyu',
+	mongodb: {
+		// [必填] 数据库的账号
+		userName: '',
+		// [必填] 数据库的密码
+		password: '',
+		// [必填] 数据库名称
+		database: 'xiaoduyu',
+		// [必填] 地址(一般不需要修改)
+		address: 'localhost',
+		// [必填] 端口号(一般不需要修改)
+		port: 27017,
+		// [选填] mongodb的安装位置，用于拿到bin的命令，进行备份的操作，如未填写则不进行自动备份操作
+		path: '/usr/local/mongodb',
+		// [选填] 备份数据，储存的路径
+		backupPath: '/usr/local/mongodb/backup',
+		// [选填，暂时还用不到] 从指定备份数据中恢复数据
+		restorePath: '/usr/local/mongodb/backup/xiaoduyu'
+	},
+	// [忽略] uri会根据mongodb配置自动组合生成
+	mongodbURI: '',
 	
 	host: 'localhost',
 	// 端口 [必填]
@@ -183,10 +213,16 @@ if (process.env.NODE_ENV == 'development') {
 	config.debug = true;
 	// config.mongodbDebug = true;
 	config.port = 3000;
-	config.mongodbURI = 'mongodb://localhost:27017/xiaoduyu';
+	config.mongodb.userName = '';
+	config.mongodb.password = '';
+	config.mongodb.path = '';
 	config.domain = 'http://localhost:3000';
 	config.alicloud.accessKeyId = '';
 	config.alicloud.secretAccessKey = '';
 }
+
+// make up a mongodb uri
+const mongodb = config.mongodb;
+config.mongodbURI = `mongodb://${mongodb.userName && mongodb.password ? `${mongodb.userName}:${mongodb.password}@` : ''}${mongodb.address}:${mongodb.port}/${mongodb.database}`
 
 export default config;

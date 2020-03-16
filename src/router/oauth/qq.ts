@@ -12,6 +12,7 @@ interface signIn{
     _id: string
   }
   token: {
+    unionid: string
     openid: string
     access_token: string
     expires_in: number
@@ -46,11 +47,11 @@ class QQClass extends OauthClass {
         } 
       }
 
-      let err, result, userinfo, userId, openid;
+      let err, result, userinfo, userId, meInfo;
 
       // 获取第三放的访问令牌
       [ err, result ] = await To(this.getAccessToken(code, state));
-
+      
       if (err) {
         this.goToNoticePage(req, res, 'wrong_token');
         return;
@@ -61,9 +62,16 @@ class QQClass extends OauthClass {
         return;
       }
 
-      [ err, openid ] = await To(this.getOpenId(result.access_token));
+      [ err, meInfo ] = await To(this.getOpenId(result.access_token));
 
-      // 获取open id
+      if (err) {
+        this.goToNoticePage(req, res, err);
+        return;
+      }
+
+      let openid = meInfo.openid,
+          unionid = meInfo.unionid;
+
       [ err, userinfo ] = await To(this.getUserinfo(result.access_token, openid));
 
       let socialInfo: any = {
@@ -75,6 +83,7 @@ class QQClass extends OauthClass {
 
       let socialAccessToken: any = {
         openid: openid,
+        unionid: unionid,
         access_token: result.access_token,
         expires_in: result.expires_in,
         refresh_token: result.refresh_token || ''
@@ -120,6 +129,7 @@ class QQClass extends OauthClass {
         };
   
         let socialAccessToken: any = {
+          unionid: token.unionid,
           openid: token.openid,
           access_token: token.access_token,
           expires_in: token.expires_in,
@@ -186,7 +196,8 @@ class QQClass extends OauthClass {
     return new Promise((resolve, reject)=>{
 
       request.get(
-        'https://graph.qq.com/oauth2.0/me?access_token='+access_token,
+        // 'https://graph.qq.com/oauth2.0/me?access_token='+access_token,
+        `https://graph.qq.com/oauth2.0/me?access_token=${access_token}&unionid=1`,
         {},
         function (error: any, response: any, body: any) {
           if (!error && response.statusCode == 200) {
@@ -195,11 +206,15 @@ class QQClass extends OauthClass {
             var end = body.lastIndexOf(')');
             var body = body.substring(star, end);
             var info = JSON.parse(body);
-    
-            if (info.openid) {
-              resolve(info.openid);
+
+            if (!info.unionid) {
+              reject('unionid get failed')
+            } else if (!info.openid) {
+              reject('openid get failed')
+            } else if (info.openid && info.unionid) {
+              resolve(info);
             } else {
-              reject('openid get failed');
+              reject('unknown error');
             }
     
           } else {

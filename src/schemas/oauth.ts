@@ -6,7 +6,9 @@ const ObjectId = Schema.Types.ObjectId;
 
 const OauthSchema = new Schema({
   // 用户的唯一id
-  openid: String,
+  openid: { type: String },
+  // QQ、微信
+  unionid: { type: String },
   // 微信登录PC端、服务号的openid，留着备用，微信的 unionid 是该表的 openid
   backup_openid: String,
   // 访问令牌
@@ -51,8 +53,6 @@ OauthSchema.pre('updateOne', async function(next) {
   next();
 });
 
-OauthSchema.index({ openid: 1 }, { unique: true });
-OauthSchema.index({ openid: 1, source: 1 }, { unique: true });
-OauthSchema.index({ openid: 1, source: 1, user_id: 1 }, { unique: true });
+OauthSchema.index({ openid: 1, unionid: 1, source: 1, user_id: 1 }, { unique: true });
 
 mongoose.model('Oauth', OauthSchema);

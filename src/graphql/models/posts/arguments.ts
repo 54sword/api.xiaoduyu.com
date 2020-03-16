@@ -125,7 +125,7 @@ export const addPosts = {
   content_html: (data: string) => ({
     typename: 'save',
     name: 'content_html',
-    value: data,
+    value: decodeURIComponent(data),
     type: 'String',
     desc:'文本HTML'
   }),
@@ -208,7 +208,7 @@ export const updatePosts = {
   content_html: (data: string) => ({
     typename: 'save',
     name: 'content_html',
-    value: data,
+    value: decodeURIComponent(data),
     type: 'String',
     desc:'正文HTML'
   }),

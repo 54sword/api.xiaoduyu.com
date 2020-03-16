@@ -131,15 +131,26 @@ class GithubClass extends OauthClass {
       };
     
       request.get(options, function (error: any, response: any, body: any) {
-    
-        body = JSON.parse(body)
 
-        if (body && body.id) {
-          resolve(body)
-        } else if (body.message) {
-          reject(body.message)
-        } else {
-          reject(error)
+        if (error) {
+          console.log(error);
+          reject(error);
+          return;
+        }
+        
+        try {
+          body = JSON.parse(body)
+
+          if (body && body.id) {
+            resolve(body)
+          } else if (body.message) {
+            reject(body.message)
+          } else {
+            reject(error)
+          }
+        } catch (err) {
+          console.log(err);
+          reject(error);
         }
 
       })

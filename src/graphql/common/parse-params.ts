@@ -57,6 +57,15 @@ export const sortBy = function(data: string): any {
   return value;
 }
 
+function stripscript(s: string) {
+  var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]")
+  var rs = "";
+  for (var i = 0; i < s.length; i++) {
+    rs = rs + s.substr(i, 1).replace(pattern, '');
+  }
+  return rs;
+}
+
 /**
  * 模糊搜索
  *
@@ -69,14 +78,22 @@ export const search = function(str: string): any {
     return {}
   }
 
-  let s = (str+'').split(' ');
+  let s = stripscript(str+'').split(' ');
 
-  s.map((item, index)=>{
-    let arr = encodeURIComponent(item).split('%');
-    s[index] = decodeURIComponent(arr.join('%2F%'))
+  // 数组去重
+  // let resultarr = [...new Set(s)]; 
+
+  s = s.filter(function (s) {
+    return s && s.trim(); // 注：IE9(不包含IE9)以下的版本没有trim()方法
   });
 
-  var re = new RegExp("(?:" + s.join('|') + ")","gim");
+  // s.map((item, index)=>{
+  //   let arr = encodeURIComponent(item).split('%');
+  //   s[index] = decodeURIComponent(arr.join('%2F%'))
+  // });
+  
+  // var re = new RegExp("(?:" + s.join('|') + ")","gim");
+  var re = new RegExp("(" + s.join('+(.*)+') + ")","gim");
 
   return {
     $regex: re

@@ -37,6 +37,12 @@ class OauthModel extends baseMethod {
     })
   }
 
+  fetchByUnionIdAndSource(unionid: string, _source: string) {
+    return this.findOne({
+      query: { unionid, source: social[_source] }
+    })
+  }
+
 }
 
 export default new OauthModel(Oauth)

@@ -24,6 +24,8 @@ import router from '@src/router'
 import socket from '@src/socket'
 import * as Models from '@src/models'
 
+import '@src/backup-database';
+
 const app = express();
 
 // 启动日志

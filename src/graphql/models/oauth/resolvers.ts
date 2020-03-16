@@ -49,6 +49,7 @@ const QQOAuth = async (root: any, args: any, context: any, schema: any) => {
     ip,
     user,
     token: {
+      unionid: fields.unionid,
       openid: fields.openid,
       access_token: fields.access_token,
       expires_in: fields.expires_in,
