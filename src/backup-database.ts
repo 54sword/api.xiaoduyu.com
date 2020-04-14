@@ -18,10 +18,6 @@ function execute(cmd: any) {
 
 var mongo = config.mongodb;
 
-// mongo.userName = 'xiaoduyu_db';
-// mongo.password = 'xiaoduyu.abcd.1234';
-// mongo.address = '115.29.206.217';
-
 let arr: Array<string> = [];
 
 if (mongo.path) arr.push(mongo.path+'/bin/mongodump')
