@@ -53,7 +53,7 @@
     "rate-limit-mongo": "^1.0.3",
     "request": "^2.88.2",
     "sendcloud-client": "^0.1.1",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.4.0",
     "svg-captcha": "^1.4.0",
     "xss": "^1.0.6"
   },
