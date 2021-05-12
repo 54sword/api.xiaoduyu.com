@@ -48,7 +48,7 @@
     "mongoose": "^5.7.11",
     "morgan": "^1.9.1",
     "node-uuid": "^1.4.8",
-    "nodemailer": "^0.7.1",
+    "nodemailer": "^6.4.16",
     "qiniu": "^6.1.13",
     "rate-limit-mongo": "^1.0.3",
     "request": "^2.88.2",
